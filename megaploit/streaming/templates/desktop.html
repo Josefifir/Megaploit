@@ -3,15 +3,175 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Megaploit — Desktop Stream</title>
+  <title>Megaploit · Desktop Stream</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0d0d0d; display: flex; align-items: center;
-           justify-content: center; min-height: 100vh; }
-    img  { max-width: 100%; display: block; }
+
+    :root {
+      --red:    #e03333;
+      --dim:    #2a2a2a;
+      --border: #2c2c2c;
+      --text:   #f0f0f0;
+      --muted:  #909090;
+      --bright: #ffffff;
+      --accent: #4db8ff;
+      --bg:     #0a0a0a;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Courier New", Courier, monospace;
+      font-size: 13px;
+      overflow: hidden;
+    }
+
+    /* ── Chrome shell ──────────────────────────────────── */
+    .shell {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ── Top bar ────────────────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      height: 36px;
+      background: #0f0f0f;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .topbar-left  { display: flex; align-items: center; gap: 10px; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+
+    .logo {
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+    .badge {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--bright);
+      border: 1px solid #444;
+      padding: 1px 6px;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.25; }
+    }
+    .status-text { font-size: 10px; letter-spacing: 1px; color: var(--accent); font-weight: bold; }
+
+    /* ── Video area ─────────────────────────────────────── */
+    .viewport {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feed {
+      max-width: 100%;
+      max-height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+
+    /* Corner HUD labels */
+    .hud {
+      position: absolute;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.55);
+      text-shadow: 0 1px 4px rgba(0,0,0,.9);
+      pointer-events: none;
+      user-select: none;
+    }
+    .hud-tl { top: 10px; left: 14px; }
+    .hud-tr { top: 10px; right: 14px; }
+    .hud-bl { bottom: 10px; left: 14px; }
+    .hud-br { bottom: 10px; right: 14px; }
+
+    /* ── Bottom bar ─────────────────────────────────────── */
+    .bottombar {
+      height: 24px;
+      background: #0f0f0f;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 24px;
+      flex-shrink: 0;
+    }
+    .info { font-size: 9px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+    .info span { color: var(--accent); font-weight: bold; }
   </style>
 </head>
 <body>
-  <img src="/video_feed" alt="Desktop stream">
+  <div class="shell">
+
+    <!-- Top chrome bar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="logo">Megaploit</span>
+        <span class="badge">Desktop Stream</span>
+      </div>
+      <div class="topbar-right">
+        <span class="status-text" id="ts">—</span>
+        <div class="live-dot" title="Live"></div>
+      </div>
+    </div>
+
+    <!-- Feed -->
+    <div class="viewport">
+      <img class="feed" src="/video_feed" alt="Desktop stream" id="feed">
+      <span class="hud hud-tl">MJPEG / LIVE</span>
+      <span class="hud hud-tr" id="hud-res">—</span>
+      <span class="hud hud-bl">SCREEN · PRIMARY</span>
+      <span class="hud hud-br">PORT 5000</span>
+    </div>
+
+    <!-- Bottom status bar -->
+    <div class="bottombar">
+      <span class="info">Stream <span>active</span></span>
+      <span class="info">Encoding <span>JPEG</span></span>
+      <span class="info">Target <span>0.0.0.0</span></span>
+    </div>
+
+  </div>
+
+  <script>
+    // Clock in top-right
+    function tick() {
+      const now = new Date();
+      document.getElementById('ts').textContent =
+        now.toLocaleTimeString('en-GB', { hour12: false });
+    }
+    tick();
+    setInterval(tick, 1000);
+
+    // Resolution readout once the image loads
+    const feed = document.getElementById('feed');
+    feed.addEventListener('load', function() {
+      document.getElementById('hud-res').textContent =
+        feed.naturalWidth + ' × ' + feed.naturalHeight;
+    });
+  </script>
 </body>
 </html>

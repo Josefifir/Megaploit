@@ -3,56 +3,381 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Megaploit — Webcam</title>
+  <title>Megaploit · Webcam Stream</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body   { background: #0d0d0d; color: #e0e0e0; font-family: "Courier New", monospace;
-             display: flex; flex-direction: column; align-items: center;
-             padding: 24px; gap: 18px; }
-    h1     { font-size: 1rem; letter-spacing: 4px; color: #cc0000; text-transform: uppercase; }
-    .bar   { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-    button { background: #1a1a1a; color: #e0e0e0; border: 1px solid #333;
-             padding: 6px 18px; cursor: pointer; font-family: inherit;
-             font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;
-             transition: background 0.15s; }
-    button:hover { background: #cc0000; color: #fff; border-color: #cc0000; }
-    img    { max-width: 960px; width: 100%; border: 1px solid #222; }
-    table  { font-size: 0.75rem; color: #666; border-collapse: collapse; max-width: 600px; }
-    td     { padding: 3px 12px 3px 0; vertical-align: top; }
-    td:first-child { color: #cc0000; white-space: nowrap; }
+
+    :root {
+      --red:      #e03333;
+      --red-dim:  #963030;
+      --green:    #3dd68c;
+      --green-dim:#1d7a4e;
+      --amber:    #f0a030;
+      --border:   #2c2c2c;
+      --surface:  #111111;
+      --bg:       #0a0a0a;
+      --text:     #f0f0f0;
+      --muted:    #909090;
+      --bright:   #ffffff;
+      --accent:   #4db8ff;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Courier New", Courier, monospace;
+      font-size: 13px;
+    }
+
+    /* ── Layout ─────────────────────────────────────────── */
+    .shell {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ─────────────────────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      height: 38px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .topbar-left  { display: flex; align-items: center; gap: 12px; }
+    .topbar-right { display: flex; align-items: center; gap: 18px; }
+    .logo {
+      font-size: 11px; font-weight: bold; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--red);
+    }
+    .badge {
+      font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--bright); border: 1px solid #484848; padding: 2px 7px;
+    }
+    .clock { font-size: 10px; letter-spacing: 1px; color: var(--accent); font-weight: bold; }
+
+    /* ── Main body ───────────────────────────────────────── */
+    .body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 24px 28px;
+      gap: 0;
+    }
+
+    /* ── Control panel ───────────────────────────────────── */
+    .panel {
+      width: 100%;
+      max-width: 960px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      height: 44px;
+      gap: 8px;
+    }
+    .panel-left  { display: flex; align-items: center; gap: 6px; }
+    .panel-right { display: flex; align-items: center; gap: 6px; }
+
+    /* Buttons */
+    button {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid #3a3a3a;
+      padding: 4px 14px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      transition: color 0.12s, border-color 0.12s, background 0.12s;
+      height: 26px;
+      line-height: 1;
+    }
+    button:hover {
+      color: var(--bright);
+      border-color: #707070;
+      background: rgba(255,255,255,.04);
+    }
+    button.active {
+      color: var(--green);
+      border-color: var(--green-dim);
+      background: rgba(61,214,140,.08);
+    }
+    button.active:hover {
+      color: var(--green);
+      border-color: var(--green);
+    }
+    button.danger { color: #ff6b6b; border-color: var(--red-dim); font-weight: bold; }
+    button.danger:hover {
+      background: rgba(224,51,51,.14);
+      border-color: var(--red);
+      color: #ff8080;
+    }
+    button.rec-on {
+      color: var(--red);
+      border-color: var(--red);
+      background: rgba(204,34,34,.10);
+      animation: rec-blink 1.2s step-end infinite;
+    }
+    @keyframes rec-blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.55; }
+    }
+
+    /* Divider between button groups */
+    .sep {
+      width: 1px; height: 20px;
+      background: var(--border);
+      margin: 0 2px;
+    }
+
+    /* ── Feed wrapper ─────────────────────────────────────── */
+    .feed-wrap {
+      width: 100%;
+      max-width: 960px;
+      position: relative;
+      background: #070707;
+      border: 1px solid var(--border);
+      border-top: none;
+      overflow: hidden;
+      line-height: 0;
+    }
+    .feed-wrap img {
+      width: 100%;
+      display: block;
+    }
+
+    /* Corner HUD overlays */
+    .hud {
+      position: absolute;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      pointer-events: none;
+      user-select: none;
+      padding: 3px 6px;
+      text-shadow: 0 1px 5px rgba(0,0,0,.95);
+    }
+    .hud-tl { top: 8px;    left: 10px;  color: rgba(255,255,255,.60); }
+    .hud-tr { top: 8px;    right: 10px; }
+    .hud-bl { bottom: 8px; left: 10px;  color: rgba(255,255,255,.50); }
+    .hud-br { bottom: 8px; right: 10px; color: rgba(255,255,255,.50); }
+
+    .live-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--green); background: rgba(39,194,122,.10);
+      border: 1px solid rgba(39,194,122,.25);
+      padding: 2px 8px;
+    }
+    .live-pill .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--green);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    .rec-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--red); background: rgba(204,34,34,.10);
+      border: 1px solid rgba(204,34,34,.30);
+      padding: 2px 8px;
+      animation: rec-blink 1.2s step-end infinite;
+    }
+    .rec-pill .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--red);
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.2; }
+    }
+
+    /* ── Status bar ──────────────────────────────────────── */
+    .statusbar {
+      width: 100%;
+      max-width: 960px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 1px solid #161616;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 0 14px;
+      height: 26px;
+    }
+    .stat {
+      font-size: 9px; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .stat span { color: var(--muted); }
+    .stat-val  { color: var(--accent); font-weight: bold; }
+
+    /* ── Filter indicator pills ──────────────────────────── */
+    .filter-indicator {
+      display: none;
+      font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--amber); border: 1px solid rgba(240,160,48,.45);
+      padding: 1px 7px; background: rgba(240,160,48,.12);
+      font-weight: bold;
+    }
+    .filter-indicator.visible { display: inline; }
   </style>
 </head>
 <body>
-  <h1>Megaploit &mdash; Webcam Stream</h1>
+<div class="shell">
 
-  <div class="bar">
-    <button onclick="ctrl('toggle_cam')">Stop / Start</button>
-    <button onclick="ctrl('capture')">Capture</button>
-    <button onclick="ctrl('toggle_grey')">Greyscale</button>
-    <button onclick="ctrl('toggle_neg')">Negative</button>
-    <button onclick="ctrl('toggle_face')">Face Only</button>
-    <button onclick="ctrl('toggle_rec')">Record</button>
+  <!-- ── Top bar ─────────────────────────────────────────── -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="logo">Megaploit</span>
+      <span class="badge">Webcam Stream</span>
+    </div>
+    <div class="topbar-right">
+      <span class="filter-indicator" id="fi-grey">Grey</span>
+      <span class="filter-indicator" id="fi-neg">Neg</span>
+      <span class="filter-indicator" id="fi-face">Face</span>
+      <span class="clock" id="clock">—</span>
+    </div>
   </div>
 
-  <img src="/video_feed" alt="Webcam stream" id="feed">
+  <!-- ── Body ──────────────────────────────────────────────── -->
+  <div class="body">
 
-  <table>
-    <tr><td>Stop/Start</td><td>Toggle the live camera feed on or off</td></tr>
-    <tr><td>Capture</td><td>Save a still frame to loot/screenshots/</td></tr>
-    <tr><td>Greyscale</td><td>Toggle greyscale filter</td></tr>
-    <tr><td>Negative</td><td>Toggle colour-negative filter</td></tr>
-    <tr><td>Face Only</td><td>Crop to detected face (DNN model required)</td></tr>
-    <tr><td>Record</td><td>Toggle video recording to loot/recordings/</td></tr>
-  </table>
+    <!-- Control panel -->
+    <div class="panel">
+      <div class="panel-left">
+        <button id="btn-cam"  onclick="toggle('toggle_cam',  'btn-cam',  'Camera')">Stop Cam</button>
+        <span class="sep"></span>
+        <button id="btn-grey" onclick="toggle('toggle_grey', 'btn-grey', 'Greyscale')">Greyscale</button>
+        <button id="btn-neg"  onclick="toggle('toggle_neg',  'btn-neg',  'Negative')">Negative</button>
+        <button id="btn-face" onclick="toggle('toggle_face', 'btn-face', 'Face Only')">Face Only</button>
+      </div>
+      <div class="panel-right">
+        <button onclick="capture()" id="btn-snap">Capture</button>
+        <span class="sep"></span>
+        <button id="btn-rec" class="danger" onclick="toggleRec()">&#9679; Record</button>
+      </div>
+    </div>
 
-  <script>
-    function ctrl(action) {
-      fetch('/control', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'action=' + action
-      });
+    <!-- Feed -->
+    <div class="feed-wrap">
+      <img src="/video_feed" alt="Webcam stream" id="feed">
+
+      <span class="hud hud-tl">MJPEG / LIVE</span>
+
+      <span class="hud hud-tr" id="hud-status">
+        <span class="live-pill"><span class="dot"></span>Live</span>
+      </span>
+
+      <span class="hud hud-bl" id="hud-res">—</span>
+      <span class="hud hud-br">PORT 5001</span>
+    </div>
+
+    <!-- Status bar -->
+    <div class="statusbar">
+      <span class="stat">Mode <span id="st-mode" class="stat-val">RGB</span></span>
+      <span class="stat">Encoding <span class="stat-val">JPEG</span></span>
+      <span class="stat">Source <span class="stat-val">CAM 0</span></span>
+      <span class="stat">Loot <span class="stat-val">loot/screenshots/</span></span>
+    </div>
+
+  </div><!-- .body -->
+</div><!-- .shell -->
+
+<script>
+  /* ── Clock ─────────────────────────────────────── */
+  function tick() {
+    document.getElementById('clock').textContent =
+      new Date().toLocaleTimeString('en-GB', { hour12: false });
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ── Resolution readout ────────────────────────── */
+  const feed = document.getElementById('feed');
+  feed.addEventListener('load', function() {
+    const el = document.getElementById('hud-res');
+    if (feed.naturalWidth) {
+      el.textContent = feed.naturalWidth + ' × ' + feed.naturalHeight;
     }
-  </script>
+  });
+
+  /* ── State ─────────────────────────────────────── */
+  const state = { grey: false, neg: false, face: false, rec: false, cam: true };
+
+  /* ── POST helper ───────────────────────────────── */
+  function ctrl(action) {
+    return fetch('/control', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'action=' + action
+    });
+  }
+
+  /* ── Filter toggle (generic) ───────────────────── */
+  const filterIds = { toggle_grey: 'fi-grey', toggle_neg: 'fi-neg', toggle_face: 'fi-face' };
+  const filterMode = { toggle_grey: 'Grey', toggle_neg: 'Neg.', toggle_face: 'Face' };
+
+  function toggle(action, btnId, label) {
+    ctrl(action).then(function() {
+      const btn = document.getElementById(btnId);
+      const on = btn.classList.toggle('active');
+      // update top-right filter indicator
+      const fi = filterIds[action];
+      if (fi) document.getElementById(fi).classList.toggle('visible', on);
+      // update mode stat
+      updateMode();
+    });
+  }
+
+  function updateMode() {
+    const parts = [];
+    if (document.getElementById('btn-grey').classList.contains('active')) parts.push('Grey');
+    if (document.getElementById('btn-neg').classList.contains('active'))  parts.push('Neg');
+    if (document.getElementById('btn-face').classList.contains('active')) parts.push('Face');
+    document.getElementById('st-mode').textContent = parts.length ? parts.join(' + ') : 'RGB';
+  }
+
+  /* ── Capture ────────────────────────────────────── */
+  function capture() {
+    const btn = document.getElementById('btn-snap');
+    btn.textContent = 'Saved!';
+    btn.classList.add('active');
+    ctrl('capture').then(function() {
+      setTimeout(function() {
+        btn.textContent = 'Capture';
+        btn.classList.remove('active');
+      }, 1200);
+    });
+  }
+
+  /* ── Record ─────────────────────────────────────── */
+  function toggleRec() {
+    ctrl('toggle_rec').then(function() {
+      state.rec = !state.rec;
+      const btn = document.getElementById('btn-rec');
+      const hudStatus = document.getElementById('hud-status');
+      if (state.rec) {
+        btn.classList.remove('danger');
+        btn.classList.add('rec-on');
+        btn.innerHTML = '&#9632; Stop Rec';
+        hudStatus.innerHTML = '<span class="rec-pill"><span class="dot"></span>REC</span>';
+      } else {
+        btn.classList.remove('rec-on');
+        btn.classList.add('danger');
+        btn.innerHTML = '&#9679; Record';
+        hudStatus.innerHTML = '<span class="live-pill"><span class="dot"></span>Live</span>';
+      }
+    });
+  }
+</script>
 </body>
 </html>

@@ -1,0 +1,133 @@
+# =============================================================================
+#  Megaploit Plugin — Example
+#  Drop any *.toml file into the  plugins/  directory and it is loaded
+#  automatically when Megaploit starts (or after  plugins reload ).
+#
+#  Copy this file, edit it, and share it with the community.
+#  No Python knowledge is required for `local` and `session` commands.
+# =============================================================================
+
+[plugin]
+name        = "example"
+version     = "1.0.0"
+author      = "YourName"
+description = "Example plugin showing all three command kinds"
+
+
+# =============================================================================
+#  COMMAND KINDS
+#
+#  local   → runs a shell command on the OPERATOR machine
+#  session → sends a shell command to the active AGENT over the C2 channel
+#  python  → calls a Python function  (for advanced plugin authors)
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+#  LOCAL command — runs on the OPERATOR machine
+#
+#  Placeholders (expand at runtime):
+#    {lhost}       — the LHOST value set in the console
+#    {port}        — the PORT value
+#    {session_ip}  — IP of the current session (set when inside a session)
+#    {session_id}  — ID of the current session
+#    {arg0}        — first CLI argument after the command name
+#    {arg1}        — second CLI argument, etc.
+#
+#  Example: inside a session, run  portscan 1-1000
+#    → expands to: nmap -sV -p 1-1000 192.168.1.42
+# -----------------------------------------------------------------------------
+
+[[command]]
+name        = "portscan"
+kind        = "local"
+description = "Quick nmap port scan against the active session's IP"
+usage       = "portscan <ports>"
+shell       = "nmap -sV -p {arg0} {session_ip}"
+min_args    = 1
+
+
+# -----------------------------------------------------------------------------
+#  LOCAL command — no arguments needed
+# -----------------------------------------------------------------------------
+
+[[command]]
+name        = "myip"
+kind        = "local"
+description = "Show your public IP address"
+usage       = "myip"
+shell       = "curl -s https://ifconfig.me"
+min_args    = 0
+
+
+# -----------------------------------------------------------------------------
+#  SESSION command — sent to the active agent over the C2 channel
+#
+#  The shell string is forwarded verbatim to the agent's shell handler.
+#  Same placeholders apply; {session_ip} and {session_id} are available.
+#
+#  Example: inside a session, run  getuid
+#    → agent executes: id
+#    → output is returned to the operator console
+# -----------------------------------------------------------------------------
+
+[[command]]
+name        = "getuid"
+kind        = "session"
+description = "Print the current user on the target (Linux/macOS)"
+usage       = "getuid"
+shell       = "id"
+min_args    = 0
+
+
+[[command]]
+name        = "whoami_target"
+kind        = "session"
+description = "Print the username on the target (Windows + Unix)"
+usage       = "whoami_target"
+shell       = "whoami"
+min_args    = 0
+
+
+[[command]]
+name        = "ifconfig_target"
+kind        = "session"
+description = "Show network interfaces on the target"
+usage       = "ifconfig_target"
+shell       = "ip a 2>/dev/null || ipconfig"
+min_args    = 0
+
+
+# dangerous = true — the console will ask for YES confirmation before running
+[[command]]
+name        = "rmtemp_target"
+kind        = "session"
+description = "Clear /tmp on the target (Linux only)"
+usage       = "rmtemp_target"
+shell       = "rm -rf /tmp/*"
+min_args    = 0
+dangerous   = true
+
+
+# -----------------------------------------------------------------------------
+#  PYTHON command — for plugin authors who want full control
+#
+#  `handler` must be an importable  module.function  path.
+#  The function receives:
+#      args    : list[str]   — CLI arguments after the command name
+#      context : dict[str, str] — same placeholders as above
+#  It should return a string (printed as output) or None.
+#
+#  To use this kind you need a Python file on sys.path or relative to
+#  the Megaploit project root, e.g.:
+#
+#    plugins/my_checks.py   (then handler = "plugins.my_checks.run")
+# -----------------------------------------------------------------------------
+
+# [[command]]
+# name        = "mycheck"
+# kind        = "python"
+# description = "Custom Python check (uncomment to enable)"
+# usage       = "mycheck <target>"
+# handler     = "plugins.my_checks.run"
+# min_args    = 1
