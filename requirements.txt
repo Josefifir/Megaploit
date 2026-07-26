@@ -15,6 +15,9 @@
 # ── Core (operator console) ────────────────────────────────────────────────
 termcolor>=2.3.0
 
+# TOML plugin support — stdlib on Python ≥ 3.11; this polyfill covers 3.10
+tomli>=2.0.1; python_version < "3.11"
+
 # ── Agent capabilities ─────────────────────────────────────────────────────
 pynput>=1.7.6               # keylogger
 PyAutoGUI>=0.9.54           # screenshot + screen-resolution query

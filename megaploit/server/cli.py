@@ -34,15 +34,15 @@ try:
 except ImportError:
     _HAS_READLINE = False
 
-from megaploit.core.config import AUTH_TIMEOUT
 from megaploit.core.crypto import load_key
 from megaploit.server.commands import dispatch, all_commands, CommandResult
 from megaploit.server.listener import Listener, build_ssl_context
 from megaploit.server.session import Session
-from megaploit.toolbox.registry import registry as _tool_registry, Tool
+from megaploit.toolbox.registry import registry as _tool_registry
 from megaploit.toolbox import installer as _installer
-from megaploit.toolbox import runner as _runner
 from megaploit.toolbox.updater import UpdateChecker as _UpdateChecker
+from megaploit.plugins.loader import plugin_loader as _plugin_loader
+from megaploit.plugins.runner import run_plugin_command as _run_plugin_cmd
 
 # ---------------------------------------------------------------------------
 # ANSI colour helpers
@@ -155,14 +155,15 @@ def _print_sessions(sessions: dict[int, Session]) -> None:
 
 _GLOBAL_CMDS  = [
     "sessions", "use", "generate", "set", "help", "clear", "exit",
-    "toolbox",
+    "toolbox", "plugins",
 ]
 _SESSION_CMDS = list(all_commands().keys()) + ["back", "clear"]
 
 def _completer(text: str, state: int) -> Optional[str]:
-    # Combined pool: global + session + installed tool names
-    tool_names = [f"toolbox_run {t.name}" for t in _tool_registry.all()]
-    pool = _GLOBAL_CMDS + _SESSION_CMDS + tool_names
+    # Combined pool: global + session + installed tools + plugin commands
+    tool_names   = [f"toolbox_run {t.name}" for t in _tool_registry.all()]
+    plugin_cmds  = _plugin_loader.all_command_names()
+    pool = _GLOBAL_CMDS + _SESSION_CMDS + tool_names + plugin_cmds
     options = [c for c in pool if c.startswith(text)]
     return options[state] if state < len(options) else None
 
@@ -211,8 +212,20 @@ class Console:
 
         _print_banner()
         self._start_updater()
+        self._load_plugins()
         self._start_listener()
         self._global_loop()
+
+    # ---------------------------------------------------------------
+    # Plugin loader
+    # ---------------------------------------------------------------
+
+    def _load_plugins(self) -> None:
+        loaded, _errs = _plugin_loader.load_all()
+        if loaded:
+            print(ok(f"Loaded {loaded} plugin(s) from plugins/"))
+        for fname, msg in _plugin_loader.errors():
+            print(warn(f"Plugin error in '{fname}': {msg}"))
 
     # ---------------------------------------------------------------
     # Updater
@@ -326,6 +339,14 @@ class Console:
             elif cmd == "toolbox":
                 self._cmd_toolbox(args)
 
+            elif cmd == "plugins":
+                self._cmd_plugins(args)
+
+            elif _plugin_loader.is_plugin_command(cmd):
+                pc = _plugin_loader.get_command(cmd)
+                result = _run_plugin_cmd(pc, args, lhost=self.lhost, port=self.port)
+                self._print_result(result)
+
             else:
                 print(err(f"Unknown command: {cmd}  (type help)"))
 
@@ -364,13 +385,38 @@ class Console:
                 os.system("cls" if os.name == "nt" else "clear")
                 continue
 
-            # Dangerous command confirmation
+            # Dangerous command confirmation — built-in and plugin commands
             cmds = all_commands()
-            if cmd_name in cmds and cmds[cmd_name].dangerous:
+            is_dangerous = (
+                (cmd_name in cmds and cmds[cmd_name].dangerous)
+                or (
+                    _plugin_loader.is_plugin_command(cmd_name)
+                    and _plugin_loader.get_command(cmd_name).dangerous
+                )
+            )
+            if is_dangerous:
                 confirm = input(warn(f"  {cmd_name} is dangerous. Type YES to confirm: ")).strip()
                 if confirm != "YES":
                     print(warn("  Cancelled."))
                     continue
+
+            # Plugin session commands take priority over the C2 dispatcher
+            if _plugin_loader.is_plugin_command(cmd_name):
+                pc = _plugin_loader.get_command(cmd_name)
+                result = _run_plugin_cmd(
+                    pc, args,
+                    session=session,
+                    lhost=self.lhost,
+                    port=self.port,
+                )
+                self._print_result(result)
+                if result.close_session:
+                    with self._sessions_lock:
+                        self._sessions.pop(session.id, None)
+                    session.close()
+                    print(info(f"Session #{session.id} closed."))
+                    return
+                continue
 
             result: CommandResult = dispatch(session, raw)
             self._print_result(result)
@@ -416,11 +462,12 @@ class Console:
         self._session_loop(session)
 
     def _cmd_generate(self, args: list[str]) -> None:
-        """Patch agent.py with LHOST/PORT and optionally byte-compile it."""
+        """Patch agent.py with LHOST/PORT/USE_TLS and optionally byte-compile it."""
         if not self.lhost or not self.port:
             print(err("Set LHOST and PORT first:  set lhost <ip>  /  set port <port>"))
             return
-        _patch_agent(self.lhost, self.port)
+        use_tls = "--tls" in args or "-t" in args
+        _patch_agent(self.lhost, self.port, use_tls=use_tls)
         if "--compile" in args or "-c" in args:
             try:
                 py_compile.compile("agent.py", doraise=True)
@@ -464,7 +511,7 @@ class Console:
             _c("  " + "─" * 50, _GREY),
             f"  {'sessions':<28}  List active sessions",
             f"  {'use <id>':<28}  Interact with a session",
-            f"  {'generate [-c]':<28}  Patch & (optionally compile) agent.py",
+            f"  {'generate [-c] [--tls]':<28}  Patch agent.py; -c compiles, --tls enables TLS",
             f"  {'set <opt> <val>':<28}  Set lhost / port / cert / key",
             f"  {'toolbox install <url> <name>':<28}  Install a GitHub tool",
             f"  {'toolbox list':<28}  Show installed tools",
@@ -493,6 +540,22 @@ class Console:
                 status = _c("✔", _GREEN) if t.is_installed else _c("✘", _RED)
                 lines.append(f"  {status} {_c(t.name, _CYAN):<22}  {t.description[:55]}")
             lines.append("")
+
+        plugins = _plugin_loader.plugins()
+        if plugins:
+            lines += [
+                _c("  Loaded Plugins", _BOLD, _WHITE),
+                _c("  " + "─" * 50, _GREY),
+            ]
+            for p in plugins:
+                ncmds = len(p.commands)
+                lines.append(
+                    f"  {_c(p.name, _CYAN):<22}  v{p.version}  "
+                    f"{_c(p.description[:40], _GREY)}  "
+                    f"{_c(f'({ncmds} cmd)', _DIM)}"
+                )
+            lines.append("")
+
         print("\n".join(lines))
 
     # ---------------------------------------------------------------
@@ -637,10 +700,13 @@ class Console:
             print(err(f"Tool '{args[0]}' not found."))
             return
         installed = _c("yes", _GREEN) if t.is_installed else _c("no", _RED)
+        run_cmd_str = " ".join(t.run_cmd) if t.run_cmd else _c("(auto)", _GREY)
         print()
         print(f"  {_c('Name', _BOLD):<22}  {_c(t.name, _CYAN)}")
         print(f"  {'Repo':<18}  {t.repo}")
         print(f"  {'Description':<18}  {t.description}")
+        print(f"  {'Language':<18}  {_c(t.lang, _YELLOW)}")
+        print(f"  {'Run command':<18}  {run_cmd_str}")
         print(f"  {'Entry-point':<18}  {t.entry}")
         print(f"  {'Path':<18}  {t.path}")
         print(f"  {'Installed':<18}  {installed}")
@@ -748,6 +814,89 @@ class Console:
         print("\n".join(lines))
 
     # ---------------------------------------------------------------
+    # Plugins command
+    # ---------------------------------------------------------------
+
+    def _cmd_plugins(self, args: list[str]) -> None:
+        """
+        plugins              — list all loaded plugins and their commands
+        plugins reload       — re-scan plugins/ and reload everything
+        plugins info <name>  — show full details for one plugin
+        """
+        sub = args[0].lower() if args else "list"
+
+        if sub in ("list", "ls"):
+            self._plugins_list()
+        elif sub == "reload":
+            self._plugins_reload()
+        elif sub == "info":
+            self._plugins_info(args[1:])
+        else:
+            # Treat unknown sub-commands as the plugin name for quick info
+            self._plugins_info(args)
+
+    def _plugins_list(self) -> None:
+        plugins = _plugin_loader.plugins()
+        if not plugins:
+            print(info("No plugins loaded."))
+            print(info("Drop a .toml file into the  plugins/  directory and run  plugins reload"))
+            return
+        print()
+        hdr = f"  {'PLUGIN':<20} {'VER':<10} {'CMDS':<6} {'DESCRIPTION'}"
+        print(_c(hdr, _BOLD, _WHITE))
+        print(_c("  " + "─" * 68, _GREY))
+        for p in plugins:
+            ncmds = str(len(p.commands))
+            desc  = p.description[:42] + ("…" if len(p.description) > 42 else "")
+            print(
+                f"  {_c(p.name, _CYAN):<29} {p.version:<10} {ncmds:<6} {_c(desc, _GREY)}"
+            )
+        print()
+        # Show all plugin command names for tab-complete awareness
+        all_cmd_names = _plugin_loader.all_command_names()
+        if all_cmd_names:
+            print(_c("  Plugin commands:", _BOLD, _WHITE))
+            for cname in all_cmd_names:
+                pc = _plugin_loader.get_command(cname)
+                tag = _c(" [!]", _RED) if pc.dangerous else ""
+                print(f"    {_c(cname, _GREEN):<28}  {pc.description}{tag}")
+            print()
+
+    def _plugins_reload(self) -> None:
+        print(info("Reloading plugins…"))
+        loaded, _errs = _plugin_loader.load_all()
+        if loaded:
+            print(ok(f"Loaded {loaded} plugin(s)."))
+        else:
+            print(info("No plugins found in  plugins/"))
+        for fname, msg in _plugin_loader.errors():
+            print(warn(f"  Error in '{fname}': {msg}"))
+
+    def _plugins_info(self, args: list[str]) -> None:
+        if not args:
+            print(err("Usage: plugins info <name>"))
+            return
+        p = _plugin_loader.get(args[0])
+        if not p:
+            print(err(f"Plugin '{args[0]}' not loaded."))
+            return
+        print()
+        print(f"  {_c('Name', _BOLD):<22}  {_c(p.name, _CYAN)}")
+        print(f"  {'Version':<18}  {p.version}")
+        print(f"  {'Author':<18}  {p.author or '(unknown)'}")
+        print(f"  {'Description':<18}  {p.description}")
+        print(f"  {'Source file':<18}  {p.source_path}")
+        print()
+        if p.commands:
+            print(_c("  Commands:", _BOLD, _WHITE))
+            print(_c("  " + "─" * 60, _GREY))
+            for pc in p.commands:
+                tag = _c("  [dangerous]", _RED) if pc.dangerous else ""
+                kind_col = _c(f"[{pc.kind}]", _YELLOW)
+                print(f"  {_c(pc.usage or pc.name, _GREEN):<30}  {kind_col}  {pc.description}{tag}")
+        print()
+
+    # ---------------------------------------------------------------
     # Shutdown
     # ---------------------------------------------------------------
 
@@ -778,18 +927,35 @@ def _show_options(console: Console) -> None:
 # Agent patcher
 # ---------------------------------------------------------------------------
 
-def _patch_agent(lhost: str, port: int) -> None:
-    """Find LHOST= line in agent.py and overwrite it."""
+def _patch_agent(lhost: str, port: int, use_tls: bool = False) -> None:
+    """
+    Patch LHOST/PORT/USE_TLS values in agent.py so the agent connects back
+    to the correct server.  Also patches megaploit/agent/connection.py directly
+    so that the values take effect when agent.py imports the module.
+    """
+    _patch_connection_module(lhost, port, use_tls)
+    print(ok(f"agent.py patched: LHOST={lhost}  PORT={port}  USE_TLS={use_tls}"))
+
+
+def _patch_connection_module(lhost: str, port: int, use_tls: bool) -> None:
+    """Overwrite the LHOST / PORT / USE_TLS lines in connection.py."""
+    path = os.path.join("megaploit", "agent", "connection.py")
     try:
-        with open("agent.py", "r") as f:
+        with open(path, "r") as f:
             lines = f.readlines()
-        idx = next((i for i, l in enumerate(lines) if l.startswith("LHOST =")), None)
-        if idx is None:
-            print(err("Cannot find 'LHOST =' line in agent.py"))
-            return
-        lines[idx] = f'LHOST = "{lhost}"; PORT = {port}  # patched by server\n'
-        with open("agent.py", "w") as f:
+
+        def _replace(lines, prefix, new_line):
+            for i, l in enumerate(lines):
+                if l.startswith(prefix):
+                    lines[i] = new_line
+                    return True
+            return False
+
+        _replace(lines, "LHOST", f'LHOST   = "{lhost}"\n')
+        _replace(lines, "PORT",  f'PORT    = {port}\n')
+        _replace(lines, "USE_TLS", f'USE_TLS = {use_tls}   # patched by server\n')
+
+        with open(path, "w") as f:
             f.writelines(lines)
-        print(ok(f"agent.py patched: LHOST={lhost} PORT={port}"))
     except IOError as e:
         print(err(f"Patch failed: {e}"))
