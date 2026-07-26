@@ -1,29 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Megaploit — Webcam</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #111; color: #eee; font-family: monospace;
+               display: flex; flex-direction: column; align-items: center;
+               padding: 24px; gap: 16px; }
+        h2 { font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; }
+        .controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        button { background: #222; color: #eee; border: 1px solid #444;
+                 padding: 6px 14px; cursor: pointer; font-family: monospace; font-size: 0.85rem; }
+        button:hover { background: #333; }
+        img { max-width: 900px; width: 100%; height: auto; }
+        ol { max-width: 600px; font-size: 0.82rem; color: #aaa; line-height: 1.8; }
+    </style>
+</head>
 <body>
-<div class="container">
-    <div class="row">
-        <div class="col-lg-8  offset-lg-2">
+    <h2>Webcam Stream</h2>
 
+    <form method="post" action="{{ url_for('tasks') }}" class="controls">
+        <button type="submit" name="stop"  value="Stop/Start">Stop / Start</button>
+        <button type="submit" name="click" value="Capture">Capture</button>
+        <button type="submit" name="grey"  value="Grey">Greyscale</button>
+        <button type="submit" name="neg"   value="Negative">Negative</button>
+        <button type="submit" name="face"  value="Face Only">Face Only</button>
+        <button type="submit" name="rec"   value="Start/Stop Recording">Start / Stop Recording</button>
+    </form>
 
-            <h2 class="mt-5">Webcam</h2>
-			<form method="post" action="{{ url_for('tasks') }}">
-			<input type="submit" value="Stop/Start" name="stop" />
-			<input type="submit" value="Capture" name="click"/>
-			<input type="submit" value="Grey" name="grey" />
-			<input type="submit" value="Negative" name="neg" />
-			<input type="submit" value="Face Only" name="face" />
-			<input type="submit" value="Start/Stop Recording" name="rec" />
-			</form>
-            <img src="{{ url_for('video_feed') }}" height="80%">
-			<h3 style="font-family:courier;">Instructions:</h3>
-			<ol style="font-family:courier;">
-			<li>Stop/Start--Toggle between stop or start live streaming</li>
-			<li>Capture--Take still-shot and save in the 'shots' directory</li>
-			<li>Grey--Toggle between grayscale and RGB output</li>
-			<li>Negative--Toggle between negative and RGB output</li>
-			<li>Face Only--Shows just your face if present(Toggle on/off)</li>
-			<li>Start/Stop Recording--Toggle between starting and stopping video recording</li> </ol>
+    <img src="{{ url_for('video_feed') }}" alt="Webcam stream">
 
-        </div>
-    </div>
-</div>
+    <ol>
+        <li><strong>Stop / Start</strong> — toggle the live stream on or off</li>
+        <li><strong>Capture</strong> — save a still image to the <code>images/</code> folder</li>
+        <li><strong>Greyscale</strong> — toggle greyscale output</li>
+        <li><strong>Negative</strong> — toggle colour-negative output</li>
+        <li><strong>Face Only</strong> — crop the stream to the detected face</li>
+        <li><strong>Start / Stop Recording</strong> — toggle video recording to disk</li>
+    </ol>
 </body>
+</html>
