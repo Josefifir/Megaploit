@@ -109,33 +109,38 @@ def _rec_worker(writer: cv2.VideoWriter) -> None:
 def _frames():
     global _rec_frame
     cam = _get_cam()
-    while True:
-        ok, frame = cam.read()
-        if not ok:
-            time.sleep(0.05)
-            continue
+    try:
+        while True:
+            ok, frame = cam.read()
+            if not ok:
+                time.sleep(0.05)
+                continue
 
-        if _face:
-            frame = _crop_face(frame)
-        if _grey:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-        if _neg:
-            frame = cv2.bitwise_not(frame)
+            if _face:
+                frame = _crop_face(frame)
+            if _grey:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+            if _neg:
+                frame = cv2.bitwise_not(frame)
 
-        if _rec_active:
-            _rec_frame = frame.copy()
-            cv2.putText(frame, "REC", (10, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            if _rec_active:
+                _rec_frame = frame.copy()
+                cv2.putText(frame, "REC", (10, 30),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-        flipped = cv2.flip(frame, 1)
-        ret, buf = cv2.imencode(".jpg", flipped)
-        if not ret:
-            continue
-        yield (
-            b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n" + buf.tobytes() + b"\r\n"
-        )
+            flipped = cv2.flip(frame, 1)
+            ret, buf = cv2.imencode(".jpg", flipped)
+            if not ret:
+                continue
+            yield (
+                b"--frame\r\n"
+                b"Content-Type: image/jpeg\r\n\r\n" + buf.tobytes() + b"\r\n"
+            )
+    except GeneratorExit:
+        pass
+    finally:
+        _release_cam()
 
 
 # ---------------------------------------------------------------------------

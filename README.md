@@ -63,7 +63,9 @@ Key properties:
 - **Metasploit-style console** — animated banner, colour-coded prompts, spinner, tab-completion, multi-session support
 - **Multi-session** — the server handles unlimited simultaneous agent connections; `use <id>` to switch
 - **HMAC-SHA256 authentication** — every connection is challenge-response authenticated before any command runs
-- **Optional TLS** — wrap the C2 channel in SSL using your own cert/key pair
+- **Hardened TLS 1.2+** — optional; enforces AEAD-only cipher suites, no renegotiation, no compression, forward secrecy required
+- **Rate limiter + IP allowlist** — per-IP sliding-window rate limiter auto-bans after 5 failed attempts; optional `--allow-ip` restricts who can even attempt auth
+- **Audit log** — every connection attempt, result, and cipher suite recorded to `loot/audit.log` with UTC timestamps
 - **Toolbox** — install any GitHub tool in any language (Python, Go, Rust, Node.js, Ruby, Java, Bash, PowerShell, C/C++) and run it locally against victims or deploy it onto the target machine
 - **Plugin system** — community-contributed TOML files that add new commands without writing Python
 - **Live streaming** — MJPEG desktop stream (port 5000) and webcam stream (port 5001) with filters and recording
@@ -89,7 +91,8 @@ Megaploit-main/
 ├── loot/                        ← all collected data
 │   ├── screenshots/
 │   ├── recordings/
-│   └── downloads/
+│   ├── downloads/
+│   └── audit.log                ← connection audit trail (UTC timestamps)
 └── megaploit/
     ├── core/                    ← shared constants, protocol, crypto
     ├── server/                  ← CLI, listener, sessions, commands
@@ -202,12 +205,14 @@ Start the server console:
 python3 server.py -lh <callback-ip> -p <port> [options]
 
 Options:
-  -lh, --lhost   IP the agent connects back to (required)
-  -p,  --port    TCP port (required)
-  -rh, --rhost   Bind IP for the listener socket (default: 0.0.0.0)
-  --cert         SSL certificate file (PEM)  — enables TLS
-  --key          SSL private key file (PEM)  — enables TLS
-  --secret       Path to secret.key (default: secret.key)
+  -lh, --lhost       IP the agent connects back to (required)
+  -p,  --port        TCP port (required)
+  -rh, --rhost       Bind IP for the listener socket (default: 0.0.0.0)
+  --cert             SSL certificate file (PEM) — enables TLS 1.2+
+  --key              SSL private key file (PEM) — enables TLS 1.2+
+  --secret           Path to secret.key (default: secret.key)
+  --allow-ip <IP>    Allowlisted source IP (repeat for multiple).
+                     If omitted, all IPs may attempt authentication.
 ```
 
 ### Global Commands
@@ -486,9 +491,9 @@ Plugins with `dangerous = true` on a command will trigger the same YES-confirmat
 The agent (`agent.py`) is the payload deployed on the target machine. It:
 1. Connects back to the server on `LHOST:PORT` (reverse shell — no inbound rule needed on the target)
 2. Performs HMAC-SHA256 authentication
-3. Optionally wraps the connection in TLS (if `USE_TLS = True`)
+3. Optionally wraps the connection in TLS 1.2+ with AEAD-only ciphers (if `USE_TLS = True`)
 4. Enters a receive-execute-respond loop
-5. Silently reconnects after any disconnection (every 10 seconds by default)
+5. Silently reconnects after disconnection with jitter: `RECONNECT_DELAY + random(0, RECONNECT_JITTER)` seconds
 
 ### Generating the Payload
 
@@ -578,7 +583,18 @@ loot/
 ├── screenshots/     ← shot_<ip>_<n>.png   (from `screenshot` and webcam Capture)
 ├── recordings/      ← rec_<ip>_<n>.wav    (from `record <seconds>`)
 │                      webcam_<ts>.avi      (from webcam Record button)
-└── downloads/       ← <n>_<filename>       (from `download <file>`)
+├── downloads/       ← <n>_<filename>       (from `download <file>`)
+└── audit.log        ← connection audit trail (one line per event, UTC timestamps)
+```
+
+**Audit log format:**
+
+```
+2024-01-15 14:32:01 UTC  LISTEN    bind=0.0.0.0:4444  tls=yes  allowlist=none
+2024-01-15 14:32:18 UTC  ACCEPTED  ip=10.0.0.20       port=54321  session=1  cipher=ECDHE-RSA-AES256-GCM-SHA384
+2024-01-15 14:33:01 UTC  REJECTED  ip=192.168.1.99    port=41234  reason=auth_failed
+2024-01-15 14:33:05 UTC  BANNED    ip=192.168.1.99    attempts=6  ban_until=14:38:05
+2024-01-15 14:33:10 UTC  BLOCKED   ip=192.168.1.99    reason=banned
 ```
 
 File names include the session IP and an incrementing counter so files from multiple sessions never overwrite each other.
@@ -600,12 +616,20 @@ This means even if an attacker can reach your listener port, they cannot interac
 
 ### Transport Encryption
 
-TLS is **opt-in**. To enable it:
+TLS is **opt-in** but strongly recommended for any non-lab use. To enable it:
 
 1. Start the server with `--cert cert.pem --key key.pem`
 2. Run `generate --tls` to patch the agent
 
-Without TLS the C2 channel is plain TCP. HMAC authentication still protects against unauthorised connections, but traffic is visible on the wire. Use TLS on untrusted networks.
+**Enforced when TLS is active:**
+- TLS 1.2 minimum (`TLSVersion.TLSv1_2`); TLS 1.3 used automatically where available
+- AEAD-only cipher suites: `ECDHE+AESGCM`, `ECDHE+CHACHA20`, `DHE+AESGCM`, `DHE+CHACHA20`
+- No CBC, no RC4, no export ciphers, no MD5
+- No TLS renegotiation (`OP_NO_RENEGOTIATION`)
+- No protocol-level compression (`OP_NO_COMPRESSION`)
+- Forward secrecy required (ECDHE/DHE only)
+
+Without TLS the C2 channel is plain TCP. HMAC authentication still protects against unauthorised connections, but traffic is visible on the wire.
 
 Self-signed certificate generation:
 
@@ -614,17 +638,45 @@ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -node
   -subj "/CN=megaploit"
 ```
 
+### Rate Limiter & IP Allowlist
+
+The listener applies two additional gates before HMAC authentication:
+
+**Rate limiter** — automatically active, no configuration needed:
+- Sliding 60-second window per source IP
+- After `MAX_AUTH_ATTEMPTS_PER_MIN` (default: 5) attempts, the IP is banned for `IP_BAN_DURATION` (default: 300 s)
+- All events written to `loot/audit.log`
+
+**IP allowlist** — opt-in via `--allow-ip`:
+```bash
+python3 server.py -lh 10.0.0.1 -p 4444 --allow-ip 10.0.0.20 --allow-ip 10.0.0.21
+```
+Connections from any IP not on the list are dropped before a single byte is read.
+
 ### Secret Key
 
 The shared secret key is a 32-byte random value stored as 64 hex characters in `secret.key`.
 
-**Never commit `secret.key` to a repository.**  
+**Never commit `secret.key` to a repository.**
 **Copy it to the target machine via a secure channel before deploying the agent.**
 
 Generate a new key:
 
 ```bash
 python3 -c "import os,binascii; open('secret.key','wb').write(binascii.hexlify(os.urandom(32)))"
+```
+
+On startup the console prints a **key fingerprint** — the first 16 hex characters of `SHA-256(key)` — so you can confirm both sides are using the same key without exposing the key itself:
+
+```
+[*] Key fingerprint : 3a7f1b2c 9e8d4a05
+```
+
+On Unix, if `secret.key` has group or world read permissions, a warning is printed:
+
+```
+[!] WARNING: 'secret.key' is readable by group/others (mode 644).
+    Fix with:  chmod 600 secret.key
 ```
 
 ---
@@ -640,12 +692,16 @@ Shared constants used by both server and agent.
 | Constant | Default | Description |
 |---|---|---|
 | `BUFFER_SIZE` | `4096` | Socket read buffer size (bytes) |
-| `AUTH_TIMEOUT` | `30` | Seconds before authentication times out |
-| `RECONNECT_DELAY` | `10` | Seconds the agent waits before reconnecting |
+| `AUTH_TIMEOUT` | `10` | Seconds before authentication times out (tight to prevent connection-holding) |
+| `RECONNECT_DELAY` | `10` | Base seconds the agent waits before reconnecting |
+| `RECONNECT_JITTER` | `5` | Random 0–5 s added to each reconnect delay (prevents thundering-herd) |
+| `MAX_AUTH_ATTEMPTS_PER_MIN` | `5` | Per-IP rate limit before auto-ban |
+| `IP_BAN_DURATION` | `300` | Seconds a rate-limited IP stays banned |
 | `END_SENTINEL` | `b"<<MEGAPLOIT_END>>"` | Message framing delimiter |
 | `SCREEN_STREAM_PORT` | `5000` | Port for the desktop MJPEG server |
 | `WEBCAM_STREAM_PORT` | `5001` | Port for the webcam MJPEG server |
 | `MAX_RECORD_SECONDS` | `300` | Maximum microphone recording length |
+| `AUDIT_LOG` | `"loot/audit.log"` | Path to the connection audit log |
 | `KEYLOG_PATH` | Platform-dependent | Hidden path for the keystroke log file |
 
 #### `crypto.py`
@@ -655,15 +711,20 @@ HMAC-SHA256 authentication helpers.
 ```python
 load_key(path="secret.key") -> bytes
 ```
-Load and hex-decode the shared secret from disk. Calls `sys.exit(1)` with a human-readable message on failure.
+Load and hex-decode the shared secret. Checks file permissions on Unix and warns if world-readable. Calls `sys.exit(1)` on failure.
 
 ```python
-server_authenticate(conn, secret_key, timeout=30) -> bool
+key_fingerprint(key: bytes) -> str
+```
+Returns the first 16 hex chars of `SHA-256(key)` — printed on startup as a human-readable identity check.
+
+```python
+server_authenticate(conn, secret_key, timeout=10) -> bool
 ```
 Server side: send a 16-byte random challenge, read the 32-byte HMAC response, verify it.
 
 ```python
-agent_authenticate(conn, secret_key, timeout=40) -> bool
+agent_authenticate(conn, secret_key, timeout=15) -> bool
 ```
 Agent side: receive the challenge, compute and send the HMAC response.
 
@@ -699,17 +760,25 @@ Methods: `close()`, `screenshot_path()`, `recording_path()`, `download_path(remo
 
 #### `listener.py` — `Listener`
 
-Runs a TCP accept loop in a background daemon thread. For each incoming connection, spawns a handshake thread that optionally wraps in TLS and performs HMAC authentication. On success, calls `on_session(session)`.
+Runs a TCP accept loop in a background daemon thread. Each incoming connection passes through five hardening layers in order: IP allowlist → rate limiter → TLS upgrade → HMAC auth → session creation. Every outcome is written to `loot/audit.log`.
 
 ```python
-Listener(bind_host, port, secret_key, on_session, ssl_context=None)
+Listener(bind_host, port, secret_key, on_session, ssl_context=None, allowed_ips=None)
 listener.start()   # non-blocking
 listener.stop()
 ```
 
+`allowed_ips` — `list[str] | None`. Pass a list of IP strings to enable the allowlist; `None` (default) allows all IPs.
+
 ```python
 build_ssl_context(certfile, keyfile) -> ssl.SSLContext
 ```
+Returns a hardened server TLS context: TLS 1.2+, AEAD ciphers, no renegotiation, no compression, forward secrecy.
+
+```python
+build_agent_ssl_context() -> ssl.SSLContext
+```
+Returns a matching hardened client TLS context for the agent (cert verification disabled for self-signed certs).
 
 #### `commands.py`
 

@@ -390,6 +390,7 @@ class Console:
 
             parts = raw.split()
             cmd_name = parts[0].lower()
+            args = parts[1:]
 
             if cmd_name == "back":
                 return
