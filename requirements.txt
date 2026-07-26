@@ -1,33 +1,31 @@
 # Megaploit requirements
 # Install: pip install -r requirements.txt
 #
-# Notes:
-#   PyAudio needs PortAudio:
-#     Linux:   sudo apt-get install portaudio19-dev
-#     macOS:   brew install portaudio
-#     Windows: pre-built wheel at https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
+# System requirements:
+#   git must be on PATH (for toolbox clone/update and self-update checks)
+#     Linux/macOS: usually pre-installed
+#     Windows:     https://git-scm.com/download/win
 #
-#   readline is a stdlib module on Linux/macOS (tab completion built-in).
-#   On Windows install pyreadline3:
-#     pip install pyreadline3
+#   sounddevice uses the system's PortAudio at runtime, but ships its own
+#   bundled binaries via the wheel — no separate system install needed.
+#
+#   readline is stdlib on Linux/macOS (tab completion built-in).
+#   On Windows install pyreadline3:  pip install pyreadline3
 
-# Core (server + agent)
+# ── Core (operator console) ────────────────────────────────────────────────
 termcolor>=2.3.0
-pynput>=1.7.6
 
-# Screenshot / GUI automation (agent)
-PyAutoGUI>=0.9.54
+# ── Agent capabilities ─────────────────────────────────────────────────────
+pynput>=1.7.6               # keylogger
+PyAutoGUI>=0.9.54           # screenshot + screen-resolution query
+mss>=9.0.1                  # fast screen capture for desktop streaming
+opencv-python>=4.8.0        # webcam + image encoding
+numpy>=1.24.0               # array bridge for mss/opencv
 
-# Screen capture — desktop streaming (agent)
-mss>=9.0.1
+# Audio recording — pure-wheel, no external PortAudio build required
+sounddevice>=0.4.6
+soundfile>=0.12.1
 
-# Image processing / webcam streaming (agent)
-opencv-python>=4.8.0
-numpy>=1.24.0
-
-# Audio recording (agent)
-PyAudio>=0.2.14
-
-# Web streaming Flask servers (agent)
+# ── Web streaming (agent-side Flask MJPEG servers) ─────────────────────────
 Flask>=3.0.0
 Werkzeug>=3.0.0
