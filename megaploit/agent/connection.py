@@ -37,6 +37,34 @@ USE_TLS = False   # set to True by: generate --tls
 
 
 # ---------------------------------------------------------------------------
+# Agent-side TLS context (self-contained — does NOT import server modules)
+# ---------------------------------------------------------------------------
+
+def _build_agent_ssl_context() -> ssl.SSLContext:
+    """
+    Hardened client-side TLS context for the agent.
+    Self-signed server cert is acceptable (cert verification disabled),
+    but protocol version and cipher suite restrictions still apply.
+    """
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ctx.check_hostname = False
+    ctx.verify_mode    = ssl.CERT_NONE
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    ctx.options |= ssl.OP_NO_SSLv2
+    ctx.options |= ssl.OP_NO_SSLv3
+    ctx.options |= ssl.OP_NO_TLSv1
+    ctx.options |= ssl.OP_NO_TLSv1_1
+    ctx.options |= ssl.OP_NO_COMPRESSION
+    if hasattr(ssl, "OP_NO_RENEGOTIATION"):
+        ctx.options |= ssl.OP_NO_RENEGOTIATION
+    ctx.set_ciphers(
+        "ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20"
+        ":!aNULL:!eNULL:!EXPORT:!RC4:!DES:!MD5:!PSK:!SRP"
+    )
+    return ctx
+
+
+# ---------------------------------------------------------------------------
 # Connect-back loop
 # ---------------------------------------------------------------------------
 
@@ -46,9 +74,7 @@ def start(secret_key_path: str = "secret.key") -> None:
     # Build a reusable hardened SSL context only if TLS is requested
     _ssl_ctx: ssl.SSLContext | None = None
     if USE_TLS:
-        # Import here to avoid circular dependency at module load time
-        from megaploit.server.listener import build_agent_ssl_context
-        _ssl_ctx = build_agent_ssl_context()
+        _ssl_ctx = _build_agent_ssl_context()
 
     while True:
         conn: socket.socket | None = None

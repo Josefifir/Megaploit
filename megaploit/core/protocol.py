@@ -34,9 +34,10 @@ def send_msg(conn: socket.socket, data: object) -> None:
     conn.sendall(payload)
 
 
-def recv_msg(conn: socket.socket) -> object:
+def recv_msg(conn: socket.socket) -> str:
     """
     Block until a full JSON message (terminated by END_SENTINEL) is received.
+    Returns the decoded string.
     Raises ConnectionError if the socket closes before the sentinel arrives.
     """
     buf = b""
@@ -47,7 +48,11 @@ def recv_msg(conn: socket.socket) -> object:
         buf += chunk
         if END_SENTINEL in buf:
             payload, _ = buf.split(END_SENTINEL, 1)
-            return json.loads(payload.decode())
+            decoded = payload.decode("utf-8", errors="replace")
+            try:
+                return json.loads(decoded)
+            except json.JSONDecodeError:
+                return decoded
 
 
 # ---------------------------------------------------------------------------

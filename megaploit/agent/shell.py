@@ -21,6 +21,8 @@ def run_shell(conn: socket.socket) -> None:
         except (ConnectionError, OSError):
             break
 
+        cmd = str(cmd)   # recv_msg may return any JSON type; ensure str for handle()
+
         if cmd == "exit":
             break
 

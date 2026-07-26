@@ -479,7 +479,7 @@ def _git_clone(url: str, dest: str, progress: ProgressFn) -> None:
     _run(["git", "clone", "--depth=1", "--recurse-submodules", url, dest], progress)
 
 
-def _run(cmd: list[str], progress: ProgressFn, cwd: str = None) -> None:
+def _run(cmd: list[str], progress: ProgressFn, cwd: Optional[str] = None) -> None:
     """Stream subprocess output to *progress*. Raises RuntimeError on non-zero exit."""
     proc = subprocess.Popen(
         cmd,
