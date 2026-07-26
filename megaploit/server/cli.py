@@ -34,7 +34,7 @@ try:
 except ImportError:
     _HAS_READLINE = False
 
-from megaploit.core.crypto import load_key
+from megaploit.core.crypto import load_key, key_fingerprint
 from megaploit.server.commands import dispatch, all_commands, CommandResult
 from megaploit.server.listener import Listener, build_ssl_context
 from megaploit.server.session import Session
@@ -195,6 +195,7 @@ class Console:
         self.cert: str = ""
         self.key_file: str = ""
         self.secret_key: bytes = b""
+        self.allowed_ips: list[str] = []   # empty = allow all
 
     # ---------------------------------------------------------------
     # Entry point
@@ -202,15 +203,24 @@ class Console:
 
     def run(self, bind_host: str, lhost: str, port: int,
             cert: str = "", key_file: str = "",
-            secret_key_path: str = "secret.key") -> None:
-        self.bind_host = bind_host
-        self.lhost = lhost
-        self.port = port
-        self.cert = cert
-        self.key_file = key_file
-        self.secret_key = load_key(secret_key_path)
+            secret_key_path: str = "secret.key",
+            allowed_ips: list[str] | None = None) -> None:
+        self.bind_host   = bind_host
+        self.lhost       = lhost
+        self.port        = port
+        self.cert        = cert
+        self.key_file    = key_file
+        self.secret_key  = load_key(secret_key_path)
+        self.allowed_ips = allowed_ips or []
 
         _print_banner()
+        fp = key_fingerprint(self.secret_key)
+        print(info(f"Key fingerprint : {fp[:8]} {fp[8:]}"))
+        if self.allowed_ips:
+            print(ok(f"IP allowlist    : {', '.join(self.allowed_ips)}"))
+        else:
+            print(warn("IP allowlist    : disabled (any IP may attempt auth)"))
+        print()
         self._start_updater()
         self._load_plugins()
         self._start_listener()
@@ -251,10 +261,12 @@ class Console:
         if self.cert and self.key_file:
             try:
                 ssl_ctx = build_ssl_context(self.cert, self.key_file)
-                print(ok(f"TLS configured ({self.cert})"))
+                print(ok(f"TLS configured ({self.cert}) — TLS 1.2+ AEAD only"))
             except ssl.SSLError as e:
                 print(err(f"TLS error: {e}"))
                 sys.exit(1)
+        else:
+            print(warn("TLS not configured — traffic is unencrypted. Use --cert/--key for production."))
 
         self._listener = Listener(
             bind_host=self.bind_host,
@@ -262,6 +274,7 @@ class Console:
             secret_key=self.secret_key,
             on_session=self._on_new_session,
             ssl_context=ssl_ctx,
+            allowed_ips=self.allowed_ips or None,
         )
         self._listener.start()
         print(ok(f"Listener started on {self.bind_host}:{self.port}"))
