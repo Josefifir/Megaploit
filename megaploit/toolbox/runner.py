@@ -152,23 +152,34 @@ def run_remote(
 # Remote helpers — one per language family
 # ---------------------------------------------------------------------------
 
+def _upload_file(session, local_path: str, remote_name: str, output: OutputFn) -> None:
+    """Send upload command, transfer file, and consume the agent's ack reply."""
+    from megaploit.core.protocol import send_msg, recv_msg, send_file
+    send_msg(session.conn, f"upload {remote_name}")
+    send_file(session.conn, local_path)
+    # Consume the agent's "[+] Received: ..." ack so the protocol stays in sync
+    try:
+        ack = recv_msg(session.conn)
+        output(f"    {ack}")
+    except Exception:
+        pass
+
+
 def _remote_python(
     tool: Tool, args: list[str], session, output: OutputFn, timeout: int
 ) -> None:
-    from megaploit.core.protocol import send_msg, recv_msg, send_file, recv_file
+    from megaploit.core.protocol import send_msg
 
     remote_name = f"_tool_{tool.name}.py"
     output(f"[*] Uploading {tool.entry} → {remote_name}")
-    send_msg(session.conn, f"upload {remote_name}")
-    send_file(session.conn, tool.entry_path)
+    _upload_file(session, tool.entry_path, remote_name, output)
 
     # Also upload requirements.txt if it exists (let agent install deps)
     req = os.path.join(tool.path, "requirements.txt")
     if os.path.isfile(req):
         remote_req = f"_tool_{tool.name}_req.txt"
         output(f"[*] Uploading requirements.txt → {remote_req}")
-        send_msg(session.conn, f"upload {remote_req}")
-        send_file(session.conn, req)
+        _upload_file(session, req, remote_req, output)
         pip_cmd = f"pip install -q -r {remote_req}"
         output(f"[*] Installing deps: {pip_cmd}")
         send_msg(session.conn, pip_cmd)
@@ -185,13 +196,12 @@ def _remote_script(
     tool: Tool, args: list[str], session, output: OutputFn, timeout: int,
     interpreter: str, extra_flags: list[str] | None = None,
 ) -> None:
-    from megaploit.core.protocol import send_msg, send_file
+    from megaploit.core.protocol import send_msg
 
     suffix = os.path.splitext(tool.entry)[1]
     remote_name = f"_tool_{tool.name}{suffix}"
     output(f"[*] Uploading {tool.entry} → {remote_name}")
-    send_msg(session.conn, f"upload {remote_name}")
-    send_file(session.conn, tool.entry_path)
+    _upload_file(session, tool.entry_path, remote_name, output)
 
     flags = extra_flags or []
     arg_str = " ".join(args)
@@ -206,7 +216,7 @@ def _remote_script(
 def _remote_binary(
     tool: Tool, args: list[str], session, output: OutputFn, timeout: int
 ) -> None:
-    from megaploit.core.protocol import send_msg, send_file
+    from megaploit.core.protocol import send_msg
 
     binary_path = tool.entry_path
     remote_name = f"_tool_{tool.name}"
@@ -214,10 +224,9 @@ def _remote_binary(
         remote_name += ".exe"
 
     output(f"[*] Uploading binary {os.path.basename(binary_path)} → {remote_name}")
-    send_msg(session.conn, f"upload {remote_name}")
-    send_file(session.conn, binary_path)
+    _upload_file(session, binary_path, remote_name, output)
 
-    # Make executable on Unix targets
+    # Make executable on Unix targets; consume the ack
     send_msg(session.conn, f"chmod +x {remote_name}")
     _recv_output(session, output, timeout=5)
 
@@ -234,13 +243,12 @@ def _remote_binary(
 def _remote_java(
     tool: Tool, args: list[str], session, output: OutputFn, timeout: int
 ) -> None:
-    from megaploit.core.protocol import send_msg, send_file
+    from megaploit.core.protocol import send_msg
 
     jar_path = tool.entry_path
     remote_jar = f"_tool_{tool.name}.jar"
     output(f"[*] Uploading {os.path.basename(jar_path)} → {remote_jar}")
-    send_msg(session.conn, f"upload {remote_jar}")
-    send_file(session.conn, jar_path)
+    _upload_file(session, jar_path, remote_jar, output)
 
     arg_str = " ".join(args)
     shell_cmd = f"java -jar {remote_jar} {arg_str}".strip()
@@ -257,13 +265,12 @@ def _remote_node(
     Upload the entry .js and attempt to run it — works for self-contained scripts.
     For tools with heavy node_modules, prefer toolbox_run (local mode).
     """
-    from megaploit.core.protocol import send_msg, send_file
+    from megaploit.core.protocol import send_msg
 
     remote_name = f"_tool_{tool.name}.js"
     output(f"[*] Uploading {tool.entry} → {remote_name}")
     output(f"[!] Note: node_modules are NOT uploaded — use toolbox_run for dep-heavy tools")
-    send_msg(session.conn, f"upload {remote_name}")
-    send_file(session.conn, tool.entry_path)
+    _upload_file(session, tool.entry_path, remote_name, output)
 
     node = shutil.which("node") or "node"
     arg_str = " ".join(args)

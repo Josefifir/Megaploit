@@ -525,7 +525,11 @@ def _infer_description(repo_dir: str) -> str:
                 with open(path, "r", encoding="utf-8", errors="replace") as f:
                     for line in f:
                         line = line.strip()
-                        if line and not line.startswith(("#", "!", "<", "[", "=")):
+                        # Skip headings, badges, HTML, dividers — but keep normal prose
+                        if line and not line.startswith(("#", "!", "<", "=")):
+                            # Strip leading Markdown link/image syntax like [![...](...)
+                            if line.startswith("[!") or line.startswith("[!["):
+                                continue
                             if len(line) > 10:
                                 return line[:120]
             except OSError:

