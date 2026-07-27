@@ -11,11 +11,20 @@ All checks run in a single daemon thread so they never block the CLI.
 Results are pushed into a queue; the CLI drains it between prompts and
 prints colour-coded notifications.
 
+Auto-update mode
+----------------
+When ``auto_update=True`` is passed to UpdateChecker, any tool that has a
+newer commit available is automatically updated via ``installer.update()``
+in the background thread.  The operator sees a "[✓] Auto-updated …"
+message between prompts instead of the normal "update available" prompt.
+
+Megaploit itself is never auto-updated (requires a git pull + restart).
+
 API
 ---
     from megaploit.toolbox.updater import UpdateChecker
 
-    checker = UpdateChecker()
+    checker = UpdateChecker(auto_update=True)
     checker.start()          # non-blocking — spawns daemon thread
 
     # in your prompt loop:
@@ -47,10 +56,11 @@ CHECK_INTERVAL: int = 300   # 5 minutes
 @dataclass
 class UpdateNote:
     """A pending update notification ready to print."""
-    kind: str       # "megaploit" | "tool"
-    name: str       # project or tool name
-    current: str    # short local commit hash
-    latest: str     # short remote commit hash
+    kind:        str    # "megaploit" | "tool" | "tool_updated" | "tool_update_failed"
+    name:        str    # project or tool name
+    current:     str    # short local commit hash
+    latest:      str    # short remote commit hash
+    error:       str = ""   # error message for tool_update_failed
 
 
 # ---------------------------------------------------------------------------
@@ -112,19 +122,23 @@ class UpdateChecker:
     """
     Runs periodic checks in a daemon thread.
     Push UpdateNote objects into *_queue*; caller drains via drain().
+
+    Parameters
+    ----------
+    megaploit_dir : path to the Megaploit project root (where .git lives).
+    auto_update   : when True, tool updates are applied automatically
+                    via installer.update().  Megaploit itself is never
+                    auto-updated (requires restart).
     """
 
-    def __init__(self, megaploit_dir: str = ".") -> None:
-        """
-        Parameters
-        ----------
-        megaploit_dir : path to the Megaploit project root (where .git lives).
-                        Defaults to the current working directory.
-        """
+    def __init__(self, megaploit_dir: str = ".", auto_update: bool = False) -> None:
         self._megaploit_dir = os.path.abspath(megaploit_dir)
+        self._auto_update   = auto_update
         self._queue: queue.Queue[UpdateNote] = queue.Queue()
         self._stop  = threading.Event()
         self._thread: threading.Thread | None = None
+        # Serialise concurrent auto-update calls (one tool at a time)
+        self._update_lock = threading.Lock()
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -141,6 +155,18 @@ class UpdateChecker:
 
     def stop(self) -> None:
         self._stop.set()
+
+    # ------------------------------------------------------------------
+    # Runtime toggle
+    # ------------------------------------------------------------------
+
+    @property
+    def auto_update(self) -> bool:
+        return self._auto_update
+
+    @auto_update.setter
+    def auto_update(self, value: bool) -> None:
+        self._auto_update = value
 
     # ------------------------------------------------------------------
     # Drain results
@@ -173,7 +199,7 @@ class UpdateChecker:
             self._run_checks()
 
     def _run_checks(self) -> None:
-        # 1. Check Megaploit itself
+        # 1. Check Megaploit itself — never auto-updated
         if os.path.isdir(os.path.join(self._megaploit_dir, ".git")):
             result = _has_update(self._megaploit_dir)
             if result:
@@ -190,11 +216,36 @@ class UpdateChecker:
             if not os.path.isdir(os.path.join(tool.path, ".git")):
                 continue
             result = _has_update(tool.path)
-            if result:
-                local, remote = result
+            if not result:
+                continue
+            local, remote = result
+
+            if self._auto_update:
+                self._auto_apply(tool.name, local, remote)
+            else:
                 self._queue.put(UpdateNote(
                     kind="tool", name=tool.name,
                     current=local, latest=remote,
+                ))
+
+    def _auto_apply(self, name: str, local: str, remote: str) -> None:
+        """Run installer.update() for *name* and queue an outcome note."""
+        # Import here to avoid a circular import at module level
+        from megaploit.toolbox import installer
+
+        with self._update_lock:
+            try:
+                log: list[str] = []
+                installer.update(name, progress=log.append)
+                self._queue.put(UpdateNote(
+                    kind="tool_updated", name=name,
+                    current=local, latest=remote,
+                ))
+            except Exception as exc:
+                self._queue.put(UpdateNote(
+                    kind="tool_update_failed", name=name,
+                    current=local, latest=remote,
+                    error=str(exc),
                 ))
 
 
@@ -207,18 +258,38 @@ _BOLD   = "\033[1m"
 _YELLOW = "\033[93m"
 _CYAN   = "\033[96m"
 _GREEN  = "\033[92m"
+_RED    = "\033[91m"
 
 
 def _format_note(note: UpdateNote) -> str:
-    if note.kind == "megaploit":
-        label = f"{_BOLD}{_CYAN}Megaploit{_RESET}"
-        cmd   = "git pull"
-    else:
-        label = f"{_BOLD}{_CYAN}{note.name}{_RESET}"
-        cmd   = f"toolbox update {note.name}"
+    label = f"{_BOLD}{_CYAN}{note.name}{_RESET}"
 
-    return (
-        f"\n  {_YELLOW}[↑]{_RESET} Update available for {label}  "
-        f"{_YELLOW}{note.current}{_RESET} → {_GREEN}{note.latest}{_RESET}\n"
-        f"     Run:  {_BOLD}{cmd}{_RESET}\n"
-    )
+    if note.kind == "megaploit":
+        return (
+            f"\n  {_YELLOW}[↑]{_RESET} Update available for {label}  "
+            f"{_YELLOW}{note.current}{_RESET} → {_GREEN}{note.latest}{_RESET}\n"
+            f"     Run:  {_BOLD}git pull{_RESET}\n"
+        )
+
+    if note.kind == "tool":
+        return (
+            f"\n  {_YELLOW}[↑]{_RESET} Update available for {label}  "
+            f"{_YELLOW}{note.current}{_RESET} → {_GREEN}{note.latest}{_RESET}\n"
+            f"     Run:  {_BOLD}toolbox update {note.name}{_RESET}\n"
+        )
+
+    if note.kind == "tool_updated":
+        return (
+            f"\n  {_GREEN}[✓]{_RESET} Auto-updated {label}  "
+            f"{_YELLOW}{note.current}{_RESET} → {_GREEN}{note.latest}{_RESET}\n"
+        )
+
+    if note.kind == "tool_update_failed":
+        return (
+            f"\n  {_RED}[✗]{_RESET} Auto-update failed for {label}  "
+            f"{_YELLOW}{note.current}{_RESET} → {_GREEN}{note.latest}{_RESET}\n"
+            f"     Error: {note.error}\n"
+            f"     Run manually:  {_BOLD}toolbox update {note.name}{_RESET}\n"
+        )
+
+    return ""

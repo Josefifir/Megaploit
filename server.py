@@ -48,6 +48,10 @@ def _parse() -> argparse.Namespace:
                    action="append", default=[],
                    help="Allowlisted source IP (repeat for multiple). "
                         "Omit to allow all IPs.")
+    p.add_argument("--auto-update",     dest="auto_update",
+                   action="store_true", default=False,
+                   help="Automatically apply toolbox tool updates in the background "
+                        "(Megaploit itself is never auto-updated).")
     return p.parse_args()
 
 
@@ -63,6 +67,7 @@ def main() -> None:
             key_file=args.key,
             secret_key_path=args.secret,
             allowed_ips=args.allow_ips or None,
+            auto_update=args.auto_update,
         )
     except KeyboardInterrupt:
         sys.exit(0)

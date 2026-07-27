@@ -189,13 +189,14 @@ class Console:
         self._updater: Optional[_UpdateChecker] = None
 
         # Server config (set via 'set' or CLI args)
-        self.bind_host: str = "0.0.0.0"
-        self.lhost: str = ""
-        self.port: int = 4444
-        self.cert: str = ""
-        self.key_file: str = ""
-        self.secret_key: bytes = b""
+        self.bind_host:   str  = "0.0.0.0"
+        self.lhost:       str  = ""
+        self.port:        int  = 4444
+        self.cert:        str  = ""
+        self.key_file:    str  = ""
+        self.secret_key:  bytes = b""
         self.allowed_ips: list[str] = []   # empty = allow all
+        self.auto_update: bool = False
 
     # ---------------------------------------------------------------
     # Entry point
@@ -204,7 +205,8 @@ class Console:
     def run(self, bind_host: str, lhost: str, port: int,
             cert: str = "", key_file: str = "",
             secret_key_path: str = "secret.key",
-            allowed_ips: list[str] | None = None) -> None:
+            allowed_ips: list[str] | None = None,
+            auto_update: bool = False) -> None:
         self.bind_host   = bind_host
         self.lhost       = lhost
         self.port        = port
@@ -212,6 +214,7 @@ class Console:
         self.key_file    = key_file
         self.secret_key  = load_key(secret_key_path)
         self.allowed_ips = allowed_ips or []
+        self.auto_update = auto_update
 
         _print_banner()
         fp = key_fingerprint(self.secret_key)
@@ -242,9 +245,10 @@ class Console:
     # ---------------------------------------------------------------
 
     def _start_updater(self) -> None:
-        self._updater = _UpdateChecker(megaploit_dir=".")
+        self._updater = _UpdateChecker(megaploit_dir=".", auto_update=self.auto_update)
         self._updater.start()
-        print(info("Update checker started (checks every 5 min)"))
+        mode = "auto-update ON" if self.auto_update else "notify only"
+        print(info(f"Update checker started (checks every 5 min, {mode})"))
 
     def _drain_updates(self) -> None:
         if self._updater is None:
@@ -521,6 +525,19 @@ class Console:
         elif key == "key":
             self.key_file = val
             print(ok(f"key => {val}"))
+        elif key == "auto_update":
+            if val.lower() in ("on", "true", "1", "yes"):
+                self.auto_update = True
+                if self._updater:
+                    self._updater.auto_update = True
+                print(ok("auto_update => on  (tools will be updated automatically)"))
+            elif val.lower() in ("off", "false", "0", "no"):
+                self.auto_update = False
+                if self._updater:
+                    self._updater.auto_update = False
+                print(ok("auto_update => off  (update notifications only)"))
+            else:
+                print(err("auto_update must be on or off"))
         else:
             print(err(f"Unknown option: {key}"))
 
@@ -537,7 +554,7 @@ class Console:
             f"  {'sessions':<32}  List active sessions",
             f"  {'use <id>':<32}  Interact with a session",
             f"  {'generate [-c] [--tls]':<32}  Patch agent.py; -c compiles, --tls enables TLS",
-            f"  {'set <opt> <val>':<32}  Set lhost / port / cert / key",
+            f"  {'set <opt> <val>':<32}  Set lhost / port / cert / key / auto_update",
             f"  {'toolbox install <url> <name>':<32}  Install a GitHub tool",
             f"  {'toolbox list':<32}  Show installed tools",
             f"  {'toolbox search <query>':<32}  Search installed tools",
@@ -554,6 +571,7 @@ class Console:
             f"  {'port':<32}  {self.port}",
             f"  {'cert':<32}  {self.cert or '(none)'}",
             f"  {'key':<32}  {self.key_file or '(none)'}",
+            f"  {'auto_update':<32}  {'on' if self.auto_update else 'off'}",
             "",
             _c("  Session Commands (inside  use <id> )", _BOLD, _WHITE),
             _c("  " + "─" * 55, _GREY),
