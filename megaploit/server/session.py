@@ -11,6 +11,7 @@ import os
 import socket
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -53,15 +54,24 @@ class Session:
     def screenshot_path(self) -> str:
         self.screenshot_count += 1
         os.makedirs("loot/screenshots", exist_ok=True)
-        return os.path.join("loot", "screenshots", f"shot_{self.ip}_{self.screenshot_count}.png")
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        return os.path.join(
+            "loot", "screenshots",
+            f"shot_{self.ip}_{ts}_{self.screenshot_count}.png",
+        )
 
     def recording_path(self) -> str:
         self.recording_count += 1
         os.makedirs("loot/recordings", exist_ok=True)
-        return os.path.join("loot", "recordings", f"rec_{self.ip}_{self.recording_count}.wav")
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        return os.path.join(
+            "loot", "recordings",
+            f"rec_{self.ip}_{ts}_{self.recording_count}.wav",
+        )
 
     def download_path(self, remote_name: str) -> str:
         self.download_count += 1
         base = os.path.basename(remote_name)
         os.makedirs("loot/downloads", exist_ok=True)
-        return os.path.join("loot", "downloads", f"{self.download_count}_{base}")
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        return os.path.join("loot", "downloads", f"{ts}_{self.download_count}_{base}")

