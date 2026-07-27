@@ -178,9 +178,60 @@ _BANNER_LINES = [
 # 256-colour gradient: bright red → dark red per line
 _BANNER_COLOURS = [196, 160, 124, 88, 52, 238]
 
-_VERSION  = "v2.0.0"
+_VERSION  = "v2.2.0"
 _SUBTITLE = "Professional Remote Access Framework"
 _TAGLINE  = "For Authorized Use Only"
+
+# ---------------------------------------------------------------------------
+# Changelog  (shown after the banner on startup; `whats new` to re-show)
+# ---------------------------------------------------------------------------
+
+_CHANGELOG: list[tuple[str, list[str]]] = [
+    ("Console", [
+        "256-colour gradient banner, rounded config box, live session badge",
+        "Progress bar during toolbox install; install result in a green box",
+        "toolbox list  →  LANG column + ●/○ dots;  search  →  inline tags",
+        "Dangerous-command prompt redesigned: ⚠  +  styled YES confirmation",
+        "help  uses  ━━━ Section ━━━  headers; options in yellow; set uses  →",
+    ]),
+    ("Toolbox installer", [
+        "Go: explicit  -o <name>  output; fallback  go run ./...  (no bare .go exec)",
+        "Rust: scans target/release/ for any binary; fallback  cargo run --release --",
+        "Java: fallback  mvn exec:java  /  gradle run  when no jar produced",
+        "Binary/C: fallback  make run  when cmake/make produces nothing",
+        "Build steps now individually try/except — one failure warns and continues",
+        "_find_binary: blocklist replaces '.' heuristic; versioned names work",
+        "New  toolbox rebuild <name>  — re-builds in-place without git pull",
+        "toolbox update  now refreshes  entry  + run_cmd  after rebuild",
+    ]),
+    ("Auto-update", [
+        "--auto-update flag: tools updated automatically in the background",
+        "set auto_update on/off  toggles it at runtime without restarting",
+        "[✓] / [✗]  notifications shown between prompts after each attempt",
+    ]),
+    ("Capture & streaming", [
+        "screenshot: mss+cv2 JPEG q85 in-memory — ~10× smaller, no tmp file",
+        "timelapse: all frames JPEG in-memory; ZIP_STORED; cap raised → 120",
+        "screenrecord: monotonic pacing, 1280px scaled, mp4v MP4, fps+scale args",
+        "Camera: 20 fps, 1280px, adaptive JPEG 40–85, monotonic loop, frame lock",
+    ]),
+]
+
+
+def _print_changelog() -> None:
+    """Print the what's-new section — called once on startup, re-callable via 'whats new'."""
+    print(_rule("─", color=_GREY))
+    tag  = _c(f"  What's new in {_VERSION}", _BOLD, _WHITE)
+    hint = _c("  (type  whats new  to re-show)", _DIM)
+    print(f"{tag}  {hint}")
+    print()
+    for category, bullets in _CHANGELOG:
+        print(f"  {_c('▸', _CYAN)} {_c(category, _BOLD, _WHITE)}")
+        for b in bullets:
+            print(f"    {_c('·', _GREY)} {_c(b, _GREY)}")
+        print()
+    print(_rule("─", color=_GREY))
+    print()
 
 
 def _print_banner() -> None:
@@ -195,6 +246,7 @@ def _print_banner() -> None:
     print(subtitle)
     print(_rule("─", color=_GREY))
     print()
+    _print_changelog()
 
 
 # ---------------------------------------------------------------------------
@@ -257,7 +309,7 @@ def _print_sessions(sessions: dict[int, Session]) -> None:
 
 _GLOBAL_CMDS  = [
     "sessions", "use", "generate", "set", "help", "clear", "exit",
-    "toolbox", "plugins",
+    "toolbox", "plugins", "whatsnew",
 ]
 _SESSION_CMDS = list(all_commands().keys()) + ["back", "clear"]
 
@@ -455,6 +507,8 @@ class Console:
                 return
             elif cmd in ("help", "?"):
                 self._global_help()
+            elif cmd in ("whats new", "whatsnew", "changelog"):
+                _print_changelog()
             elif cmd == "clear":
                 os.system("cls" if os.name == "nt" else "clear")
             elif cmd == "sessions":
@@ -690,6 +744,7 @@ class Console:
             _cmd_row("toolbox remove <name>",       "Uninstall a tool"),
             _cmd_row("toolbox set-entry <name> <p>","Override the entry-point path"),
             _cmd_row("plugins [reload|info]",       "Manage loaded plugins"),
+            _cmd_row("whats new",                   f"Re-show the {_VERSION} changelog"),
             _cmd_row("clear",                       "Clear the terminal"),
             _cmd_row("exit",                        "Quit Megaploit"),
             "",
