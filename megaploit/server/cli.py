@@ -352,6 +352,11 @@ class Console:
             elif cmd == "toolbox":
                 self._cmd_toolbox(args)
 
+            elif cmd in ("toolbox_run", "toolbox_deploy"):
+                print(warn(f"  '{cmd}' must be run inside a session."))
+                print(info("  Type  use <id>  to enter a session, then run:"))
+                print(f"  {cmd} {' '.join(args) if args else '<tool-name>'}")
+
             elif cmd == "plugins":
                 self._cmd_plugins(args)
 
@@ -612,6 +617,7 @@ class Console:
         toolbox info <name>
         toolbox remove <name>
         toolbox update <name>
+        toolbox rebuild <name>
         toolbox set-entry <name> <entry_path>
         """
         if not args:
@@ -637,6 +643,8 @@ class Console:
             self._toolbox_update_all()
         elif sub == "check-updates":
             self._toolbox_check_updates()
+        elif sub == "rebuild":
+            self._toolbox_rebuild(rest)
         elif sub == "set-entry":
             self._toolbox_set_entry(rest)
         else:
@@ -819,6 +827,29 @@ class Console:
         else:
             print(warn("Update checker not running (git not on PATH?)."))
 
+    def _toolbox_rebuild(self, args: list[str]) -> None:
+        """Re-run the build step for an already-installed tool (no git pull)."""
+        if not args:
+            print(err("Usage: toolbox rebuild <name>"))
+            return
+        name = args[0]
+        t = _tool_registry.get(name)
+        if not t:
+            print(err(f"Tool '{name}' not found."))
+            return
+        if not t.is_installed:
+            print(err(f"Tool directory missing: {t.path}"))
+            return
+        print(info(f"Rebuilding '{name}'…"))
+        try:
+            t.run_cmd = _installer.build(t.path, name, t.lang, progress=print)
+            new_entry = _installer.detect_entry(t.path, name, t.lang)
+            t.entry = new_entry
+            _tool_registry.add(t)
+            print(ok(f"'{name}' rebuilt.  Entry: {new_entry}  run_cmd: {t.run_cmd}"))
+        except RuntimeError as e:
+            print(err(str(e)))
+
     def _toolbox_set_entry(self, args: list[str]) -> None:
         if len(args) < 2:
             print(err("Usage: toolbox set-entry <name> <entry_path>"))
@@ -845,6 +876,7 @@ class Console:
             f"  {'toolbox update-all':<36}  Update every installed tool at once",
             f"  {'toolbox check-updates':<36}  Check now for available updates",
             f"  {'toolbox remove <name>':<36}  Uninstall a tool",
+            f"  {'toolbox rebuild <name>':<36}  Re-run build step (no git pull)",
             f"  {'toolbox set-entry <name> <path>':<36}  Override the entry-point",
             "",
             _c("  Inside a session:", _BOLD, _WHITE),
