@@ -1,1 +1,0 @@
-Screenshots are saved here
