@@ -1,6 +1,6 @@
 # Megaploit
 
-**Professional Remote Access Framework · v2.1.0**
+**Professional Remote Access Framework · v2.2.0**
 
 > **For authorised security research and penetration testing only.**  
 > You must have explicit written permission before using this tool against any system.  
@@ -11,24 +11,73 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Requirements](#requirements)
-4. [Installation](#installation)
-5. [Quick Start](#quick-start)
-6. [Server Console](#server-console)
+2. [Changelog](#changelog)
+3. [Architecture](#architecture)
+4. [Requirements](#requirements)
+5. [Installation](#installation)
+6. [Quick Start](#quick-start)
+7. [Server Console](#server-console)
    - [Global Commands](#global-commands)
    - [Session Commands](#session-commands)
    - [Options](#options)
-7. [Toolbox](#toolbox)
-8. [Plugin System](#plugin-system)
-9. [Agent](#agent)
-10. [Streaming](#streaming)
-11. [Loot](#loot)
-12. [Security Model](#security-model)
-13. [Wire Protocol](#wire-protocol)
-14. [Module Reference](#module-reference)
-15. [Directory Layout](#directory-layout)
-16. [Contributing](#contributing)
+8. [Toolbox](#toolbox)
+9. [Plugin System](#plugin-system)
+10. [Agent](#agent)
+11. [Streaming](#streaming)
+12. [Loot](#loot)
+13. [Security Model](#security-model)
+14. [Wire Protocol](#wire-protocol)
+15. [Module Reference](#module-reference)
+16. [Directory Layout](#directory-layout)
+17. [Contributing](#contributing)
+
+---
+
+## Changelog
+
+### v2.2.0
+
+#### Console — Visual redesign
+- 256-colour gradient banner (bright red → dark via 256-colour escape codes)
+- Startup config rendered in a rounded `╭─ Server Configuration ─╮` box
+- New-session alert now shown as a full green bordered box with address and `use <id>` hint
+- Global prompt: `msf►megaploit [N] »` — live session-count badge (green when active, grey when idle)
+- Session prompt: `msf►megaploit session(id) »` with bold cyan ID
+- Spinner now shows elapsed time alongside braille animation
+- Progress bar (`██████░░░░ 66% building…`) shown during `toolbox install`
+- `toolbox install` result displayed in a green rounded success box
+- `toolbox info` rendered in a rounded info box
+- `toolbox list` gains a `LANG` column and `●/○` status dots
+- `toolbox search` shows tags inline below each result
+- `toolbox update / update-all` use spinner instead of raw output
+- Dangerous command confirmation redesigned: `⚠ destructive operation` + styled `Type YES` prompt
+- `help` screen uses `━━━ Section ━━━` headers, cyan commands, yellow options, dangerous commands highlighted
+- `set` output uses `→` arrow with cyan value colouring
+
+#### Toolbox installer — Smart fallbacks for all languages
+- **Go**: `go build -o <name> ./...` explicitly places the binary; fallback is `go run ./...` (never executes `.go` source directly)
+- **Rust**: scans `target/release/` for any binary after `cargo build`; fallback is `cargo run --release --`
+- **Java**: fallback to `mvn exec:java` or `gradle run` when no jar produced; entry no longer set to `pom.xml`
+- **Binary/C**: fallback to `make run` when no binary found after cmake/make
+- **Unknown lang**: scans for an existing executable before giving up; warns clearly
+- All build steps are now individually wrapped in `try/except` — one failed step warns and continues instead of aborting the install
+- `_find_binary`: replaced `"." not in f` heuristic with an explicit source/config extension blocklist; versioned names like `gobuster-1.2` are now found correctly; `.exe` always accepted on Windows
+- `toolbox update` now refreshes `tool.entry` alongside `run_cmd` after `git pull + rebuild`
+- New `toolbox rebuild <name>` command: re-runs the build step in-place without a git pull (repairs broken installs)
+- `toolbox_run` / `toolbox_deploy` typed at the global prompt now give a clear "must be run inside a session" message instead of `Unknown command`
+
+#### Auto-update
+- New `--auto-update` flag on `server.py`: when set, any tool with a newer remote commit is automatically updated in the background via `installer.update()`
+- `set auto_update on/off` toggles it at runtime without restarting
+- Auto-updated tools show `[✓] Auto-updated gobuster  abc1234 → def5678` between prompts
+- Failed auto-updates show `[✗]` with the error and a manual fallback command
+- Megaploit itself is never auto-updated (requires restart)
+
+#### Capture & streaming — Performance overhaul
+- **`screenshot`**: replaced `pyautogui.screenshot()` PNG-to-disk with `mss` + `cv2` JPEG encode (quality 85) entirely in memory — ~10× smaller per frame, no disk I/O before transfer
+- **`screenshot_timelapse`**: all frames JPEG-encoded in-memory (`list[bytes]`); zip assembled via `ZipFile.writestr` — zero disk I/O; `ZIP_DEFLATED` → `ZIP_STORED` (JPEGs don't compress further); frame cap raised 60 → 120
+- **`screenrecord`**: `time.sleep(1/fps)` replaced by monotonic deadline loop eliminating drift; default output scaled to 1280 px wide (aspect-preserving, even-dimension enforced); XVID AVI → mp4v MP4; optional `fps` and `scale_width` args (`screenrecord 30 15 960`)
+- **`Camera` (live stream)**: `time.time()` → `time.monotonic()` throughout; separate `_frame_lock` for frame buffer; downscaled to 1280 px wide before JPEG encode; adaptive JPEG quality 40–85 (backs off when encode exceeds 60 % of frame budget, recovers when load drops); `target_fps` and `scale_width` are class-level config
 
 ---
 
@@ -38,7 +87,7 @@ Megaploit is a modular, extensible C2 (Command & Control) framework written in P
 
 Key properties:
 
-- **Metasploit-style console** — animated banner, colour-coded prompts, spinner, tab-completion, multi-session support
+- **Metasploit-style console** — 256-colour gradient banner, rounded info boxes, live session badge, adaptive spinner with elapsed time, progress bar during installs
 - **Multi-session** — unlimited simultaneous agent connections; `use <id>` to switch between them
 - **HMAC-SHA256 authentication** — every connection is challenge-response authenticated before any command runs
 - **Hardened TLS 1.2+** — optional; enforces AEAD-only cipher suites, no renegotiation, no compression, forward secrecy required
@@ -47,7 +96,7 @@ Key properties:
 - **Toolbox** — install any GitHub tool in any language (Python, Go, Rust, Node.js, Ruby, Java, Bash, PowerShell, C/C++) and run it locally against victims or deploy it onto the target
 - **Plugin system** — community-contributed TOML files that add new commands without writing Python
 - **Live streaming** — MJPEG desktop stream (port 5000) and webcam stream (port 5001) with filters and recording
-- **Background update checker** — notifies you of updates for Megaploit itself and every installed tool
+- **Background update checker** — notifies you of updates for Megaploit itself and every installed tool; optional `--auto-update` flag applies tool updates automatically in the background
 
 ---
 
@@ -188,6 +237,7 @@ Options:
   --key              SSL private key file (PEM) — enables TLS 1.2+
   --secret           Path to secret.key (default: secret.key)
   --allow-ip <IP>    Allowlisted source IP (repeat for multiple)
+  --auto-update      Auto-apply tool updates in the background (tools only; Megaploit itself requires manual git pull)
 ```
 
 ### Global Commands
@@ -201,6 +251,7 @@ Options:
 | `set port <port>` | Set the callback port |
 | `set cert <file>` | Set the SSL certificate file |
 | `set key <file>` | Set the SSL private key file |
+| `set auto_update <on\|off>` | Toggle background auto-update at runtime |
 | `toolbox …` | Manage and run toolbox tools (see [Toolbox](#toolbox)) |
 | `plugins …` | Manage plugins (see [Plugin System](#plugin-system)) |
 | `help` / `?` | Show all global commands, options, installed tools, and loaded plugins |
@@ -228,9 +279,9 @@ These commands are available inside a session (`megaploit session(N) >`):
 
 | Command | Description |
 |---|---|
-| `screenshot` | Capture a full PNG screenshot (saved with UTC timestamp + PNG metadata) |
-| `screenshot_timelapse <count> <interval>` | Take N screenshots every N seconds, zip and pull back |
-| `screenrecord <seconds>` | Record the desktop as an AVI video file |
+| `screenshot` | Capture a JPEG screenshot via `mss`+`cv2` (~10× smaller than PNG, no disk I/O on target) |
+| `screenshot_timelapse <count> <interval>` | Take N JPEG screenshots every N seconds, zip in-memory and pull back (frame cap: 120) |
+| `screenrecord <seconds> [fps] [scale_width]` | Record the desktop as MP4 (default 12 fps, 1280 px wide); monotonic clock pacing eliminates drift |
 | `record <seconds>` | Record microphone audio (WAV) to `loot/recordings/` (max 300s) |
 | `mic_level` | Snapshot peak dB level — detect if someone is speaking |
 | `screen_stream <on\|off>` | Start/stop MJPEG desktop stream at `http://<target>:5000` |
@@ -317,12 +368,13 @@ These commands are available inside a session (`megaploit session(N) >`):
 
 ```
 megaploit > set
-  Option      Value
-  ──────────  ────────────────────
-  lhost       192.168.1.10
-  port        4444
-  cert        (none)
-  key         (none)
+  Option        Value
+  ────────────  ────────────────────
+  lhost         192.168.1.10
+  port          4444
+  cert          (none)
+  key           (none)
+  auto_update   off
 ```
 
 ---
@@ -341,20 +393,22 @@ megaploit > toolbox update-all
 megaploit > toolbox check-updates
 megaploit > toolbox remove <name>
 megaploit > toolbox set-entry <name> <path>
+megaploit > toolbox rebuild <name>
 ```
 
 **Note:** `toolbox install/list/etc.` must be typed at the global `megaploit >` prompt, not inside a session. Inside a session use `toolbox_run` or `toolbox_deploy`.
+If you type `toolbox_run` or `toolbox_deploy` at the global prompt, the console now shows a clear "must be run inside a session" message with the correct `use <id>` instruction.
 
 ### Supported Languages
 
 | Language | Detection Signal | Build Step |
 |---|---|---|
 | Python | `requirements.txt`, `setup.py`, `pyproject.toml`, `*.py` | `python -m venv .venv` + `pip install` |
-| Go | `go.mod`, `go.sum` | `go build ./...` |
-| Rust | `Cargo.toml` | `cargo build --release` |
+| Go | `go.mod`, `go.sum` | `go build -o <name> ./...` (explicit output path); fallback: `go run ./...` |
+| Rust | `Cargo.toml` | `cargo build --release`; fallback: `cargo run --release --` |
 | Node.js | `package.json` | `npm install` |
 | Ruby | `Gemfile`, `*.rb` | `bundle install` |
-| Java | `pom.xml`, `build.gradle` | `mvn package` or `gradle build` |
+| Java | `pom.xml`, `build.gradle` | `mvn package` or `gradle build`; fallback: `mvn exec:java` / `gradle run` |
 | Bash | `*.sh` at root | `chmod +x` |
 | PowerShell | `*.ps1` at root | `pwsh -ExecutionPolicy Bypass -File` |
 | C/C++ | `CMakeLists.txt`, `Makefile` | `cmake + make` or `make` |
@@ -466,7 +520,8 @@ megaploit/   ← the entire package directory
 megaploit session(1) > screen_stream on
 ```
 
-Open `http://<target-ip>:5000` in a browser. ~30 fps via `mss` + OpenCV JPEG encoding.  
+Open `http://<target-ip>:5000` in a browser.
+The stream runs at **20 fps** (configurable via `Camera.target_fps`), downscaled to **1280 px wide** before encoding, with **adaptive JPEG quality** (40–85): quality backs off automatically when the encoder is under load to keep the frame rate stable.
 Stop with `screen_stream off`.
 
 ### Webcam Stream
@@ -486,14 +541,15 @@ All files collected from sessions are saved under `loot/`:
 
 ```
 loot/
-├── screenshots/    shot_<ip>_<utc-timestamp>_<n>.png    (screenshot / webcam Capture)
+├── screenshots/    shot_<ip>_<utc-timestamp>_<n>.jpg    (screenshot — JPEG, ~10× smaller than PNG)
 ├── recordings/     rec_<ip>_<utc-timestamp>_<n>.wav     (record <seconds>)
 │                   webcam_<ts>.avi                       (webcam Record button)
-├── downloads/      <n>_<filename>                        (download / zip_download)
+├── downloads/      <n>_<filename>                        (download / zip_download / timelapse zip)
+│                   screenrec.mp4                         (screenrecord — MP4, replaces AVI)
 └── audit.log       one line per connection + command event, UTC timestamps
 ```
 
-**Screenshot files** include embedded PNG `tEXt` metadata chunks (`Source`, `CapturedAt`, `SessionId`) written by Pillow, making the capture fully self-documenting.
+> Screenshots are now saved as JPEG (`.jpg`) rather than PNG. JPEG is ~10× smaller for typical screen content with no perceptible quality difference at quality 85.
 
 **Audit log format:**
 
@@ -712,7 +768,7 @@ Uses `pynput.keyboard.Listener`. Methods: `start()`, `stop()`, `read_logs()`, `d
 
 ### megaploit.streaming
 
-- **`screen.py`** — `Camera` singleton: `mss` screen capture at ~30 fps, OpenCV JPEG encoding, auto-stops after 10 s of inactivity
+- **`screen.py`** — `Camera` singleton: `mss` screen capture at 20 fps (configurable), downscaled to 1280 px wide, adaptive JPEG quality 40–85 (backs off under load), monotonic-clock pacing, separate `_frame_lock` for the frame buffer, auto-stops after 10 s of inactivity
 - **`desktop.py`** — Flask app (port 5000): `/` → `desktop.html`; `/video_feed` → MJPEG from `Camera`
 - **`webcam.py`** — Flask app (port 5001): greyscale/negative/face-crop filters, server-side recording. `POST /control` toggles: `toggle_grey`, `toggle_neg`, `toggle_face`, `toggle_cam`, `capture`, `toggle_rec`
 
@@ -725,7 +781,7 @@ Each streaming server is tracked in a `dict[int, thread]` keyed by port — star
 - **`registry.py`** — `Tool` dataclass + `ToolRegistry` (persistent `tools.json`)
 - **`installer.py`** — multi-language build system; `install`, `uninstall`, `update`, `detect_language`, `build`, `detect_entry`
 - **`runner.py`** — `run_local`, `run_remote`; uses `_upload_file()` helper that correctly drains the agent's ack after each file upload, preventing protocol desync
-- **`updater.py`** — `UpdateChecker`: background `git ls-remote` checks every 300 s; `drain()` yields formatted update notes
+- **`updater.py`** — `UpdateChecker`: background `git ls-remote` checks every 300 s; `drain()` yields formatted update notes; `auto_update=True` applies tool updates automatically via `installer.update()` and queues `tool_updated` / `tool_update_failed` notes; runtime toggle via `auto_update` property
 
 ---
 
@@ -780,7 +836,7 @@ Megaploit-main/
     │   ├── keylogger.py             pynput keystroke logger
     │   └── shell.py                 recv → handle → respond loop
     ├── streaming/
-    │   ├── screen.py                Camera class (mss + OpenCV, ~30fps)
+    │   ├── screen.py                Camera class (mss + OpenCV, 20 fps, 1280px, adaptive JPEG)
     │   ├── desktop.py               Flask MJPEG desktop stream (:5000)
     │   ├── webcam.py                Flask MJPEG webcam stream (:5001)
     │   └── templates/
