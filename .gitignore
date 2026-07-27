@@ -1,3 +1,66 @@
-venv
-__pycache__
-.idea
+﻿# -- Python -------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# -- Virtual environments -----------------------------------------------------
+venv/
+.venv/
+env/
+.env/
+
+# -- Secrets / credentials  ---------------------------------------------------
+# Never commit these -- generate locally and copy to target via secure channel
+secret.key
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# -- Loot (operator-side collected data) --------------------------------------
+loot/
+# Keep directory stubs via .gitkeep, not actual loot
+!loot/.gitkeep
+!loot/screenshots/.gitkeep
+!loot/recordings/.gitkeep
+!loot/downloads/.gitkeep
+
+# -- Toolbox clones -----------------------------------------------------------
+tools/*/
+# Keep the catalogue file
+!tools/tools.json
+
+# -- IDEs / editors -----------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.qodo/
+
+# -- OS artefacts -------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -- Compiled agent payload ---------------------------------------------------
+*.pyc
+agent_compiled/
+
+# -- Temp files produced during a session -------------------------------------
+_screenshot*.png
+_recording*.wav
+_tlapse_*/
+*_megaploit.zip
+
+# -- Stray screenshots / recordings committed by mistake ----------------------
+screenshot_*.png
