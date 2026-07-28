@@ -1,10 +1,10 @@
+<div align="center">
+
 # Megaploit
 
-**Professional C2 Framework & Security Research Toolbox · v4.0.0**
+**Modern Python C2 Framework & Penetration Testing Toolbox**
 
-> **For authorised security research and penetration testing only.**  
-> You must have explicit written permission before using this tool against any system.  
-> Misuse is illegal and unethical. The authors accept no liability.
+*A Metasploit-class post-exploitation framework — Python-native, extensible, and built for modern infrastructure.*
 
 [![CI](https://github.com/Josefifir/Megaploit/actions/workflows/ci.yml/badge.svg)](https://github.com/Josefifir/Megaploit/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Josefifir/Megaploit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Josefifir/Megaploit/actions/workflows/codeql-analysis.yml)
@@ -12,6 +12,35 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
 [![License](https://img.shields.io/github/license/Josefifir/Megaploit)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-553%20passing-brightgreen)](#running-tests)
+[![GitHub Stars](https://img.shields.io/github/stars/Josefifir/Megaploit?style=social)](https://github.com/Josefifir/Megaploit/stargazers)
+
+**[📖 Docs](https://josefifir.github.io/Megaploit/) · [🐛 Report Bug](https://github.com/Josefifir/Megaploit/issues/new?template=bug_report.md) · [💡 Request Feature](https://github.com/Josefifir/Megaploit/issues/new?template=feature_request.md) · [📦 Request a Module](https://github.com/Josefifir/Megaploit/issues/new?template=module_request.md)**
+
+</div>
+
+---
+
+> **For authorised security research and penetration testing only.**
+> You must have explicit written permission before using this tool against any system.
+> Misuse is illegal and unethical. The authors accept no liability.
+
+---
+
+## Why Megaploit?
+
+```
+pip install -r requirements.txt
+python server.py -lh 10.0.0.1 -p 4444 --tls
+```
+
+- 🐍 **Pure Python** — 10× more contributors than Ruby-based frameworks
+- 🔒 **AES-256-GCM encrypted transport** with HMAC-SHA256 auth on every connection
+- 🪟 **Hardened C Windows agent** ([C-remote-shell](https://github.com/Levon-Volodin/C-remote-shell)) — SChannel TLS, BCrypt GCM, NT syscall post-exploitation
+- 🧩 **TOML plugin system** — add new commands without writing Python
+- 🏗️ **Metasploit-style module API** — copy a template, fill in the blanks, open a PR
+- 📊 **116 session commands** · 20 exploit modules · 8 scanners · 203-tool toolbox
+
+> ⭐ **If Megaploit saves you time on an engagement, a star helps others find it.**
 
 ---
 
