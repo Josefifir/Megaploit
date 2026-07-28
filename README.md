@@ -462,7 +462,34 @@ megaploit > toolbox plan <name|url>         # dry-run install plan
 
 ## Plugin System
 
-Drop a `.toml` file into `plugins/`. Loads automatically at startup.
+Drop a `.toml` (or `.json`) file into `plugins/`. Megaploit loads it automatically at startup and hot-reloads it whenever the file changes.
+
+### Command kinds
+
+| `kind` | What runs | Required field |
+|---|---|---|
+| `"local"` | Shell command on the **operator** machine | `shell` |
+| `"session"` | Shell command sent to the active **agent** | `shell` |
+| `"python"` | Python function, dotted import path | `handler` |
+| `"native"` | C or C++ source file — compiled on demand, cached by mtime | `source_file` |
+
+### Placeholders (available in `shell`, `source_file`, and `compiler_flags`)
+
+```
+{lhost}            operator LHOST setting
+{port}             operator PORT setting
+{session_ip}       active session IP
+{session_id}       active session numeric ID
+{session_tag}      operator tag for the session
+{session_os}       session OS name
+{session_hostname} session hostname
+{session_username} session username
+{arg0} … {argN}    positional CLI args
+{joined_args}      all args joined with a space
+{key:-default}     use default when key is empty
+```
+
+### Example — local shell command
 
 ```toml
 [plugin]
@@ -471,13 +498,93 @@ version     = "1.0.0"
 description = "Quick recon commands"
 
 [[command]]
-name        = "portscan"
-kind        = "local"
-shell       = "nmap -sV -p {arg0} {session_ip}"
-min_args    = 1
+name          = "portscan"
+kind          = "local"
+description   = "nmap scan against the active session IP"
+usage         = "portscan [ports]"
+shell         = "nmap -sV -p {arg0:-1-1000} {session_ip}"
+min_args      = 0
+timeout       = 120
+output_format = "raw"
+retry         = 1
 ```
 
-Plugin management: `plugins list` · `plugins reload` · `plugins enable/disable <name>` · `plugins load <path|url>` · `plugins watcher on|off`
+### Example — Python handler
+
+```toml
+[[command]]
+name          = "mycheck"
+kind          = "python"
+description   = "Custom Python check"
+handler       = "myplugin.checks.run_check"
+usage         = "mycheck <target>"
+min_args      = 1
+output_format = "json"
+```
+
+```python
+# myplugin/checks.py
+from megaploit.plugins.schema import PluginContext
+
+def run_check(args: list[str], ctx: PluginContext) -> str:
+    ctx.emit(f"[*] Checking {args[0]} …")
+    return '{"result": "ok"}'
+```
+
+### Example — native C / C++ command
+
+```toml
+[[command]]
+name           = "tcpprobe"
+kind           = "native"
+description    = "TCP connect-probe from the operator machine (C++ binary)"
+usage          = "tcpprobe <host> <port> [timeout_secs]"
+source_file    = "plugins/myplugin/probe.cpp"
+compiler_flags = "-std=c++17 -O2"
+min_args       = 2
+max_args       = 3
+timeout        = 15
+dangerous      = false
+```
+
+The runner:
+1. Finds the first available C/C++ compiler on `$PATH` (`gcc`/`g++`, `clang`/`clang++`, `cc`/`c++`).
+2. Compiles `source_file` to a cached binary (name includes an 8-char source-path hash to prevent collisions).
+3. Skips recompilation when the binary is newer than the source (mtime, like `make`).
+4. Passes expanded `{arg0}…{argN}` as `argv[1..N]` and streams stdout/stderr back to the console.
+5. Recompiles automatically when the hot-reload watcher detects a source change.
+
+A complete single-header C/C++ SDK (`megaploit_protocol.h`) and a working example plugin are provided in [`plugins/native_sdk/`](plugins/native_sdk/).
+
+### Writing a native agent in C, C++, or C\#
+
+Any language can connect to the C2 server as an agent as long as it follows the wire protocol exactly. The critical rules (violating any one causes the Python server to silently reject the client):
+
+| Rule | Detail |
+|---|---|
+| **4-byte length prefix** | Big-endian `uint32`, frames every message |
+| **8-byte sequence stamp** | Big-endian `uint64`, prepended to every plaintext before encryption; starts at 1, strictly monotonic |
+| **Replay protection** | Server rejects any message whose sequence number ≤ the last accepted one |
+| **JSON string payload** | The JSON must be a quoted *string* value — not an object or array — e.g. `"ls -la"` or `"[+] done"` |
+| **AES-256-GCM layout** | `nonce (12 bytes) ‖ ciphertext ‖ tag (16 bytes)` — nonce comes first |
+| **Protocol handshake** | Server sends `0x4D` ('M') for v2 encrypted, agent echoes it back; if it matches and both have the key, encryption is active |
+| **HMAC auth** | Server sends 16 random bytes; agent replies with `HMAC-SHA256(key, challenge)` |
+
+See [`megaploit/core/protocol.py`](megaploit/core/protocol.py) for the authoritative Python implementation and [`plugins/native_sdk/megaploit_protocol.h`](plugins/native_sdk/megaploit_protocol.h) for the C/C++ equivalent.
+
+### Plugin management commands
+
+```
+plugins list                        list all loaded plugins
+plugins reload                      reload all plugins from disk
+plugins enable  <name>              re-enable a disabled plugin
+plugins disable <name>              disable (unregister its commands)
+plugins load    <path|url|zip>      load a plugin file or archive
+plugins watcher on|off              toggle hot-reload watcher
+plugins info    <name>              detailed plugin metadata
+plugins search  <query>             search by name / description / tags
+plugins deps    install             pip-install all missing dependencies
+```
 
 ---
 

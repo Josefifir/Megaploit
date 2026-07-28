@@ -22,11 +22,12 @@ license             = "MIT"            # optional SPDX identifier
 
 # ── Commands ─────────────────────────────────────────────────────────────────
 # Each [[command]] block defines one new CLI command.
-# Commands come in three kinds, set via the `kind` field:
+# Commands come in four kinds, set via the `kind` field:
 #
 #   kind = "local"    — run a shell command on the OPERATOR machine
 #   kind = "session"  — send a shell command to the active AGENT session
 #   kind = "python"   — call a Python function  (dotted import path)
+#   kind = "native"   — compile and run a C / C++ source file
 #
 # Placeholders available in `shell` and `args` strings:
 #   {session_ip}     — IP of the current session (session commands only)
@@ -67,6 +68,16 @@ license             = "MIT"            # optional SPDX identifier
 # usage         = "mycheck <target>"
 # min_args      = 1
 # output_format = "json"
+#
+# [[command]]
+# name           = "tcpprobe"
+# kind           = "native"
+# description    = "TCP probe via a compiled C++ binary"
+# source_file    = "plugins/myplugin/probe.cpp"
+# compiler_flags = "-std=c++17 -O2"   # optional; passed verbatim to gcc/g++
+# usage          = "tcpprobe <host> <port>"
+# min_args       = 2
+# timeout        = 15
 """
 
 from __future__ import annotations
@@ -173,11 +184,13 @@ _VALID_OUTPUT_FORMATS = ("raw", "table", "json", "pretty_json", "csv")
 @dataclass
 class PluginCommand:
     name: str
-    kind: str                           # "local" | "session" | "python"
+    kind: str                           # "local" | "session" | "python" | "native"
     description: str = ""
     usage: str = ""
     shell: str = ""                     # for kind=local or kind=session
     handler: str = ""                   # dotted path for kind=python
+    source_file: str = ""               # path to .c / .cpp source for kind=native
+    compiler_flags: str = ""            # extra flags passed verbatim to gcc/g++/clang
     min_args: int = 0
     max_args: int = -1                  # -1 = unlimited
     dangerous: bool = False
@@ -193,10 +206,10 @@ class PluginCommand:
     plugin_name: str = ""
 
     def validate(self) -> None:
-        if self.kind not in ("local", "session", "python"):
+        if self.kind not in ("local", "session", "python", "native"):
             raise ValueError(
-                f"Command '{self.name}': kind must be 'local', 'session', or 'python'"
-                f" — got '{self.kind}'"
+                f"Command '{self.name}': kind must be 'local', 'session', 'python',"
+                f" or 'native' — got '{self.kind}'"
             )
         if self.kind in ("local", "session") and not self.shell:
             raise ValueError(
@@ -205,6 +218,10 @@ class PluginCommand:
         if self.kind == "python" and not self.handler:
             raise ValueError(
                 f"Command '{self.name}' (kind=python) requires a 'handler' dotted path."
+            )
+        if self.kind == "native" and not self.source_file:
+            raise ValueError(
+                f"Command '{self.name}' (kind=native) requires a 'source_file' path."
             )
         if self.output_format not in _VALID_OUTPUT_FORMATS:
             raise ValueError(
@@ -338,6 +355,8 @@ class Plugin:
             usage=str(raw.get("usage", cmd_name)),
             shell=str(raw.get("shell", "")),
             handler=str(raw.get("handler", "")),
+            source_file=str(raw.get("source_file", "")),
+            compiler_flags=str(raw.get("compiler_flags", "")),
             min_args=int(raw.get("min_args", 0)),
             max_args=int(raw.get("max_args", -1)),
             dangerous=bool(raw.get("dangerous", False)),
