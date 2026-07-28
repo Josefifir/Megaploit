@@ -142,12 +142,12 @@ After TLS (or immediately on a plain TCP socket), both sides run a challenge/res
 
 ```
 Server                              Agent
-  │                                   │
+  │                                    │
   │──── 16 random bytes (challenge) ──►│
-  │                                   │  HMAC-SHA256(key, challenge)
-  │◄─── 32 bytes (HMAC response) ─────│
-  │  hmac.compare_digest()            │
-  │  drop if mismatch                 │
+  │                                    │  HMAC-SHA256(key, challenge)
+  │◄─── 32 bytes (HMAC response) ──────│
+  │  hmac.compare_digest()             │
+  │  drop if mismatch                  │
 ```
 
 **Server code:**
