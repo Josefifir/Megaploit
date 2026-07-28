@@ -744,6 +744,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Plugins">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c-remote-shell-plugin-c-remote-shell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C-remote-shell Plugin (c-remote-shell)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1587,6 +1604,53 @@
 </tr>
 </tbody>
 </table>
+<h4 id="c-remote-shell-plugin-c-remote-shell">C-remote-shell Plugin (<code>c-remote-shell</code>)<a class="headerlink" href="#c-remote-shell-plugin-c-remote-shell" title="Permanent link">&para;</a></h4>
+<p>Bundled first-party plugin for the <a href="https://github.com/Levon-Volodin/C-remote-shell"><code>C-remote-shell</code></a> Windows C agent submodule.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Args</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>crs_build</code></td>
+<td><code>[lhost] [port]</code></td>
+<td>Compile <code>megaploit_c_agent.exe</code> — auto-detects MinGW / MSVC; bakes LHOST+PORT in at compile time</td>
+</tr>
+<tr>
+<td><code>crs_probe</code></td>
+<td>—</td>
+<td>Run the 46-signal C2 compliance report on the C-remote-shell source tree</td>
+</tr>
+<tr>
+<td><code>crs_verbs</code></td>
+<td>—</td>
+<td>List every wire verb the C agent dispatches; marks C-exclusive ones</td>
+</tr>
+<tr>
+<td><code>crs_payload_info</code></td>
+<td>—</td>
+<td>Print the exact MinGW command line for current LHOST/PORT</td>
+</tr>
+<tr>
+<td><code>forceOff</code> ⚠</td>
+<td>—</td>
+<td>Send <code>forceOff()</code> to the active C session — force power-off via <code>NtSetSystemPowerState</code></td>
+</tr>
+<tr>
+<td><code>blueScreen</code> ⚠</td>
+<td>—</td>
+<td>Send <code>blueScreen()</code> to the active C session — BSOD via <code>NtRaiseHardError</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Requirements:</strong> MinGW (<code>apt install mingw-w64</code>) for Linux/macOS builds, or MSVC Developer Command Prompt on Windows.
+<code>forceOff</code> and <code>blueScreen</code> require a <strong>C-remote-shell</strong> session (not a Python agent session) and prompt for <code>YES</code> confirmation.</p>
+</blockquote>
 <h3 id="engagement-operations">Engagement &amp; Operations<a class="headerlink" href="#engagement-operations" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
