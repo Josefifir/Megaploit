@@ -442,18 +442,38 @@ class PluginLoader:
                 _LOG.debug("Watcher loop error: %s", e)
 
     def _dir_snapshot(self) -> dict[str, float]:
-        """Return a dict of {filename: mtime} for all plugin files."""
+        """
+        Return a dict of {path: mtime} for all files that affect plugin state.
+
+        Covers:
+          - .toml / .json descriptor files in the plugins/ root
+          - .c / .cpp source files referenced by loaded native commands
+            (so a recompile is triggered whenever the source changes)
+        """
         snapshot: dict[str, float] = {}
         if not os.path.isdir(PLUGINS_DIR):
             return snapshot
+
+        # Descriptor files
         for fname in os.listdir(PLUGINS_DIR):
             ext = os.path.splitext(fname)[1].lower()
             if ext in (".toml", ".json"):
                 path = os.path.join(PLUGINS_DIR, fname)
                 try:
-                    snapshot[fname] = os.path.getmtime(path)
+                    snapshot[path] = os.path.getmtime(path)
                 except OSError:
                     pass
+
+        # Native source files referenced by active commands
+        with self._lock:
+            for cmd in self._commands.values():
+                if cmd.kind == "native" and cmd.source_file:
+                    src = os.path.abspath(cmd.source_file)
+                    try:
+                        snapshot[src] = os.path.getmtime(src)
+                    except OSError:
+                        pass
+
         return snapshot
 
     # ------------------------------------------------------------------

@@ -46,10 +46,12 @@ Output formats
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import importlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import threading
@@ -109,6 +111,8 @@ def run_plugin_command(
                 result = _run_session(cmd, ctx, session)
             elif cmd.kind == "python":
                 result = _run_python(cmd, args, plugin_ctx, output)
+            elif cmd.kind == "native":
+                result = _run_native(cmd, ctx, output)
             else:
                 return CommandResult(
                     ok=False,
@@ -292,6 +296,172 @@ def _run_session(
             output=f"[-] Connection lost: {e}",
             close_session=True,
         )
+
+
+# ---------------------------------------------------------------------------
+# Native (C / C++) execution backend
+# ---------------------------------------------------------------------------
+
+# Compilers tried in order.  The first one found on $PATH is used.
+_C_COMPILERS   = ["gcc",   "clang",   "cc"]
+_CXX_COMPILERS = ["g++",   "clang++", "c++"]
+
+
+def _find_compiler(source: str) -> str | None:
+    """Return the first available compiler for *source* (.c → C, else C++)."""
+    ext = os.path.splitext(source)[1].lower()
+    candidates = _C_COMPILERS if ext == ".c" else _CXX_COMPILERS
+    for name in candidates:
+        if shutil.which(name):
+            return name
+    return None
+
+
+def _binary_path(source: str) -> str:
+    """
+    Derive a stable cache path for the compiled binary next to the source.
+
+    The binary name embeds a short SHA-256 digest of the *absolute* source
+    path so two plugins with identically-named source files don't collide.
+    """
+    abs_src  = os.path.abspath(source)
+    tag      = hashlib.sha256(abs_src.encode()).hexdigest()[:8]
+    base     = os.path.splitext(abs_src)[0]
+    suffix   = ".exe" if sys.platform == "win32" else ""
+    return f"{base}_{tag}{suffix}"
+
+
+def _needs_recompile(source: str, binary: str) -> bool:
+    """True when the binary is missing or older than the source."""
+    if not os.path.isfile(binary):
+        return True
+    return os.path.getmtime(source) > os.path.getmtime(binary)
+
+
+def _compile(
+    compiler: str,
+    source: str,
+    binary: str,
+    extra_flags: str,
+    output: "OutputFn",
+) -> tuple[bool, str]:
+    """
+    Compile *source* → *binary*.
+
+    Returns (success, stderr_output).
+    """
+    cmd_parts = [compiler, source, "-o", binary]
+    if extra_flags.strip():
+        import shlex
+        cmd_parts += shlex.split(extra_flags)
+
+    output(f"[*] Compiling: {' '.join(cmd_parts)}")
+    try:
+        proc = subprocess.run(
+            cmd_parts,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        if proc.returncode != 0:
+            return False, (proc.stderr or proc.stdout).strip()
+        return True, ""
+    except FileNotFoundError:
+        return False, f"Compiler '{compiler}' not found on PATH."
+    except subprocess.TimeoutExpired:
+        return False, "Compilation timed out after 120 s."
+
+
+def _run_native(
+    cmd: "PluginCommand",
+    ctx: dict[str, str],
+    output: "OutputFn",
+) -> "CommandResult":
+    """
+    Compile (if necessary) and run a C / C++ plugin.
+
+    The compiled binary receives the expanded args as argv[1..N] and its
+    stdout/stderr are captured exactly like ``_run_local``.
+
+    The binary is recompiled automatically whenever the source file's mtime
+    is newer than the cached binary (same logic as ``make``).
+    """
+    source = _expand(cmd.source_file, ctx)
+
+    if not os.path.isfile(source):
+        return CommandResult(
+            ok=False,
+            output=f"[-] native plugin source not found: {source}",
+        )
+
+    compiler = _find_compiler(source)
+    if compiler is None:
+        ext = os.path.splitext(source)[1].lower()
+        lang = "C" if ext == ".c" else "C++"
+        return CommandResult(
+            ok=False,
+            output=(
+                f"[-] No {lang} compiler found on PATH.\n"
+                f"    Install gcc/clang (Linux/macOS) or MinGW (Windows) and retry."
+            ),
+        )
+
+    binary = _binary_path(source)
+
+    if _needs_recompile(source, binary):
+        ok, err = _compile(compiler, source, binary, cmd.compiler_flags, output)
+        if not ok:
+            return CommandResult(
+                ok=False,
+                output=f"[-] Compilation failed:\n{err}",
+            )
+        output(f"[+] Compiled: {binary}")
+
+    # Build the invocation: binary + expanded positional args
+    invoke_args = [binary] + [_expand(a, ctx) for a in ctx.get("joined_args", "").split() if a]
+
+    # Honour env_vars the same way _run_local does
+    env = dict(os.environ)
+    for k, v in cmd.env_vars.items():
+        env[k] = _expand(v, ctx)
+
+    lines: list[str] = []
+    timed_out = False
+
+    proc = subprocess.Popen(
+        invoke_args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        env=env,
+    )
+
+    def _stream() -> None:
+        for line in proc.stdout:
+            stripped = line.rstrip()
+            output(stripped)
+            lines.append(stripped)
+
+    t = threading.Thread(target=_stream, daemon=True)
+    t.start()
+
+    timeout = cmd.timeout if cmd.timeout > 0 else None
+    try:
+        proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        timed_out = True
+        output(f"[!] Native plugin '{cmd.name}' timed out after {cmd.timeout}s.")
+    t.join(timeout=2)
+
+    if timed_out:
+        return CommandResult(
+            ok=False,
+            output="\n".join(lines) + f"\n[-] Timed out after {cmd.timeout}s.",
+        )
+    return CommandResult(ok=(proc.returncode == 0), output="\n".join(lines))
 
 
 def _run_python(
