@@ -19,7 +19,7 @@
 | [Post-Exploitation Pipeline](PIPELINE.md) | Named collection profiles (`basic`, `creds`, `recon`, etc.) |
 | [Malleable C2 Profile](C2_PROFILE.md) | YAML traffic shaping, URI rotation, sleep/jitter, headers |
 | [Web Dashboard](WEB_DASHBOARD.md) | Flask dashboard, SSE live updates, and REST API |
-| [Networking](NETWROKING.md) | Transport, WebSocket evasion, TLS, and protocol details |
+| [Networking](NETWORKING.md) | Transport, WebSocket evasion, TLS, and protocol details |
 
 ---
 

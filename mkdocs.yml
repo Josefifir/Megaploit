@@ -1,0 +1,88 @@
+site_name: Megaploit
+site_description: Professional C2 Framework & Security Research Toolbox
+site_url: https://josefifir.github.io/Megaploit
+repo_name: Josefifir/Megaploit
+repo_url: https://github.com/Josefifir/Megaploit
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.integrate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+validation:
+  links:
+    not_found: warn          # keep as warnings, don't abort on cross-refs to source files
+    absolute_links: ignore
+    unrecognized_links: ignore
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Architecture: ARCHITECTURE.md
+  - CLI Reference: CLI_REFERENCE.md
+  - Module System: MODULE_SYSTEM.md
+  - Payload Builder: PAYLOAD_BUILDER.md
+  - Pipeline: PIPELINE.md
+  - Malleable C2 Profile: C2_PROFILE.md
+  - Web Dashboard: WEB_DASHBOARD.md
+  - Networking: NETWORKING.md
+  - C Plugin Development: C_PLUGIN_DEVELOPMENT.md
