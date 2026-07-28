@@ -114,7 +114,7 @@ Megaploit is a modular, extensible **Command & Control (C2) framework** and **pe
 | **Reporting** | Built-in HTML/Markdown/JSON engagement report | `db_export` + community reports |
 | **Maturity** | v4 — actively developed, Python-native | 20+ years, battle-tested |
 
-> **Summary:** Megaploit matches Metasploit on all core post-exploitation primitives (multi-technique `getsystem`, token impersonation, UAC bypass, DLL injection, AMSI bypass) and surpasses it on transport security, toolbox breadth, and Python-native extensibility. Metasploit remains ahead on raw exploit count and the kiwi/mimikatz integration.
+> **Summary:** Megaploit matches Metasploit on all core post-exploitation primitives (multi-technique `getsystem`, token impersonation, UAC bypass, DLL injection, AMSI bypass) and surpasses it on transport security, toolbox breadth, and Python-native extensibility. Metasploit remains ahead on raw exploit count.
 
 ---
 
