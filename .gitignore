@@ -64,3 +64,6 @@ _tlapse_*/
 
 # -- Stray screenshots / recordings committed by mistake ----------------------
 screenshot_*.png
+
+# -- MkDocs build output -------------------------------------------------------
+site/
