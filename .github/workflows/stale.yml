@@ -1,0 +1,45 @@
+name: Mark stale issues and PRs
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'   # every Monday at 08:00 UTC
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          # Issues with no activity for 60 days get the stale label
+          days-before-issue-stale: 60
+          # Issues stale for 14 more days get closed
+          days-before-issue-close: 14
+          stale-issue-label: 'stale'
+          stale-issue-message: >
+            This issue has been automatically marked as stale because it has had no
+            activity for 60 days. It will be closed in 14 days unless there is new
+            activity. If this is still relevant, please leave a comment or remove the
+            **stale** label.
+          close-issue-message: >
+            This issue was closed automatically after 74 days of inactivity.
+            If it is still relevant, please re-open it with updated information.
+
+          # PRs with no activity for 30 days get the stale label
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+          stale-pr-label: 'stale'
+          stale-pr-message: >
+            This pull request has been automatically marked as stale because it has had
+            no activity for 30 days. It will be closed in 14 days unless updated.
+            Please rebase and push if the work is still in progress.
+          close-pr-message: >
+            This PR was closed automatically after 44 days of inactivity.
+            Please re-open if you want to continue.
+
+          # Never mark these labels as stale
+          exempt-issue-labels: 'pinned,security,good first issue,help wanted,module-request'
+          exempt-pr-labels: 'pinned,security'
