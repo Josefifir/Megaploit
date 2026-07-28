@@ -121,6 +121,15 @@ Megaploit is a modular, extensible **Command & Control (C2) framework** and **pe
 - Config injected via `-ldflags "-X main.LHOST=… -X main.PORT=… -X main.SECRET=…"`
 - Graceful failure when `go` is not in PATH
 
+#### C-remote-shell Integration (`megaploit/payload/builder.py`, `megaploit/core/c_probe.py`)
+- New `OutputFormat.C_EXE` — builds the hardened Windows C client EXE
+- `generate_c <lhost> <lport>` operator command embeds key/IP/port at compile time
+- `c_probe` runs a **46-signal compliance check** before every build (33 required)
+- Source layout auto-discovered — no subdirectory names hardcoded in Python
+- C-exclusive verbs (`forceOff()`, `blueScreen()`) auto-detected from `strncmp()` calls
+- `commands.py` auto-registers operator commands for C-exclusive verbs at startup
+- Adding a new `strncmp("verb()", ...)` in `shell.c` is the only step needed
+
 #### Stage-0 Command Fix & Enhancements (`megaploit/server/cli.py`)
 - Fixed broken `_cmd_stage0` that called non-existent `generate_dropper()` method
 - Now correctly calls `generate_stage0(lhost, port, key_hex, use_tls, minimal)`
@@ -682,6 +691,7 @@ megaploit [1] » payload ps1 --out agent.ps1
 megaploit [1] » payload exe --out agent.exe
 megaploit [1] » payload go_exe --out agent_win.exe      # Go agent for Windows
 megaploit [1] » payload go_elf --out agent_linux        # Go agent for Linux
+megaploit [1] » payload c_exe --out agent.exe           # C-remote-shell Windows EXE
 megaploit [1] » payload oneliner_py
 
 # Encoder chaining:
@@ -691,6 +701,8 @@ megaploit [1] » payload py --encoder comment_spam --encoder varname_rand --out 
 All formats embed LHOST, PORT, TLS flag, and HMAC key automatically from the current console settings.
 
 **Go formats** require `go` on PATH. Config is injected at link time via `-ldflags`, so no source patching is needed. Cross-compilation works naturally via `GOOS`/`GOARCH`.
+
+**C format** (`c_exe`) requires MSVC (`cl.exe`) or MinGW (`x86_64-w64-mingw32-gcc`) on PATH. Before compiling, `c_probe` runs a 46-signal compliance check against the C source tree and aborts if the security standard is not met. The secret key is embedded as a hex array — no file needed on the target.
 
 See [docs/PAYLOAD_BUILDER.md](docs/PAYLOAD_BUILDER.md) for the full reference.
 
@@ -988,6 +1000,26 @@ HTTP Upgrade → RFC 6455 binary frames → C2 framing inside frame payload
 Megaploit-main/
 ├── server.py / agent.py / secret.key / requirements.txt / install.sh
 │
+├── C-remote-shell/                # Hardened Windows reverse shell (C)
+│   ├── client/                    # Windows implant (target-side)
+│   │   ├── config.h               # C2 IP, port, key path, reconnect delay
+│   │   ├── ntcalls.h / ntcalls.c  # NT syscall loader + privilege check
+│   │   ├── shell.h / shell.c      # strncmp() verb dispatch + _popen fallback
+│   │   │                          #   ← source of truth for c_probe verb extraction
+│   │   └── main.c                 # WinMain: mutex, Winsock, embedded key, reconnect loop
+│   ├── tls/                       # Windows-native TLS transport (no OpenSSL)
+│   │   ├── tls_client.h           # TLS_CONTEXT + 4-function public API
+│   │   └── tls_client.c           # SChannel TLS 1.2/1.3, BCrypt AES-GCM + HMAC-SHA256
+│   ├── server/                    # Standalone operator console (Linux / macOS)
+│   │   ├── config.h               # LISTEN_PORT, LISTEN_ADDR
+│   │   ├── server.h / server.c    # socket / bind / listen / accept
+│   │   ├── prompt.h / prompt.c    # stdin → send → recv → print loop
+│   │   └── main.c                 # Entry point
+│   ├── Makefile                   # MSVC + MinGW build; C2_IP/C2_PORT overrides
+│   ├── definitions.h              # Compatibility shim
+│   ├── CHANGELOG.md               # Full bug-fix log, developer guide, probe docs
+│   └── README.md                  # C-remote-shell documentation
+│
 ├── tests/                         # 282 tests — pytest
 │   ├── test_improvements.py       # NEW v3: 61 tests for all 7 new systems
 │   ├── test_commands.py           # 39 tests for dispatch/all_commands
@@ -1011,10 +1043,12 @@ Megaploit-main/
     │   ├── protocol.py            # WsTransport added (NEW v3)
     │   ├── pipeline.py            # Post-exploitation pipeline (NEW v3)
     │   ├── profile.py             # Malleable C2 profile (NEW v3)
+    │   ├── c_probe.py             # C source compliance prober + verb extractor (NEW)
     │   ├── autorun.py / jobs.py / staging.py / crypto.py / config.py
     ├── server/
     │   ├── cli.py                 # stage0 fixed + pipeline cmd (NEW v3)
-    │   └── commands.py / listener.py / session.py
+    │   └── commands.py            # C-exclusive cmds auto-registered via c_probe (NEW)
+    │   └── listener.py / session.py
     ├── agent/
     │   ├── go_agent/main.go       # Build integration via payload builder (NEW v3)
     │   └── connection.py / handlers.py / keylogger.py / shell.py
@@ -1022,7 +1056,7 @@ Megaploit-main/
     │   ├── base.py                # AgentModule added (NEW v3)
     │   ├── registry.py / auxiliary/
     ├── payload/
-    │   ├── builder.py             # go_exe / go_elf formats added (NEW v3)
+    │   ├── builder.py             # go_exe / go_elf / c_exe formats (NEW)
     │   └── encoders.py
     ├── db/ / reporting/ / web/ / streaming/ / toolbox/ / plugins/
 ```
