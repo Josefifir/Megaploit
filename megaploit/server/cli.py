@@ -286,42 +286,50 @@ _BANNER_LINES = [
 # 256-colour gradient: bright red → dark red per line
 _BANNER_COLOURS = [196, 160, 124, 88, 52, 238]
 
-_VERSION  = "v2.2.0"
-_SUBTITLE = "Professional Remote Access Framework"
-_TAGLINE  = "For Authorized Use Only"
+_VERSION  = "v4.0.0"
+_SUBTITLE = "Professional C2 & Exploit Framework"
+_TAGLINE  = "For Authorized Penetration Testing Only"
+
+# v4 feature badges shown on the subtitle row
+_BADGES = [
+    ("Meterpreter-class Shell", 39),   # sky blue
+    ("20 Exploit Modules",       82),   # bright green
+    ("AES-256-GCM",             220),   # gold
+    ("507 Tests ✓",              46),   # green
+]
 
 # ---------------------------------------------------------------------------
 # Changelog  (shown after the banner on startup; `whats new` to re-show)
 # ---------------------------------------------------------------------------
 
 _CHANGELOG: list[tuple[str, list[str]]] = [
-    ("Console", [
-        "256-colour gradient banner, rounded config box, live session badge",
-        "Progress bar during toolbox install; install result in a green box",
-        "toolbox list  →  LANG column + ●/○ dots;  search  →  inline tags",
-        "Dangerous-command prompt redesigned: ⚠  +  styled YES confirmation",
-        "help  uses  ━━━ Section ━━━  headers; options in yellow; set uses  →",
+    ("Advanced Shell  [NEW v4]", [
+        "MeterpreterSession interactive console — tab-complete, per-session history",
+        "migrate <pid>  — inject agent into another process (Windows + POSIX)",
+        "port_scan <host> <ports>  — TCP scan from target's perspective (256 threads)",
+        "run_psh / run_python  — PowerShell & in-agent Python execution",
+        "load_extension / unload_extension  — runtime Python module injection",
+        "screenshot_stream <n> [fps]  — burst JPEG frames over C2 channel",
+        "pty_shell  — real PTY with resize on Unix, cmd.exe pipe on Windows",
+        "whoami · getpid · getuid · sleep · beacon_sleep",
     ]),
-    ("Toolbox installer", [
-        "Go: explicit  -o <name>  output; fallback  go run ./...  (no bare .go exec)",
-        "Rust: scans target/release/ for any binary; fallback  cargo run --release --",
-        "Java: fallback  mvn exec:java  /  gradle run  when no jar produced",
-        "Binary/C: fallback  make run  when cmake/make produces nothing",
-        "Build steps now individually try/except — one failure warns and continues",
-        "_find_binary: blocklist replaces '.' heuristic; versioned names work",
-        "New  toolbox rebuild <name>  — re-builds in-place without git pull",
-        "toolbox update  now refreshes  entry  + run_cmd  after rebuild",
+    ("Exploit Modules  [NEW v4]", [
+        "20 modules: EternalBlue, BlueKeep, ProxyLogon, Log4Shell, Spring4Shell",
+        "PrintNightmare, Heartbleed, vsFTPd backdoor, Shellshock, Citrix CVE",
+        "Apache Struts, IIS WebDAV, Redis RCE, Redis unauth, SQL injection",
+        "SMB / SSH / FTP brute-force  +  anonymous FTP agent deployment",
+        "Registry auto-discovery via os.walk() — nested paths supported",
     ]),
-    ("Auto-update", [
-        "--auto-update flag: tools updated automatically in the background",
-        "set auto_update on/off  toggles it at runtime without restarting",
-        "[✓] / [✗]  notifications shown between prompts after each attempt",
+    ("Framework  [v4]", [
+        "C++ probe support: .cpp .cc .cxx .hpp added to c_probe verb extractor",
+        "datetime.utcnow() deprecation fixed in 8 locations (Python 3.12+ safe)",
+        "MkDocs + Material theme auto-deployed to GitHub Pages on push to main",
+        "507 tests passing — 69 meterp + 156 exploit module + 282 core tests",
     ]),
-    ("Capture & streaming", [
+    ("Capture & Streaming  [v3]", [
         "screenshot: mss+cv2 JPEG q85 in-memory — ~10× smaller, no tmp file",
-        "timelapse: all frames JPEG in-memory; ZIP_STORED; cap raised → 120",
         "screenrecord: monotonic pacing, 1280px scaled, mp4v MP4, fps+scale args",
-        "Camera: 20 fps, 1280px, adaptive JPEG 40–85, monotonic loop, frame lock",
+        "timelapse: all frames JPEG in-memory; ZIP_STORED; cap raised → 120",
     ]),
 ]
 
@@ -349,9 +357,24 @@ def _print_banner() -> None:
         print(_fg256(col, line))
         time.sleep(0.045)
     print()
-    # Centred subtitle row
-    subtitle = f"  {_c(_SUBTITLE, _BOLD, _WHITE)}  {_c('│', _GREY)}  {_c(_VERSION, _CYAN)}  {_c('│', _GREY)}  {_c(_TAGLINE, _GREY)}"
+
+    # ── version / subtitle row ────────────────────────────────────────
+    ver_badge  = f"\033[48;5;196m\033[38;5;231m\033[1m {_VERSION} \033[0m"   # red bg, white text
+    subtitle   = (
+        f"  {ver_badge}"
+        f"  {_c(_SUBTITLE, _BOLD, _WHITE)}"
+        f"  {_c('│', _GREY)}"
+        f"  {_c(_TAGLINE, _GREY)}"
+    )
     print(subtitle)
+    print()
+
+    # ── feature badge row ─────────────────────────────────────────────
+    badge_parts = []
+    for label, colour in _BADGES:
+        badge_parts.append(f"\033[38;5;{colour}m◆\033[0m {_c(label, _GREY)}")
+    print("  " + f"  {_c('·', _GREY)}  ".join(badge_parts))
+
     print(_rule("─", color=_GREY))
     print()
     _print_changelog()
@@ -706,10 +729,18 @@ class Console:
                     _c(f"[{n_sessions}]", _GREEN, _BOLD)
                     if n_sessions else _c("[0]", _GREY)
                 )
+                # Global prompt:  [v4.0.0] megaploit [N] »
+                ver_pill = f"\033[48;5;196m\033[38;5;231m\033[1m v4 \033[0m"
+                mod_badge = (
+                    f" {_c('[', _GREY)}{_c(self._active_module_name, _YELLOW, _BOLD)}{_c(']', _GREY)}"
+                    if self._active_module_name else ""
+                )
                 prompt = (
-                    f"\n{_c('msf', _GREY)}{_c('►', _RED, _BOLD)}"
-                    f"{_c('megaploit', _RED, _BOLD)} "
-                    f"{sess_badge} {_c('»', _GREY)} "
+                    f"\n  {ver_pill}"
+                    f" {_c('megaploit', _RED, _BOLD)}"
+                    f"{mod_badge}"
+                    f" {sess_badge}"
+                    f" {_c('»', _GREY)} "
                 )
                 raw = input(prompt).strip()
             except (EOFError, KeyboardInterrupt):
@@ -845,9 +876,11 @@ class Console:
                     f" {_c('[', _GREY)}{_c(session.tag, _YELLOW)}{_c(']', _GREY)}"
                     if session.tag else ""
                 )
+                # Session prompt:  [v4.0.0] megaploit session(N)[@tag] »
+                ver_pill = f"\033[48;5;22m\033[38;5;154m\033[1m v4 \033[0m"  # dark-green bg
                 prompt = (
-                    f"\n{_c('msf', _GREY)}{_c('►', _RED, _BOLD)}"
-                    f"{_c('megaploit', _RED, _BOLD)}"
+                    f"\n  {ver_pill}"
+                    f" {_c('megaploit', _RED, _BOLD)}"
                     f" {_c('session', _GREY)}"
                     f"{_c('(', _GREY)}{_c(str(session.id), _CYAN, _BOLD)}{_c(')', _GREY)}"
                     f"{tag_badge}"
