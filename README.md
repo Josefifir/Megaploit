@@ -11,15 +11,16 @@
 [![Docs](https://github.com/Josefifir/Megaploit/actions/workflows/docs.yml/badge.svg)](https://josefifir.github.io/Megaploit/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
 [![License](https://img.shields.io/github/license/Josefifir/Megaploit)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-507%20passing-brightgreen)](#running-tests)
+[![Tests](https://img.shields.io/badge/tests-513%20passing-brightgreen)](#running-tests)
 
 ---
 
 ## Table of Contents
 
 1. [What is Megaploit](#what-is-megaploit)
-2. [v4.0 Changelog](#v40-changelog)
-3. [Architecture](#architecture)
+2. [Megaploit vs Metasploit](#megaploit-vs-metasploit)
+3. [v4.0 Changelog](#v40-changelog)
+4. [Architecture](#architecture)
 4. [Requirements](#requirements)
 5. [Installation](#installation)
 6. [Quick Start](#quick-start)
@@ -85,6 +86,34 @@ Megaploit is a modular, extensible **Command & Control (C2) framework** and **pe
 | **SQLite credential + loot DB** | Hosts, services, creds, notes, loot, jobs |
 | **Web dashboard** | Flask SSE live dashboard at `http://127.0.0.1:8080` |
 | **Multi-operator JSON-RPC** | TCP JSON-RPC 2.0 server for team operations |
+
+---
+
+## Megaploit vs Metasploit
+
+| Category | Megaploit v4 | Metasploit Framework |
+|---|---|---|
+| **Language / runtime** | Pure Python 3.10+ — single file agent, zero C deps | Ruby + C + native extensions |
+| **Agent delivery** | 13 payload formats (py, ps1, hta, vba, sh, bat, exe, elf, Go binary, oneliner…) | Staged/stageless PE/ELF via msfvenom |
+| **Encrypted transport** | AES-256-GCM + sequence numbers + WebSocket framing | AES via `--encrypt aes256` (optional) |
+| **TLS** | `--tls` auto-cert (self-signed, SHA-256 fingerprint shown); or bring-your-own PEM | Manual cert required |
+| **Authentication** | HMAC-SHA256 challenge/response on every connection | No built-in agent authentication |
+| **Sessions** | Multi-session, tag + OS column, background/foreground | Multi-session (`sessions -i`) |
+| **Shell quality** | PTY + resize, PowerShell exec, in-agent Python exec | Meterpreter PTY |
+| **Privilege escalation** | `getsystem` — 3 techniques: **named-pipe impersonation**, SeDebugPrivilege token steal, unquoted service path; `uac_bypass` fodhelper hijack (W10/11); `token_steal`; `dll_inject`; `patch_amsi` | `getsystem` (named pipe + token duplicate + service + more); `bypassuac`; kiwi/mimikatz built-in |
+| **Credential harvesting** | `hashdump`, `wifi_passwords`, `cred_vault` (Credential Manager), `browser_creds`, `ssh_harvest`, `sudo_sniff`, `keylog_*` | Mimikatz, hashdump, `post/multi/gather` |
+| **Persistence** | `persist`, `startup_items`, `scheduled_tasks`, `keylog_*` | `post/*/manage/persistence` |
+| **Post-exploitation** | 116 session commands; SOCKS5 proxy; port-forward; screenshot stream; webcam; DLL inject; AMSI patch; process migration; memory R/W | Meterpreter + post modules |
+| **Exploit modules** | 20 modules (EternalBlue, Log4Shell, BlueKeep, ProxyLogon, Spring4Shell, Heartbleed, vsFTPd, Shellshock, PrintNightmare, and more) | 2 000+ modules |
+| **Module system** | `auxiliary`, `exploit`, `post`, `payload` with full options lifecycle; `AgentModule` base class | Same architecture (the original) |
+| **Evasion** | `patch_amsi`, `disable_defender`, `timestomp`, `clear_logs`, `hide_file`, `living_off_land` | Limited built-in; mostly AV-bypass payloads |
+| **Toolbox** | 203-tool catalogue — install any GitHub tool in any language | No equivalent |
+| **Plugin system** | TOML hot-reload plugins, zero Python required | Metasploit plugins (Ruby) |
+| **Malleable C2 profile** | YAML traffic shaping — URI rotation, User-Agent, sleep/jitter | Cobalt Strike concept; not native to Metasploit |
+| **Reporting** | Built-in HTML/Markdown/JSON engagement report | `db_export` + community reports |
+| **Maturity** | v4 — actively developed, Python-native | 20+ years, battle-tested |
+
+> **Summary:** Megaploit matches Metasploit on all core post-exploitation primitives (multi-technique `getsystem`, token impersonation, UAC bypass, DLL injection, AMSI bypass) and surpasses it on transport security, toolbox breadth, and Python-native extensibility. Metasploit remains ahead on raw exploit count and the kiwi/mimikatz integration.
 
 ---
 
@@ -178,7 +207,7 @@ Megaploit-main/
 ├── tools/                       ← Toolbox: git clones + tools.json
 ├── loot/                        ← All collected data + audit.log
 │
-├── tests/                       ← Test suite (pytest · 507 tests)
+├── tests/                       ← Test suite (pytest · 513 tests)
 │
 └── megaploit/
     ├── core/
@@ -539,6 +568,9 @@ python3 server.py -lh <callback-ip> -p <port> [options]
 | `use <module/path>` | Load a module |
 | `generate [-c] [--tls]` | Patch agent with LHOST/PORT |
 | `set <option> <value>` | Set lhost / port / cert / key |
+| `tls auto` | Auto-generate self-signed cert and enable TLS |
+| `tls regen` | Force-regenerate the auto cert |
+| `tls status` | Show TLS mode, cert path, and SHA-256 fingerprint |
 | `show modules [query]` | Browse loaded module catalogue |
 | `run` / `check` / `info` | Execute / pre-check / describe active module |
 | `broadcast <cmd>` | Run shell command on ALL active sessions |
@@ -843,10 +875,30 @@ Stage-0 dropper authenticates with HMAC-SHA256, receives gzip-compressed stage-1
 
 ### TLS
 
+**Auto-generate a self-signed cert (recommended):**
+
+```bash
+python3 server.py -lh 10.0.0.1 -p 4444 --tls
+```
+
+Megaploit generates `loot/tls/megaploit.crt` and `loot/tls/megaploit.key` automatically (uses the `cryptography` package if installed, falls back to `openssl req`). The SHA-256 fingerprint is printed in the startup config box and reused on subsequent runs.
+
+**Or inside the console at any time:**
+
+```
+megaploit [0] » tls auto       # generate & enable immediately
+megaploit [0] » tls status     # show current cert path + fingerprint
+megaploit [0] » tls regen      # force-generate a new cert
+```
+
+**Manual cert (bring your own):**
+
 ```bash
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
 python3 server.py -lh 10.0.0.1 -p 4444 --cert cert.pem --key key.pem
 ```
+
+All TLS modes enforce TLS 1.2+ minimum, AEAD-only cipher suites (AES-GCM / ChaCha20-Poly1305), no renegotiation, no compression, forward secrecy required.
 
 ### Rate Limiter
 5 failed attempts per 60s → auto-ban for 300s.
