@@ -1,0 +1,3 @@
+[submodule "C-remote-shell"]
+	path = C-remote-shell
+	url = https://github.com/Levon-Volodin/C-remote-shell
