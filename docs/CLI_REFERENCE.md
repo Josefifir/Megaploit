@@ -237,6 +237,22 @@ toolbox config <name> set <k> <v>   Set config value
 | `plugins watcher on\|off` | Toggle hot-reload file watcher |
 | `plugins deps install` | pip-install missing plugin dependencies |
 
+#### C-remote-shell Plugin (`c-remote-shell`)
+
+Bundled first-party plugin for the [`C-remote-shell`](https://github.com/Levon-Volodin/C-remote-shell) Windows C agent submodule.
+
+| Command | Args | Description |
+|---|---|---|
+| `crs_build` | `[lhost] [port]` | Compile `megaploit_c_agent.exe` — auto-detects MinGW / MSVC; bakes LHOST+PORT in at compile time |
+| `crs_probe` | — | Run the 46-signal C2 compliance report on the C-remote-shell source tree |
+| `crs_verbs` | — | List every wire verb the C agent dispatches; marks C-exclusive ones |
+| `crs_payload_info` | — | Print the exact MinGW command line for current LHOST/PORT |
+| `forceOff` ⚠ | — | Send `forceOff()` to the active C session — force power-off via `NtSetSystemPowerState` |
+| `blueScreen` ⚠ | — | Send `blueScreen()` to the active C session — BSOD via `NtRaiseHardError` |
+
+> **Requirements:** MinGW (`apt install mingw-w64`) for Linux/macOS builds, or MSVC Developer Command Prompt on Windows.
+> `forceOff` and `blueScreen` require a **C-remote-shell** session (not a Python agent session) and prompt for `YES` confirmation.
+
 ### Engagement & Operations
 
 | Command | Description |
