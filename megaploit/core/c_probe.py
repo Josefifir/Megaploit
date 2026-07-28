@@ -380,6 +380,8 @@ _PYTHON_AGENT_VERBS: frozenset[str] = frozenset({
     "reverse_shell", "uac_bypass", "dll_inject", "sudo_sniff",
     "ssh_harvest", "screenrecord", "mouse_move", "type_keys",
     "browser_creds", "exit", "q",
+    # Added in v4 — kiwi native C credential dumper
+    "kiwi",
 })
 
 
