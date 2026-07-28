@@ -3,14 +3,16 @@
 #
 # System requirements:
 #   git must be on PATH (for toolbox clone/update and self-update checks)
-#     Linux/macOS: usually pre-installed
-#     Windows:     https://git-scm.com/download/win
+#   For exe/elf payload compilation: pip install pyinstaller
+#   For UPX packing: install upx from https://upx.github.io/
 #
-#   sounddevice uses the system's PortAudio at runtime, but ships its own
-#   bundled binaries via the wheel — no separate system install needed.
-#
-#   readline is stdlib on Linux/macOS (tab completion built-in).
-#   On Windows install pyreadline3:  pip install pyreadline3
+# Optional extras that unlock additional capabilities:
+#   pip install cryptography          # AES-256-GCM transport (strongly recommended)
+#   pip install flask                 # Web dashboard (web start)
+#   pip install impacket              # SMB share enumeration module
+#   pip install dnspython             # DNS resolver module (all record types)
+#   pip install pyinstaller           # payload exe / payload elf compilation
+#   pip install weasyprint            # PDF export from HTML reports
 
 # ── Core (operator console) ────────────────────────────────────────────────
 termcolor>=2.3.0
@@ -29,6 +31,16 @@ numpy>=1.24.0               # array bridge for mss/opencv
 sounddevice>=0.4.6
 soundfile>=0.12.1
 
+# ── Transport encryption (strongly recommended) ────────────────────────────
+# Unlocks AES-256-GCM per-session encryption + sequence numbers
+# Falls back to XOR-CTR if absent.
+cryptography>=41.0.0
+
 # ── Web streaming (agent-side Flask MJPEG servers) ─────────────────────────
 Flask>=3.0.0
 Werkzeug>=3.0.0
+
+# ── Testing ────────────────────────────────────────────────────────────────
+# Install separately: pip install pytest pytest-cov
+# pytest>=7.0.0
+# pytest-cov>=4.0.0

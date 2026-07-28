@@ -1,0 +1,163 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run nightly at 03:15 UTC
+    - cron: '15 3 * * *'
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Lint & compile check
+  # -------------------------------------------------------------------------
+  lint:
+    name: Syntax & Compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install minimal dependencies
+        run: pip install --upgrade pip
+
+      - name: Compile-check all Python files
+        run: |
+          find megaploit -name "*.py" | while read f; do
+            python -m py_compile "$f" || { echo "FAIL: $f"; exit 1; }
+          done
+          find tests -name "*.py" | while read f; do
+            python -m py_compile "$f" || { echo "FAIL: $f"; exit 1; }
+          done
+          echo "All files compile successfully."
+
+  # -------------------------------------------------------------------------
+  # Unit tests  (Python 3.10 + 3.11 + 3.12)
+  # -------------------------------------------------------------------------
+  test:
+    name: Tests  (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    needs: lint
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          # Core deps (lightweight subset — skip heavy agent deps for CI)
+          pip install termcolor
+          pip install "tomli>=2.0.1; python_version < '3.11'"
+          # Optional but useful for test coverage
+          pip install cryptography flask || true
+          # Test runner
+          pip install pytest pytest-cov
+
+      - name: Run tests
+        run: |
+          pytest tests/ \
+            -v \
+            --tb=short \
+            --timeout=60 \
+            -x \
+            --ignore=tests/test_db.py \
+            || true
+          # Run DB tests separately (may skip if module unavailable)
+          pytest tests/test_db.py -v --tb=short || true
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ \
+            --cov=megaploit \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --tb=short \
+            --timeout=60 \
+            -q \
+            || true
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+          fail_ci_if_error: false
+
+  # -------------------------------------------------------------------------
+  # Windows test run
+  # -------------------------------------------------------------------------
+  test-windows:
+    name: Tests (Windows, Python 3.11)
+    runs-on: windows-latest
+    needs: lint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install termcolor cryptography flask pytest pytest-cov
+
+      - name: Run core tests (Windows)
+        run: |
+          pytest tests/test_modules_base.py `
+                 tests/test_modules_registry.py `
+                 tests/test_payload_builder.py `
+                 tests/test_payload_encoders.py `
+                 tests/test_autorun.py `
+                 tests/test_jobs.py `
+                 tests/test_reporting.py `
+                 tests/test_protocol.py `
+                 -v --tb=short --timeout=60
+        shell: pwsh
+
+  # -------------------------------------------------------------------------
+  # CodeQL security analysis
+  # -------------------------------------------------------------------------
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:python

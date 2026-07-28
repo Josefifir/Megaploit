@@ -31,6 +31,7 @@ import time
 from typing import Callable
 
 from megaploit.core.crypto import server_authenticate
+from megaploit.core.protocol import handshake_server, remove_state
 from megaploit.server.session import Session
 from megaploit.core.config import (
     AUTH_TIMEOUT,
@@ -177,6 +178,10 @@ class Listener:
                 pass
         _audit.info("STOPPED")
 
+    def cleanup_session(self, conn) -> None:
+        """Call when a session socket is being closed."""
+        remove_state(conn)
+
     # ---------------------------------------------------------------
     # Accept loop
     # ---------------------------------------------------------------
@@ -234,7 +239,10 @@ class Listener:
             _audit.warning("REJECTED ip=%-18s port=%d  reason=auth_failed", ip, src_port)
             return
 
-        # ── 5. Session created ───────────────────────────────────
+        # ── 5. Protocol version handshake (AES-GCM v2) ──────────
+        handshake_server(conn, self.secret_key)
+
+        # ── 6. Session created ───────────────────────────────────
         with self._lock:
             self._session_counter += 1
             sid = self._session_counter

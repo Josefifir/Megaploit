@@ -9,34 +9,58 @@ Three execution modes
 kind = "local"
     Expand placeholders in the shell string, then run the resulting command
     on the operator machine via subprocess.  Output is streamed line-by-line
-    to the *output* callback.
+    to the *output* callback.  Timeout, env injection, and retry are all
+    enforced.
 
 kind = "session"
     Expand placeholders, send the resulting command string to the active agent
     session via the C2 channel, and return the response.
 
 kind = "python"
-    Import the dotted handler path and call it with (args, context) where
-    context is a dict of resolved placeholders.  The callable should return
-    a string or None.
+    Import the dotted handler path, build a PluginContext, and call the handler
+    with ``(args: list[str], ctx: PluginContext)``.  The callable should return
+    a str or None.  It may also call ``ctx.emit(line)`` for streaming output.
 
 Placeholder reference
 ---------------------
-    {session_ip}  — session.ip                 (session commands only)
-    {session_id}  — str(session.id)             (session commands only)
-    {lhost}       — console.lhost
-    {port}        — str(console.port)
-    {arg0}…{argN} — positional args from the CLI
+    {session_ip}       session.ip
+    {session_id}       str(session.id)
+    {session_tag}      session.tag
+    {session_os}       session.os_name
+    {session_hostname} session.hostname
+    {session_username} session.username
+    {lhost}            console.lhost
+    {port}             str(console.port)
+    {arg0}…{argN}      positional args from the CLI
+    {joined_args}      all args joined with a space
+
+Output formats
+--------------
+    raw          — print as-is (default)
+    json         — pretty-print JSON parsed from output
+    pretty_json  — same as json but with sorted keys
+    table        — render list-of-dicts or list-of-lists as an ASCII table
+    csv          — render list-of-lists as CSV
 """
 
 from __future__ import annotations
 
+import csv
+import io
 import importlib
+import json
+import os
 import subprocess
+import sys
 import threading
+import time
 from typing import Callable, Optional
 
-from megaploit.plugins.schema import PluginCommand
+from megaploit.plugins.schema import (
+    PluginCommand,
+    PluginContext,
+    PLACEHOLDER_KEYS,
+)
 from megaploit.server.commands import CommandResult
 
 OutputFn = Callable[[str], None]
@@ -50,7 +74,7 @@ _NOOP: OutputFn = lambda _: None
 def run_plugin_command(
     cmd: PluginCommand,
     args: list[str],
-    session=None,          # megaploit.server.session.Session | None
+    session=None,           # megaploit.server.session.Session | None
     lhost: str = "",
     port: int = 0,
     output: OutputFn = _NOOP,
@@ -59,64 +83,148 @@ def run_plugin_command(
     Execute *cmd* and return a CommandResult.
 
     *session* is required for kind='session' commands.
-    *output*  is a streaming callback for local/python commands.
+    *output*  is a streaming callback; called with each output line.
+    Retry logic, timeout, and env_var injection are applied automatically.
     """
-    if len(args) < cmd.min_args:
-        return CommandResult(
-            ok=False,
-            output=f"[-] '{cmd.name}' requires at least {cmd.min_args} argument(s).\n"
-                   f"    Usage: {cmd.usage}",
-        )
+    # Arity check (uses schema's check_args)
+    err = cmd.check_args(args)
+    if err:
+        return CommandResult(ok=False, output=err)
 
     ctx = _build_context(args, session, lhost, port)
+    plugin_ctx = _build_plugin_context(args, cmd, session, lhost, port, output)
 
-    try:
-        if cmd.kind == "local":
-            return _run_local(cmd, ctx, output)
-        elif cmd.kind == "session":
-            return _run_session(cmd, ctx, session)
-        elif cmd.kind == "python":
-            return _run_python(cmd, args, ctx, output)
-        else:
-            return CommandResult(ok=False, output=f"[-] Unknown plugin command kind: {cmd.kind}")
-    except Exception as e:
-        return CommandResult(ok=False, output=f"[-] Plugin '{cmd.name}' error: {e}")
+    last_result: Optional[CommandResult] = None
+    attempts = max(1, cmd.retry + 1)
+
+    for attempt in range(attempts):
+        if attempt > 0:
+            output(f"[*] Retry {attempt}/{cmd.retry} for '{cmd.name}'…")
+            time.sleep(0.5 * attempt)   # back-off
+
+        try:
+            if cmd.kind == "local":
+                result = _run_local(cmd, ctx, output)
+            elif cmd.kind == "session":
+                result = _run_session(cmd, ctx, session)
+            elif cmd.kind == "python":
+                result = _run_python(cmd, args, plugin_ctx, output)
+            else:
+                return CommandResult(
+                    ok=False,
+                    output=f"[-] Unknown plugin command kind: {cmd.kind}",
+                )
+        except Exception as e:
+            result = CommandResult(
+                ok=False,
+                output=f"[-] Plugin '{cmd.name}' raised an unhandled exception: {e}",
+            )
+
+        last_result = result
+        if result.ok:
+            break   # success — no retry needed
+
+    assert last_result is not None
+    # Apply output formatting
+    if last_result.ok and last_result.output and cmd.output_format != "raw":
+        last_result = _apply_output_format(last_result, cmd.output_format, output)
+
+    return last_result
 
 
 # ---------------------------------------------------------------------------
-# Context builder
+# Context builders
 # ---------------------------------------------------------------------------
 
-def _build_context(args: list[str], session, lhost: str, port: int) -> dict[str, str]:
+def _build_context(
+    args: list[str],
+    session,
+    lhost: str,
+    port: int,
+) -> dict[str, str]:
+    """Build the placeholder-expansion dict for shell templates."""
     ctx: dict[str, str] = {
-        "lhost": lhost,
-        "port":  str(port),
-        "session_ip": session.ip  if session else "",
-        "session_id": str(session.id) if session else "",
+        "lhost":            lhost,
+        "port":             str(port),
+        "session_ip":       getattr(session, "ip",       "") if session else "",
+        "session_id":       str(getattr(session, "id",   0)) if session else "0",
+        "session_tag":      getattr(session, "tag",      "") if session else "",
+        "session_os":       getattr(session, "os_name",  "") if session else "",
+        "session_hostname": getattr(session, "hostname", "") if session else "",
+        "session_username": getattr(session, "username", "") if session else "",
+        "joined_args":      " ".join(args),
     }
     for i, a in enumerate(args):
         ctx[f"arg{i}"] = a
     return ctx
 
 
+def _build_plugin_context(
+    args: list[str],
+    cmd: PluginCommand,
+    session,
+    lhost: str,
+    port: int,
+    output: OutputFn,
+) -> PluginContext:
+    """Build the rich PluginContext for python-kind handlers."""
+    ctx = PluginContext(
+        lhost=lhost,
+        port=port,
+        session_ip=       getattr(session, "ip",       "") if session else "",
+        session_id=       getattr(session, "id",        0) if session else 0,
+        session_tag=      getattr(session, "tag",      "") if session else "",
+        session_os=       getattr(session, "os_name",  "") if session else "",
+        session_hostname= getattr(session, "hostname", "") if session else "",
+        session_username= getattr(session, "username", "") if session else "",
+        positional=list(args),
+        env_vars=dict(cmd.env_vars),
+        command_name=cmd.name,
+        plugin_name=cmd.plugin_name,
+    )
+    ctx._output_fn = output
+    return ctx
+
+
 def _expand(template: str, ctx: dict[str, str]) -> str:
-    """Replace {key} placeholders in *template* from *ctx*."""
-    result = template
-    for key, val in ctx.items():
-        result = result.replace(f"{{{key}}}", val)
-    return result
+    """
+    Replace ``{key}`` placeholders in *template* from *ctx*.
+
+    Supports ``{key:-default}`` syntax: if the value for *key* is empty,
+    the default string is used instead.
+    """
+    import re
+    def _replacer(m: re.Match) -> str:
+        key     = m.group(1)
+        default = m.group(2)      # None if no :-default present
+        val     = ctx.get(key, "")
+        if not val and default is not None:
+            return default
+        return val
+
+    return re.sub(r"\{(\w+)(?::-([^}]*))?\}", _replacer, template)
 
 
 # ---------------------------------------------------------------------------
 # Execution backends
 # ---------------------------------------------------------------------------
 
-def _run_local(cmd: PluginCommand, ctx: dict[str, str], output: OutputFn) -> CommandResult:
+def _run_local(
+    cmd: PluginCommand,
+    ctx: dict[str, str],
+    output: OutputFn,
+) -> CommandResult:
     """Run the shell string on the operator machine; stream output."""
     shell_cmd = _expand(cmd.shell, ctx)
     output(f"[*] Running: {shell_cmd}")
 
+    # Build environment — start from current env, layer plugin env_vars on top
+    env = dict(os.environ)
+    for k, v in cmd.env_vars.items():
+        env[k] = _expand(v, ctx)
+
     lines: list[str] = []
+    timed_out = False
 
     proc = subprocess.Popen(
         shell_cmd,
@@ -126,9 +234,10 @@ def _run_local(cmd: PluginCommand, ctx: dict[str, str], output: OutputFn) -> Com
         text=True,
         encoding="utf-8",
         errors="replace",
+        env=env,
     )
 
-    def _stream():
+    def _stream() -> None:
         for line in proc.stdout:
             stripped = line.rstrip()
             output(stripped)
@@ -136,50 +245,88 @@ def _run_local(cmd: PluginCommand, ctx: dict[str, str], output: OutputFn) -> Com
 
     t = threading.Thread(target=_stream, daemon=True)
     t.start()
-    proc.wait()
+
+    timeout = cmd.timeout if cmd.timeout > 0 else None
+    try:
+        proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        timed_out = True
+        output(f"[!] Command '{cmd.name}' timed out after {cmd.timeout}s.")
     t.join(timeout=2)
 
+    if timed_out:
+        return CommandResult(
+            ok=False,
+            output="\n".join(lines) + f"\n[-] Timed out after {cmd.timeout}s.",
+        )
     return CommandResult(ok=(proc.returncode == 0), output="\n".join(lines))
 
 
-def _run_session(cmd: PluginCommand, ctx: dict[str, str], session) -> CommandResult:
+def _run_session(
+    cmd: PluginCommand,
+    ctx: dict[str, str],
+    session,
+) -> CommandResult:
     """Send the expanded shell command to the agent and return the response."""
     if session is None:
         return CommandResult(
             ok=False,
-            output=f"[-] '{cmd.name}' is a session command — you must be inside a session (use <id>).",
+            output=(
+                f"[-] '{cmd.name}' is a session command — "
+                f"you must be inside a session (use <id>)."
+            ),
         )
+
     from megaploit.core.protocol import send_msg, recv_msg
 
     shell_cmd = _expand(cmd.shell, ctx)
     send_msg(session.conn, shell_cmd)
+
     try:
         resp = recv_msg(session.conn)
         return CommandResult(ok=True, output=str(resp) if resp else "")
     except ConnectionError as e:
-        return CommandResult(ok=False, output=f"[-] Connection lost: {e}", close_session=True)
+        return CommandResult(
+            ok=False,
+            output=f"[-] Connection lost: {e}",
+            close_session=True,
+        )
 
 
 def _run_python(
-    cmd: PluginCommand, args: list[str], ctx: dict[str, str], output: OutputFn
+    cmd: PluginCommand,
+    args: list[str],
+    ctx: PluginContext,
+    output: OutputFn,
 ) -> CommandResult:
     """
     Import and call the dotted handler.
 
-    The callable receives  (args: list[str], context: dict)  and should
-    return a string result or None.  It may also call output() for streaming.
+    Old-style handler signature:  fn(args: list[str], context: dict) → str | None
+    New-style handler signature:  fn(args: list[str], ctx: PluginContext) → str | None
+
+    Both are supported.  If the handler accepts a PluginContext it will receive
+    the rich context; if it accepts a plain dict it receives a compatibility dict.
     """
     parts = cmd.handler.rsplit(".", 1)
     if len(parts) != 2:
         return CommandResult(
             ok=False,
-            output=f"[-] handler '{cmd.handler}' is not a valid dotted path (expected 'module.function').",
+            output=(
+                f"[-] handler '{cmd.handler}' is not a valid dotted path "
+                f"(expected 'module.function')."
+            ),
         )
+
     module_path, func_name = parts
     try:
         mod = importlib.import_module(module_path)
     except ImportError as e:
-        return CommandResult(ok=False, output=f"[-] Cannot import '{module_path}': {e}")
+        return CommandResult(
+            ok=False,
+            output=f"[-] Cannot import '{module_path}': {e}",
+        )
 
     fn = getattr(mod, func_name, None)
     if fn is None:
@@ -188,5 +335,133 @@ def _run_python(
             output=f"[-] '{func_name}' not found in module '{module_path}'.",
         )
 
-    result = fn(args, ctx)
+    # Inspect handler signature to determine call style
+    import inspect
+    sig = inspect.signature(fn)
+    params = list(sig.parameters.values())
+
+    if len(params) >= 2 and params[1].annotation is PluginContext:
+        # New-style: fn(args, ctx: PluginContext)
+        result = fn(args, ctx)
+    else:
+        # Old/compat style: fn(args, dict)
+        compat_dict: dict[str, str] = {
+            "lhost":      ctx.lhost,
+            "port":       str(ctx.port),
+            "session_ip": ctx.session_ip,
+            "session_id": str(ctx.session_id),
+        }
+        for i, a in enumerate(ctx.positional):
+            compat_dict[f"arg{i}"] = a
+        result = fn(args, compat_dict)
+
     return CommandResult(ok=True, output=str(result) if result is not None else "")
+
+
+# ---------------------------------------------------------------------------
+# Output formatters
+# ---------------------------------------------------------------------------
+
+def _apply_output_format(
+    result: CommandResult,
+    fmt: str,
+    output: OutputFn,
+) -> CommandResult:
+    """
+    Reformat *result.output* according to *fmt*.
+
+    On parse failure the original raw output is returned unchanged.
+    """
+    raw = result.output.strip()
+
+    if fmt in ("json", "pretty_json"):
+        try:
+            parsed = json.loads(raw)
+            sort_keys = (fmt == "pretty_json")
+            formatted = json.dumps(parsed, indent=2, sort_keys=sort_keys, ensure_ascii=False)
+            return CommandResult(ok=True, output=formatted)
+        except json.JSONDecodeError:
+            output("[!] Output format is 'json' but response is not valid JSON — showing raw.")
+            return result
+
+    if fmt == "table":
+        return CommandResult(ok=True, output=_format_table(raw, output))
+
+    if fmt == "csv":
+        return CommandResult(ok=True, output=_format_csv(raw, output))
+
+    return result
+
+
+def _format_table(raw: str, output: OutputFn) -> str:
+    """
+    Parse *raw* as JSON (list of dicts or list of lists) and render as an
+    aligned ASCII table.  Falls back to raw on parse failure.
+    """
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        output("[!] 'table' format requires JSON output — showing raw.")
+        return raw
+
+    if not isinstance(data, list) or not data:
+        return raw
+
+    if isinstance(data[0], dict):
+        # List-of-dicts → column headers from keys
+        headers: list[str] = list(data[0].keys())
+        rows: list[list[str]] = [
+            [str(row.get(h, "")) for h in headers]
+            for row in data
+        ]
+        return _render_table(headers, rows)
+
+    if isinstance(data[0], list):
+        rows = [[str(cell) for cell in row] for row in data]
+        headers = [f"Col{i}" for i in range(len(rows[0]))] if rows else []
+        return _render_table(headers, rows)
+
+    return raw
+
+
+def _render_table(headers: list[str], rows: list[list[str]]) -> str:
+    all_rows = [headers] + rows
+    widths   = [
+        max(len(cell) for cell in col)
+        for col in zip(*all_rows)
+    ]
+    sep  = "  " + "  ".join("-" * w for w in widths)
+    hdr  = "  " + "  ".join(h.ljust(w) for h, w in zip(headers, widths))
+    body = "\n".join(
+        "  " + "  ".join(cell.ljust(w) for cell, w in zip(row, widths))
+        for row in rows
+    )
+    return "\n".join([hdr, sep, body])
+
+
+def _format_csv(raw: str, output: OutputFn) -> str:
+    """
+    Parse *raw* as JSON list-of-lists and render as CSV.
+    Falls back to raw on parse failure.
+    """
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        output("[!] 'csv' format requires JSON output — showing raw.")
+        return raw
+
+    if not isinstance(data, list):
+        return raw
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    if data and isinstance(data[0], dict):
+        headers = list(data[0].keys())
+        writer.writerow(headers)
+        for row in data:
+            writer.writerow([row.get(h, "") for h in headers])
+    else:
+        for row in data:
+            writer.writerow(row if isinstance(row, list) else [row])
+
+    return buf.getvalue()

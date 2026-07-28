@@ -12,6 +12,7 @@ import socket
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from typing import Optional
 
 
 @dataclass
@@ -26,12 +27,21 @@ class Session:
     upload_count: int = 0
     id: int = 0                       # set by Listener
 
+    # ── Operator-assigned metadata ─────────────────────────────────────
+    tag: str = ""                     # short label for this session
+    notes: str = ""                   # operator free-text notes
+    hostname: str = ""                # populated by sysinfo / os_info
+    os_name: str = ""                 # e.g. "Windows 10 21H2"
+    username: str = ""                # remote username if known
+
     # ---------------------------------------------------------------
     # Convenience helpers
     # ---------------------------------------------------------------
 
     @property
     def label(self) -> str:
+        if self.tag:
+            return f"{self.ip}:{self.port} ({self.tag})"
         return f"{self.ip}:{self.port}"
 
     @property
@@ -46,6 +56,18 @@ class Session:
             self.conn.close()
         except OSError:
             pass
+
+    # ---------------------------------------------------------------
+    # Loot directory
+    # ---------------------------------------------------------------
+
+    def loot_dir(self) -> str:
+        """Return (and create) a per-session loot directory."""
+        ts   = datetime.fromtimestamp(self.connected_at, tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
+        slug = self.tag.replace(" ", "_") if self.tag else self.ip.replace(".", "_")
+        path = os.path.join("loot", f"session_{self.id}_{slug}_{ts}")
+        os.makedirs(path, exist_ok=True)
+        return path
 
     # ---------------------------------------------------------------
     # Unique save paths (never overwrite previous files)
@@ -75,3 +97,23 @@ class Session:
         os.makedirs("loot/downloads", exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         return os.path.join("loot", "downloads", f"{ts}_{self.download_count}_{base}")
+
+    # ---------------------------------------------------------------
+    # Summary dict (for JSON export / loot browser)
+    # ---------------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        return {
+            "id":           self.id,
+            "ip":           self.ip,
+            "port":         self.port,
+            "tag":          self.tag,
+            "hostname":     self.hostname,
+            "os_name":      self.os_name,
+            "username":     self.username,
+            "notes":        self.notes,
+            "uptime":       self.uptime,
+            "connected_at": datetime.fromtimestamp(
+                self.connected_at, tz=timezone.utc
+            ).isoformat(),
+        }
