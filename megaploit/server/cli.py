@@ -43,7 +43,10 @@ from megaploit.core.crypto import load_key, key_fingerprint
 from megaploit.core.autorun import autorun as _autorun
 from megaploit.core.pipeline import pipeline as _pipeline
 from megaploit.server.commands import dispatch, all_commands, CommandResult
-from megaploit.server.listener import Listener, build_ssl_context
+from megaploit.server.listener import (
+    Listener, build_ssl_context,
+    generate_self_signed_cert, _AUTO_CERT, _AUTO_KEY,
+)
 from megaploit.server.session import Session
 from megaploit.toolbox.registry import registry as _tool_registry
 from megaploit.toolbox import installer as _installer
@@ -560,6 +563,10 @@ class Console:
         self._active_module = None          # Module instance or None
         self._active_module_name: str = ""  # display name
 
+        # ── TLS auto-cert state ───────────────────────────────────────
+        self._tls_auto:    bool = False   # True when auto-cert is/was requested
+        self._tls_auto_fp: str  = ""      # SHA-256 fingerprint of auto-cert
+
     # ---------------------------------------------------------------
     # Entry point
     # ---------------------------------------------------------------
@@ -568,7 +575,8 @@ class Console:
             cert: str = "", key_file: str = "",
             secret_key_path: str = "secret.key",
             allowed_ips: list[str] | None = None,
-            auto_update: bool = False) -> None:
+            auto_update: bool = False,
+            tls_auto: bool = False) -> None:
 
         self.bind_host   = bind_host
         self.lhost       = lhost
@@ -578,19 +586,32 @@ class Console:
         self.secret_key  = load_key(secret_key_path)
         self.allowed_ips = allowed_ips or []
         self.auto_update = auto_update
+        self._tls_auto   = tls_auto
 
         _print_banner()
 
         # ── startup info box ──────────────────────────────────────
         fp = key_fingerprint(self.secret_key)
-        tls_val  = _c(f"{cert}", _GREEN) if cert else _c("disabled", _YELLOW)
         upd_val  = _c("on (auto)", _GREEN) if auto_update else _c("notify only", _GREY)
         ip_val   = _c(", ".join(allowed_ips), _GREEN) if allowed_ips else _c("any  ⚠", _YELLOW)
+
+        if cert:
+            tls_val = _c(f"{cert}", _GREEN)
+            tls_fp_row = None
+        elif self._tls_auto_fp:
+            tls_val   = _c("auto  (self-signed)", _GREEN)
+            fp_short  = self._tls_auto_fp[:32]
+            tls_fp_row = _kv("TLS fingerprint", _c(fp_short, _DIM))
+        else:
+            tls_val   = _c("disabled", _YELLOW)
+            tls_fp_row = None
 
         print(_box_top("Server Configuration"))
         print(_box_row(_kv("LHOST",       _c(lhost, _CYAN))))
         print(_box_row(_kv("Port",        _c(str(port), _CYAN))))
         print(_box_row(_kv("TLS",         tls_val)))
+        if tls_fp_row:
+            print(_box_row(tls_fp_row))
         print(_box_row(_kv("IP allowlist",ip_val)))
         print(_box_row(_kv("Auto-update", upd_val)))
         print(_box_row(_kv("Key fprint",  _c(f"{fp[:8]} {fp[8:]}", _DIM))))
@@ -659,6 +680,16 @@ class Console:
             except ssl.SSLError as e:
                 print(err(f"TLS error: {e}"))
                 sys.exit(1)
+        elif self._tls_auto:
+            cert_path, key_path, fp = self._do_tls_auto(self.lhost)
+            if cert_path:
+                try:
+                    ssl_ctx = build_ssl_context(cert_path, key_path)
+                    print(ok(f"TLS auto-cert  →  {_c(cert_path, _CYAN)}"))
+                    print(info(f"TLS fingerprint  {_c(fp[:32], _DIM)}"))
+                except ssl.SSLError as e:
+                    print(err(f"TLS error loading auto-cert: {e}"))
+                    ssl_ctx = None
         else:
             print(warn("TLS not configured — traffic is unencrypted."))
 
@@ -674,6 +705,75 @@ class Console:
         print(ok(f"Listener ready on {_c(self.bind_host, _CYAN)}:{_c(str(self.port), _CYAN)}"))
         print(info(f"Agents should call back to  {_c(self.lhost, _WHITE)}:{_c(str(self.port), _WHITE)}"))
         print()
+
+    def _do_tls_auto(self, cn: str) -> tuple[str, str, str]:
+        """Generate (or reuse) the auto self-signed cert; store fingerprint."""
+        if self.cert and self.key_file:
+            # Manual cert takes precedence — no need to auto-generate
+            return self.cert, self.key_file, ""
+        try:
+            # Reuse existing cert if both files already present
+            if os.path.exists(_AUTO_CERT) and os.path.exists(_AUTO_KEY):
+                import hashlib as _hl
+                with open(_AUTO_CERT, "rb") as f:
+                    raw = f.read()
+                # Compute fingerprint from PEM bytes (good enough for display)
+                fp = _hl.sha256(raw).hexdigest()
+                self.cert = _AUTO_CERT
+                self.key_file = _AUTO_KEY
+                self._tls_auto_fp = fp
+                print(info(f"Reusing existing auto-cert  {_c(_AUTO_CERT, _CYAN)}"))
+                return _AUTO_CERT, _AUTO_KEY, fp
+            print(info("Generating self-signed TLS certificate…"))
+            cert_path, key_path, fp = generate_self_signed_cert(cn=cn)
+            self.cert = cert_path
+            self.key_file = key_path
+            self._tls_auto_fp = fp
+            return cert_path, key_path, fp
+        except RuntimeError as e:
+            print(err(str(e)))
+            return "", "", ""
+
+    def _cmd_tls(self, args: list[str]) -> None:
+        """Handle  tls auto | tls regen | tls status"""
+        sub = args[0].lower() if args else "status"
+        if sub == "auto":
+            self._tls_auto = True
+            cert_path, key_path, fp = self._do_tls_auto(self.lhost or "megaploit")
+            if cert_path:
+                try:
+                    ssl_ctx = build_ssl_context(cert_path, key_path)
+                    if self._listener:
+                        self._listener.ssl_context = ssl_ctx
+                    print(ok(f"TLS auto-cert active  →  {_c(cert_path, _CYAN)}"))
+                    fp_short = fp[:32]
+                    print(info(f"SHA-256 fingerprint  {_c(fp_short, _DIM)}"))
+                except ssl.SSLError as e:
+                    print(err(f"TLS error: {e}"))
+        elif sub == "regen":
+            # Force regenerate
+            for p in (_AUTO_CERT, _AUTO_KEY):
+                try:
+                    os.remove(p)
+                except FileNotFoundError:
+                    pass
+            self._tls_auto_fp = ""
+            self._tls_auto = True
+            cert_path, key_path, fp = self._do_tls_auto(self.lhost or "megaploit")
+            if cert_path:
+                print(ok(f"New cert generated  →  {_c(cert_path, _CYAN)}"))
+                print(info(f"SHA-256  {_c(fp[:32], _DIM)}"))
+        elif sub == "status":
+            if self.cert:
+                mode = "auto" if self._tls_auto else "manual"
+                fp   = self._tls_auto_fp[:32] if self._tls_auto_fp else "(n/a)"
+                print(ok(f"TLS {mode}  cert={_c(self.cert, _CYAN)}"))
+                print(info(f"Fingerprint  {_c(fp, _DIM)}"))
+            else:
+                print(warn("TLS is disabled  — run  tls auto  to enable"))
+        else:
+            print(err(f"Unknown tls sub-command: {sub}"))
+            print(info("Usage:  tls auto  |  tls regen  |  tls status"))
 
     def _on_new_session(self, session: Session) -> None:
         with self._sessions_lock:
@@ -781,6 +881,8 @@ class Console:
                 self._cmd_use(args)
             elif cmd == "generate":
                 self._cmd_generate(args)
+            elif cmd == "tls":
+                self._cmd_tls(args)
             elif cmd == "set":
                 self._cmd_set(args)
             elif cmd in ("setoption", "setopt"):
@@ -1010,6 +1112,12 @@ class Console:
             print(err("Set LHOST and PORT first:  set lhost <ip>  /  set port <port>"))
             return
         use_tls = "--tls" in args or "-t" in args
+        if use_tls and not self.cert:
+            # Auto-generate cert so the agent has a TLS server to connect to
+            self._tls_auto = True
+            cert_path, key_path, fp = self._do_tls_auto(self.lhost)
+            if cert_path:
+                print(ok(f"TLS cert ready  →  {_c(cert_path, _CYAN)}"))
         _patch_agent(self.lhost, self.port, use_tls=use_tls)
         if "--compile" in args or "-c" in args:
             try:
@@ -1077,7 +1185,10 @@ class Console:
             _cmd_row("sessions",                      "List active sessions (tag + OS columns)"),
             _cmd_row("use <id>",                      "Interact with a session"),
             _cmd_row("broadcast <cmd>",               "Run a shell cmd on ALL active sessions"),
-            _cmd_row("generate [-c] [--tls]",         "Patch agent.py  (-c compile, --tls enable TLS)"),
+            _cmd_row("generate [-c] [--tls]",         "Patch agent.py  (-c compile, --tls auto-cert + TLS)"),
+            _cmd_row("tls auto",                      "Generate self-signed cert and enable TLS now"),
+            _cmd_row("tls regen",                     "Force-regenerate the auto self-signed cert"),
+            _cmd_row("tls status",                    "Show current TLS mode and fingerprint"),
             _cmd_row("set <option> <value>",          "Set lhost / port / cert / key / auto_update"),
             "",
             _section("Toolbox"),

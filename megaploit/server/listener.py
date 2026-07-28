@@ -22,10 +22,13 @@ Hardening layers (applied in order on every inbound connection)
 from __future__ import annotations
 
 import collections
+import datetime
+import hashlib
 import logging
 import os
 import socket
 import ssl
+import subprocess
 import threading
 import time
 from typing import Callable
@@ -258,6 +261,99 @@ class Listener:
 
         session = Session(conn=conn, ip=ip, port=src_port, id=sid)
         self.on_session(session)
+
+
+# ---------------------------------------------------------------------------
+# Auto-cert generation
+# ---------------------------------------------------------------------------
+
+# Canonical paths for auto-generated TLS credentials
+_AUTO_CERT = os.path.join("loot", "tls", "megaploit.crt")
+_AUTO_KEY  = os.path.join("loot", "tls", "megaploit.key")
+
+
+def generate_self_signed_cert(
+    cert_path: str = _AUTO_CERT,
+    key_path:  str = _AUTO_KEY,
+    cn:        str = "megaploit",
+) -> tuple[str, str, str]:
+    """Generate a self-signed RSA-2048 certificate valid for 365 days.
+
+    Tries the ``cryptography`` package first; falls back to ``openssl req``
+    (subprocess).  Returns ``(cert_path, key_path, sha256_fingerprint_hex)``.
+    The fingerprint is the full 64-char hex digest of the DER-encoded cert.
+    """
+    os.makedirs(os.path.dirname(cert_path), exist_ok=True)
+
+    # ── Try cryptography package ──────────────────────────────────────────
+    try:
+        from cryptography import x509
+        from cryptography.x509.oid import NameOID
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+
+        subject = issuer = x509.Name([
+            x509.NameAttribute(NameOID.COMMON_NAME, cn),
+        ])
+        now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(subject)
+            .issuer_name(issuer)
+            .public_key(key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(now)
+            .not_valid_after(now + datetime.timedelta(days=365))
+            .add_extension(
+                x509.BasicConstraints(ca=True, path_length=None),
+                critical=True,
+            )
+            .sign(key, hashes.SHA256())
+        )
+
+        cert_pem = cert.public_bytes(serialization.Encoding.PEM)
+        key_pem  = key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+
+        with open(cert_path, "wb") as f:
+            f.write(cert_pem)
+        with open(key_path, "wb") as f:
+            f.write(key_pem)
+
+        # Fingerprint: SHA-256 of the DER form
+        der = cert.public_bytes(serialization.Encoding.DER)
+        fp  = hashlib.sha256(der).hexdigest()
+        return cert_path, key_path, fp
+
+    except ImportError:
+        pass
+
+    # ── Fallback: openssl req ────────────────────────────────────────────
+    subj = f"/CN={cn}"
+    cmd  = [
+        "openssl", "req", "-x509", "-newkey", "rsa:2048",
+        "-keyout", key_path, "-out", cert_path,
+        "-days", "365", "-nodes", "-subj", subj,
+    ]
+    try:
+        subprocess.run(cmd, check=True, capture_output=True)
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+        raise RuntimeError(
+            "TLS auto-cert failed: neither 'cryptography' package nor 'openssl' "
+            "binary is available.  Install via:  pip install cryptography\n"
+            f"  (original error: {exc})"
+        ) from exc
+
+    # Fingerprint via DER conversion
+    der_cmd = ["openssl", "x509", "-in", cert_path, "-outform", "DER"]
+    der = subprocess.run(der_cmd, check=True, capture_output=True).stdout
+    fp  = hashlib.sha256(der).hexdigest()
+    return cert_path, key_path, fp
 
 
 # ---------------------------------------------------------------------------
