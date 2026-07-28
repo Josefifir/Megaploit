@@ -5,6 +5,7 @@ server.py — Megaploit C2 operator console.
 Usage
 -----
   python server.py -lh <your-ip> -p <port>
+  python server.py -lh <your-ip> -p <port> --tls
   python server.py -lh <your-ip> -p <port> --cert cert.pem --key key.pem
   python server.py -lh <your-ip> -p <port> --allow-ip 10.0.0.5 --allow-ip 10.0.0.6
 
@@ -13,8 +14,9 @@ Options
   -lh, --lhost       IP address the agent will connect back to (required)
   -p,  --port        TCP port (required)
   -rh, --rhost       IP to bind the listener socket (default: 0.0.0.0)
-  --cert             SSL certificate file (PEM)  — enables TLS 1.2+
-  --key              SSL private key file (PEM)  — enables TLS 1.2+
+  --tls              Auto-generate a self-signed cert and enable TLS 1.2+
+  --cert             SSL certificate file (PEM)  — enables TLS 1.2+ (manual)
+  --key              SSL private key file (PEM)  — enables TLS 1.2+ (manual)
   --secret           Path to secret.key (default: secret.key)
   --allow-ip         Allowlisted source IP; repeat for multiple.
                      If omitted, all IPs may attempt authentication.
@@ -48,6 +50,10 @@ def _parse() -> argparse.Namespace:
                    action="append", default=[],
                    help="Allowlisted source IP (repeat for multiple). "
                         "Omit to allow all IPs.")
+    p.add_argument("--tls",             dest="tls_auto",
+                   action="store_true", default=False,
+                   help="Auto-generate a self-signed cert and enable TLS 1.2+. "
+                        "Stored in loot/tls/. Requires 'cryptography' or 'openssl'.")
     p.add_argument("--auto-update",     dest="auto_update",
                    action="store_true", default=False,
                    help="Automatically apply toolbox tool updates in the background "
@@ -68,6 +74,7 @@ def main() -> None:
             secret_key_path=args.secret,
             allowed_ips=args.allow_ips or None,
             auto_update=args.auto_update,
+            tls_auto=args.tls_auto,
         )
     except KeyboardInterrupt:
         sys.exit(0)
