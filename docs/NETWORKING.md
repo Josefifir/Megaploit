@@ -32,21 +32,21 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                         OPERATOR MACHINE                                  │
-│                                                                           │
+│                         OPERATOR MACHINE                                 │
+│                                                                          │
 │   CLI console  ──►  server/commands.py  ──►  core/protocol.send_msg()    │
-│                                                      │                    │
+│                                                      │                   │
 │                      server/listener.py  ◄───────────┘                   │
-│                      (accept loop,                                        │
-│                       hardening pipeline,                                 │
-│                       Session objects)                                    │
+│                      (accept loop,                                       │
+│                       hardening pipeline,                                │
+│                       Session objects)                                   │
 └─────────────────────────────────┬────────────────────────────────────────┘
                                   │  TCP  (optionally TLS)
                                   │  optionally WebSocket-framed
                                   │
 ┌─────────────────────────────────▼────────────────────────────────────────┐
-│                           AGENT MACHINE                                   │
-│                                                                           │
+│                           AGENT MACHINE                                  │
+│                                                                          │
 │   agent/connection.py  ──►  core/protocol.recv_msg()                     │
 │   agent/handlers.py    ◄──  dispatches commands, sends responses         │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -356,9 +356,9 @@ Frame payload:
 
 ```
 Server (operator)           Agent
-       │                      │
+       │                       │
        │── "download foo.bin"─►│    (send_msg — JSON string)
-       │                      │    agent reads file, prepares to send
+       │                       │    agent reads file, prepares to send
        │◄── "FILE_OK" ─────────│    (send_msg — JSON string signal)
        │◄── <framed file> ─────│    (send_file — raw bytes frame)
        │  recv_file() writes   │
@@ -409,7 +409,7 @@ while True:
 
 ```
 Agent                                   Server
-  │── GET /ws HTTP/1.1                 ──►│
+  │── GET /ws HTTP/1.1                  ──►│
   │   Upgrade: websocket                   │
   │   Sec-WebSocket-Key: <base64-nonce>    │
   │                                        │
