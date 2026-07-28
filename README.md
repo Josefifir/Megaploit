@@ -6,8 +6,8 @@
 > You must have explicit written permission before using this tool against any system.  
 > Misuse is illegal and unethical. The authors accept no liability.
 
-[![CI](https://github.com/JosephFrankFir/Megaploit/actions/workflows/ci.yml/badge.svg)](https://github.com/JosephFrankFir/Megaploit/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/JosephFrankFir/Megaploit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/JosephFrankFir/Megaploit/actions/workflows/codeql-analysis.yml)
+[![CI](https://github.com/Josefifir/Megaploit/actions/workflows/ci.yml/badge.svg)](https://github.com/JosephFrankFir/Megaploit/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Josefifir/Megaploit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Josefifir/Megaploit/actions/workflows/codeql-analysis.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
 [![License](https://img.shields.io/github/license/JosephFrankFir/Megaploit)](LICENSE)
 
