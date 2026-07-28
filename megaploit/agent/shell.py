@@ -11,6 +11,7 @@ import socket
 
 from megaploit.core.protocol import send_msg, recv_msg
 from megaploit.agent.handlers import handle
+import megaploit.agent.meterp  # noqa: F401 — registers advanced handlers on import
 
 
 def run_shell(conn: socket.socket) -> None:
