@@ -1,0 +1,35 @@
+/* ── Megaploit docs — extra styles ── */
+
+:root {
+  --md-primary-fg-color: #7b1fa2;
+  --md-accent-fg-color:  #ab47bc;
+}
+
+/* Admonition: warning gets a red left border for dangerous commands */
+.md-typeset .admonition.danger,
+.md-typeset details.danger {
+  border-color: #cf6679;
+}
+
+/* Code blocks: slightly tighter line-height */
+.md-typeset code {
+  font-size: 0.82em;
+}
+
+/* Tables: zebra striping */
+.md-typeset table:not([class]) tr:nth-child(even) {
+  background-color: var(--md-default-bg-color--lighter, rgba(0,0,0,.03));
+}
+
+/* Highlight the "NEW v3" badge inline in headings */
+.md-typeset h3 em,
+.md-typeset h4 em {
+  font-style: normal;
+  font-size: 0.72em;
+  background: var(--md-accent-fg-color);
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-left: 6px;
+}

@@ -1,0 +1,2260 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Professional C2 Framework & Security Research Toolbox">
+      
+      
+      
+        <link rel="canonical" href="https://josefifir.github.io/Megaploit/CLI_REFERENCE/">
+      
+      
+        <link rel="prev" href="../ARCHITECTURE/">
+      
+      
+        <link rel="next" href="../MODULE_SYSTEM/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CLI Reference - Megaploit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#megaploit-cli-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Megaploit" class="md-header__button md-logo" aria-label="Megaploit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Megaploit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLI Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Josefifir/Megaploit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Josefifir/Megaploit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../ARCHITECTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../MODULE_SYSTEM/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Module System
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../PAYLOAD_BUILDER/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Payload Builder
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../PIPELINE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Pipeline
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../C2_PROFILE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Malleable C2 Profile
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../WEB_DASHBOARD/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Web Dashboard
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../NETWORKING/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Networking
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../C_PLUGIN_DEVELOPMENT/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  C Plugin Development
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Megaploit" class="md-nav__button md-logo" aria-label="Megaploit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Megaploit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Josefifir/Megaploit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Josefifir/Megaploit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#global-context-megaploit-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Context (megaploit [N] »)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Global Context (megaploit [N] »)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connection-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connection &amp; Sessions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agent-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#payload-builder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Payload Builder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#staged-delivery-new-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Staged Delivery — NEW v3
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-exploitation-pipeline-new-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-Exploitation Pipeline — NEW v3
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autorunscript" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AutoRunScript
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#web-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Dashboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-operator-rpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Operator RPC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toolbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Toolbox
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#engagement-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engagement &amp; Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#session-context-megaploit-sessionn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Context (megaploit session(N) »)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Session Context (megaploit session(N) »)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filesystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filesystem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Process &amp; System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#screen-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Screen &amp; Media
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gui-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GUI &amp; Interaction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#privilege-escalation-evasion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Privilege Escalation &amp; Evasion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keylogger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keylogger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pivoting-networking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pivoting &amp; Networking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toolbox-in-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Toolbox (In-Session)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-context-options-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Context Options Table
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tab-completion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tab Completion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../MODULE_SYSTEM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAYLOAD_BUILDER/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payload Builder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../C2_PROFILE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Malleable C2 Profile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WEB_DASHBOARD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NETWORKING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../C_PLUGIN_DEVELOPMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C Plugin Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="megaploit-cli-reference">Megaploit CLI Reference<a class="headerlink" href="#megaploit-cli-reference" title="Permanent link">&para;</a></h1>
+<p>Complete reference for all commands available in the Megaploit console.</p>
+<hr />
+<h2 id="global-context-megaploit-n">Global Context (<code>megaploit [N] »</code>)<a class="headerlink" href="#global-context-megaploit-n" title="Permanent link">&para;</a></h2>
+<h3 id="connection-sessions">Connection &amp; Sessions<a class="headerlink" href="#connection-sessions" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sessions</code></td>
+<td>List all active sessions with ID, IP:Port, OS, hostname, username, tag, uptime</td>
+</tr>
+<tr>
+<td><code>use &lt;session_id&gt;</code></td>
+<td>Enter session interaction loop for session <code>&lt;id&gt;</code></td>
+</tr>
+<tr>
+<td><code>use &lt;module/path&gt;</code></td>
+<td>Load a module (e.g. <code>use auxiliary/scanner/tcp_port</code>)</td>
+</tr>
+<tr>
+<td><code>broadcast &lt;cmd&gt;</code></td>
+<td>Run a shell command on ALL active sessions simultaneously</td>
+</tr>
+</tbody>
+</table>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>set lhost &lt;ip&gt;</code></td>
+<td>Callback IP for agents</td>
+</tr>
+<tr>
+<td><code>set port &lt;port&gt;</code></td>
+<td>Callback port</td>
+</tr>
+<tr>
+<td><code>set cert &lt;file&gt;</code></td>
+<td>TLS certificate PEM file</td>
+</tr>
+<tr>
+<td><code>set key &lt;file&gt;</code></td>
+<td>TLS private key PEM file</td>
+</tr>
+<tr>
+<td><code>set auto_update on\|off</code></td>
+<td>Toggle background tool auto-update</td>
+</tr>
+</tbody>
+</table>
+<h3 id="agent-generation">Agent Generation<a class="headerlink" href="#agent-generation" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>generate</code></td>
+<td>Patch <code>connection.py</code> with current LHOST/PORT</td>
+</tr>
+<tr>
+<td><code>generate --tls</code></td>
+<td>Patch with TLS enabled</td>
+</tr>
+<tr>
+<td><code>generate -c</code></td>
+<td>Patch + byte-compile <code>agent.py</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="module-system">Module System<a class="headerlink" href="#module-system" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>show modules</code></td>
+<td>Display all loaded modules</td>
+</tr>
+<tr>
+<td><code>show modules &lt;query&gt;</code></td>
+<td>Search modules by name/description</td>
+</tr>
+<tr>
+<td><code>use &lt;module/path&gt;</code></td>
+<td>Load and display module options</td>
+</tr>
+<tr>
+<td><code>setopt &lt;OPT&gt; &lt;val&gt;</code></td>
+<td>Set option on active module</td>
+</tr>
+<tr>
+<td><code>setoption &lt;OPT&gt; &lt;val&gt;</code></td>
+<td>Alias for <code>setopt</code></td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td>Print active module options table</td>
+</tr>
+<tr>
+<td><code>run</code></td>
+<td>Execute active module (Ctrl-C to interrupt)</td>
+</tr>
+<tr>
+<td><code>check</code></td>
+<td>Run module pre-flight check (no state change)</td>
+</tr>
+<tr>
+<td><code>info</code></td>
+<td>Show info for active module</td>
+</tr>
+<tr>
+<td><code>info &lt;module/path&gt;</code></td>
+<td>Show info for named module</td>
+</tr>
+<tr>
+<td><code>back</code></td>
+<td>Clear active module (return to global context)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="payload-builder">Payload Builder<a class="headerlink" href="#payload-builder" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>payload &lt;format&gt; [options]
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Formats:
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  py            Pure Python source agent
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  ps1           PowerShell dropper
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  hta           HTML Application dropper
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  vba           VBA macro dropper
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  sh            Bash/sh dropper
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  bat           Windows batch dropper
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  raw           Same as py (for piping)
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>  exe           PyInstaller Windows EXE (requires pyinstaller)
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  elf           PyInstaller Linux ELF (requires pyinstaller)
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>  go_exe        Go agent compiled for Windows (requires go)  ← NEW v3
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  go_elf        Go agent compiled for Linux/macOS (requires go)  ← NEW v3
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  oneliner_py   Single Python one-liner (gzip+base64)
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>  oneliner_ps1  Single PowerShell one-liner (gzip+base64)
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>Options:
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>  --out &lt;file&gt;       Write to file instead of printing
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>  --tls              Agent uses TLS
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>  --encoder &lt;name&gt;   Apply encoder (can be repeated)
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>  --upx              UPX-pack binary (exe/elf only; requires upx on PATH)
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>Encoders:
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>  xor_rolling    XOR with rolling 32-byte key (key prepended to output)
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>  rc4            RC4 stream cipher (16-byte key prepended)
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>  b64gzip        Gzip compress → base64 encode
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>  rev            Reverse byte sequence
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>  zlib_b64       Zlib compress → base64 encode
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>  rot13_src      ROT-13 printable ASCII chars
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>  null_pad       Insert null byte after every real byte
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>  comment_spam   Insert random inline comments (~40% of lines)
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>  varname_rand   Randomise short Python variable names
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>  ps1_concat     PowerShell string concat obfuscation
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>Examples:
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>  payload ps1 --out agent.ps1
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>  payload exe --out agent.exe --upx
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>  payload go_exe --out agent.exe
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>  payload go_elf --out agent_linux
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>  payload py --encoder comment_spam --encoder varname_rand --out obf.py
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>  payload oneliner_py
+</span></code></pre></div>
+<h3 id="staged-delivery-new-v3">Staged Delivery — NEW v3<a class="headerlink" href="#staged-delivery-new-v3" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>stage0 generate [--minimal] [--out &lt;file&gt;] [--port N] [--start]
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>stage0 status
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>stage0 stop
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>Options:
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  --minimal      Compact single-file dropper (no threading, shorter names)
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  --out / -o     Write to file (default: print to terminal)
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  --port / -p    Staging server port (default: main_port + 1)
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  --start        Also launch StagingServer in background
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>Examples:
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>  stage0 generate --out dropper.py
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>  stage0 generate --minimal --out macro_dropper.py
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>  stage0 generate --start                          # generate + launch server
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>  stage0 generate --start --port 4445 --out d.py
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>  stage0 status
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>  stage0 stop
+</span></code></pre></div>
+<h3 id="post-exploitation-pipeline-new-v3">Post-Exploitation Pipeline — NEW v3<a class="headerlink" href="#post-exploitation-pipeline-new-v3" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pipeline status        Show active + available profiles
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pipeline list          List all profiles with status indicators
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>pipeline enable &lt;p&gt;    Enable a profile (active on next session)
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>pipeline disable &lt;p&gt;   Disable a profile
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>pipeline reload        Reload AutoRunScript config from disk
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>Profiles:
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>  basic     sysinfo, whoami, pwd, env
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>  creds     hashdump, wifi_passwords, browser_creds, ssh_harvest, cred_vault
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>  recon     ps, installed_software, scheduled_tasks, users, os_info
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>  network   arp, netstat, ifconfig, hosts_file
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>  full      All of the above
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>Examples:
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>  pipeline enable creds
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>  pipeline enable full
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>  pipeline disable creds
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>  pipeline status
+</span></code></pre></div>
+<h3 id="operations">Operations<a class="headerlink" href="#operations" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>jobs list</code></td>
+<td>List background jobs (ID, name, status, started)</td>
+</tr>
+<tr>
+<td><code>jobs kill &lt;id&gt;</code></td>
+<td>Send stop signal to a job</td>
+</tr>
+<tr>
+<td><code>creds show</code></td>
+<td>Display credential store</td>
+</tr>
+<tr>
+<td><code>creds search &lt;query&gt;</code></td>
+<td>Search credentials by host/username/type</td>
+</tr>
+<tr>
+<td><code>creds export &lt;file&gt;</code></td>
+<td>Export credentials to JSON file</td>
+</tr>
+<tr>
+<td><code>creds clear</code></td>
+<td>Clear all credentials (requires YES confirmation)</td>
+</tr>
+<tr>
+<td><code>report html [output]</code></td>
+<td>Generate HTML engagement report</td>
+</tr>
+<tr>
+<td><code>report json [output]</code></td>
+<td>Generate JSON engagement report</td>
+</tr>
+</tbody>
+</table>
+<h3 id="autorunscript">AutoRunScript<a class="headerlink" href="#autorunscript" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>autorun show</code></td>
+<td>Display current AutoRunScript config</td>
+</tr>
+<tr>
+<td><code>autorun reload</code></td>
+<td>Reload config from <code>~/.megaploit_autorun.json</code></td>
+</tr>
+<tr>
+<td><code>autorun save-default</code></td>
+<td>Write starter template to config file</td>
+</tr>
+<tr>
+<td><code>autorun test &lt;session_id&gt;</code></td>
+<td>Preview which commands would run for a session</td>
+</tr>
+</tbody>
+</table>
+<h3 id="web-dashboard">Web Dashboard<a class="headerlink" href="#web-dashboard" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>web start</code></td>
+<td>Start Flask dashboard on <code>127.0.0.1:8080</code></td>
+</tr>
+<tr>
+<td><code>web start --port N</code></td>
+<td>Start on custom port</td>
+</tr>
+<tr>
+<td><code>web start --host H</code></td>
+<td>Bind to custom host</td>
+</tr>
+<tr>
+<td><code>web stop</code></td>
+<td>Stop the dashboard</td>
+</tr>
+<tr>
+<td><code>web status</code></td>
+<td>Check if dashboard is running</td>
+</tr>
+</tbody>
+</table>
+<h3 id="multi-operator-rpc">Multi-Operator RPC<a class="headerlink" href="#multi-operator-rpc" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rpc start</code></td>
+<td>Start JSON-RPC server on <code>127.0.0.1:7777</code></td>
+</tr>
+<tr>
+<td><code>rpc start --port N</code></td>
+<td>Start on custom port</td>
+</tr>
+<tr>
+<td><code>rpc stop</code></td>
+<td>Stop RPC server</td>
+</tr>
+<tr>
+<td><code>rpc status</code></td>
+<td>Check if running + connected operator count</td>
+</tr>
+<tr>
+<td><code>rpc operators</code></td>
+<td>List connected operators</td>
+</tr>
+</tbody>
+</table>
+<h3 id="toolbox">Toolbox<a class="headerlink" href="#toolbox" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>toolbox install &lt;url&gt; &lt;name&gt; [desc] [--tags t1,t2]
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>toolbox catalogue [query]           Browse 203-tool catalogue
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>toolbox catalogue install &lt;name&gt;    Install from catalogue
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>toolbox list                        List installed tools
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>toolbox search &lt;query&gt;              Search by name/tag/description
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>toolbox info &lt;name&gt;                 Show tool details
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>toolbox update &lt;name&gt;               Pull latest + rebuild
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>toolbox update-all                  Update all installed tools
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>toolbox check-updates               Check for updates without applying
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>toolbox rebuild &lt;name&gt;              Re-build without git pull
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>toolbox remove &lt;name&gt;               Uninstall
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>toolbox set-entry &lt;name&gt; &lt;path&gt;     Override entry-point
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>toolbox healthcheck [name]          Verify tool is runnable
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>toolbox dockerfile &lt;name&gt;           Generate Dockerfile
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>toolbox audit &lt;name&gt;                Security audit
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>toolbox plan &lt;name|url&gt;             Dry-run install plan
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>toolbox workspace list              List named workspaces
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>toolbox workspace new &lt;name&gt;        Create new workspace
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>toolbox workspace install-all &lt;ws&gt;  Install all tools in workspace
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>toolbox workspace export &lt;ws&gt;       Export workspace to JSON
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>toolbox config &lt;name&gt;               Show per-tool runtime config
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>toolbox config &lt;name&gt; set &lt;k&gt; &lt;v&gt;   Set config value
+</span></code></pre></div>
+<h3 id="plugins">Plugins<a class="headerlink" href="#plugins" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plugins</code> / <code>plugins list</code></td>
+<td>List all loaded plugins</td>
+</tr>
+<tr>
+<td><code>plugins reload</code></td>
+<td>Re-scan <code>plugins/</code> directory</td>
+</tr>
+<tr>
+<td><code>plugins info &lt;name&gt;</code></td>
+<td>Full plugin details</td>
+</tr>
+<tr>
+<td><code>plugins enable &lt;name&gt;</code></td>
+<td>Enable a disabled plugin</td>
+</tr>
+<tr>
+<td><code>plugins disable &lt;name&gt;</code></td>
+<td>Disable a plugin (persisted)</td>
+</tr>
+<tr>
+<td><code>plugins load &lt;path\|url&gt;</code></td>
+<td>Load from file path or URL</td>
+</tr>
+<tr>
+<td><code>plugins watcher on\|off</code></td>
+<td>Toggle hot-reload file watcher</td>
+</tr>
+<tr>
+<td><code>plugins deps install</code></td>
+<td>pip-install missing plugin dependencies</td>
+</tr>
+</tbody>
+</table>
+<h3 id="engagement-operations">Engagement &amp; Operations<a class="headerlink" href="#engagement-operations" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>engagement name &lt;n&gt;</code></td>
+<td>Set engagement name</td>
+</tr>
+<tr>
+<td><code>engagement desc &lt;d&gt;</code></td>
+<td>Set engagement description</td>
+</tr>
+<tr>
+<td><code>engagement show</code></td>
+<td>Display current engagement info</td>
+</tr>
+<tr>
+<td><code>loot browse</code></td>
+<td>Browse loot directory tree</td>
+</tr>
+<tr>
+<td><code>loot export &lt;dir&gt;</code></td>
+<td>Export loot to directory</td>
+</tr>
+<tr>
+<td><code>loot clear</code></td>
+<td>Clear loot (requires YES)</td>
+</tr>
+<tr>
+<td><code>history [N]</code></td>
+<td>Show last N commands (default 20)</td>
+</tr>
+<tr>
+<td><code>history search &lt;query&gt;</code></td>
+<td>Search command history</td>
+</tr>
+<tr>
+<td><code>history clear</code></td>
+<td>Clear history</td>
+</tr>
+<tr>
+<td><code>alias &lt;name&gt; &lt;cmd&gt;</code></td>
+<td>Create command alias</td>
+</tr>
+<tr>
+<td><code>unalias &lt;name&gt;</code></td>
+<td>Remove alias</td>
+</tr>
+<tr>
+<td><code>aliases</code></td>
+<td>List all aliases</td>
+</tr>
+<tr>
+<td><code>env_probe [name]</code></td>
+<td>Probe operator toolchain</td>
+</tr>
+<tr>
+<td><code>workspace &lt;sub&gt;</code></td>
+<td>Named tool groups</td>
+</tr>
+<tr>
+<td><code>whatsnew</code> / <code>changelog</code></td>
+<td>Show version changelog</td>
+</tr>
+<tr>
+<td><code>clear</code></td>
+<td>Clear terminal</td>
+</tr>
+<tr>
+<td><code>exit</code></td>
+<td>Shutdown and exit</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="session-context-megaploit-sessionn">Session Context (<code>megaploit session(N) »</code>)<a class="headerlink" href="#session-context-megaploit-sessionn" title="Permanent link">&para;</a></h2>
+<h3 id="filesystem">Filesystem<a class="headerlink" href="#filesystem" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ls</code></td>
+<td><code>ls [path]</code></td>
+<td>List directory (default: cwd)</td>
+</tr>
+<tr>
+<td><code>cat</code></td>
+<td><code>cat &lt;file&gt;</code></td>
+<td>Read file contents</td>
+</tr>
+<tr>
+<td><code>find_files</code></td>
+<td><code>find_files &lt;path&gt; &lt;pattern&gt;</code></td>
+<td>Recursive file search</td>
+</tr>
+<tr>
+<td><code>find_writable</code></td>
+<td><code>find_writable [path]</code></td>
+<td>World-writable files</td>
+</tr>
+<tr>
+<td><code>find_suid</code></td>
+<td><code>find_suid [path]</code></td>
+<td>SUID binaries</td>
+</tr>
+<tr>
+<td><code>file_hash</code></td>
+<td><code>file_hash &lt;file&gt;</code></td>
+<td>SHA-256 hash</td>
+</tr>
+<tr>
+<td><code>tail</code></td>
+<td><code>tail &lt;file&gt; [n]</code></td>
+<td>Last N lines</td>
+</tr>
+<tr>
+<td><code>write_file</code></td>
+<td><code>write_file &lt;file&gt; &lt;content&gt;</code></td>
+<td>Write to file</td>
+</tr>
+<tr>
+<td><code>mkdir</code></td>
+<td><code>mkdir &lt;path&gt;</code></td>
+<td>Create directory</td>
+</tr>
+<tr>
+<td><code>rm</code></td>
+<td><code>rm &lt;path&gt;</code></td>
+<td>Remove file/directory</td>
+</tr>
+<tr>
+<td><code>chmod</code></td>
+<td><code>chmod &lt;mode&gt; &lt;path&gt;</code></td>
+<td>Change permissions</td>
+</tr>
+<tr>
+<td><code>cd</code></td>
+<td><code>cd &lt;dir&gt;</code></td>
+<td>Change working directory</td>
+</tr>
+<tr>
+<td><code>search</code></td>
+<td><code>search &lt;path&gt; &lt;keyword&gt;</code></td>
+<td>Recursive grep</td>
+</tr>
+<tr>
+<td><code>upload</code></td>
+<td><code>upload &lt;local_file&gt;</code></td>
+<td>Push file to target</td>
+</tr>
+<tr>
+<td><code>download</code></td>
+<td><code>download &lt;remote_file&gt;</code></td>
+<td>Pull file to loot</td>
+</tr>
+<tr>
+<td><code>zip_download</code></td>
+<td><code>zip_download &lt;path&gt;</code></td>
+<td>Zip + pull</td>
+</tr>
+</tbody>
+</table>
+<h3 id="process-system">Process &amp; System<a class="headerlink" href="#process-system" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sysinfo</code></td>
+<td>Full system information</td>
+</tr>
+<tr>
+<td><code>ps</code></td>
+<td>Process list</td>
+</tr>
+<tr>
+<td><code>kill &lt;pid&gt;</code></td>
+<td>Kill process</td>
+</tr>
+<tr>
+<td><code>netstat</code></td>
+<td>Active connections</td>
+</tr>
+<tr>
+<td><code>arp</code></td>
+<td>ARP table</td>
+</tr>
+<tr>
+<td><code>routes</code></td>
+<td>Routing table</td>
+</tr>
+<tr>
+<td><code>ifconfig</code></td>
+<td>Network interfaces</td>
+</tr>
+<tr>
+<td><code>env</code></td>
+<td>Environment variables</td>
+</tr>
+<tr>
+<td><code>installed_software</code></td>
+<td>Installed applications</td>
+</tr>
+<tr>
+<td><code>active_windows</code></td>
+<td>Open window titles</td>
+</tr>
+<tr>
+<td><code>scheduled_tasks</code></td>
+<td>Scheduled tasks / cron</td>
+</tr>
+<tr>
+<td><code>services</code></td>
+<td>Running services</td>
+</tr>
+<tr>
+<td><code>users</code></td>
+<td>User accounts</td>
+</tr>
+<tr>
+<td><code>logged_in</code></td>
+<td>Logged-in users</td>
+</tr>
+<tr>
+<td><code>startup_items</code></td>
+<td>Startup programs</td>
+</tr>
+<tr>
+<td><code>os_info</code></td>
+<td>Detailed OS info</td>
+</tr>
+<tr>
+<td><code>dns_query &lt;host&gt;</code></td>
+<td>DNS lookup from target</td>
+</tr>
+</tbody>
+</table>
+<h3 id="screen-media">Screen &amp; Media<a class="headerlink" href="#screen-media" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>screenshot</code></td>
+<td><code>screenshot</code></td>
+<td>JPEG screenshot</td>
+</tr>
+<tr>
+<td><code>screenshot_timelapse</code></td>
+<td><code>screenshot_timelapse &lt;n&gt; &lt;interval&gt;</code></td>
+<td>N frames</td>
+</tr>
+<tr>
+<td><code>screenshot_region</code></td>
+<td><code>screenshot_region &lt;x&gt; &lt;y&gt; &lt;w&gt; &lt;h&gt;</code></td>
+<td>Region capture</td>
+</tr>
+<tr>
+<td><code>screenrecord</code></td>
+<td><code>screenrecord &lt;secs&gt; [fps] [width]</code></td>
+<td>MP4 recording</td>
+</tr>
+<tr>
+<td><code>record</code></td>
+<td><code>record &lt;secs&gt;</code></td>
+<td>Microphone WAV</td>
+</tr>
+<tr>
+<td><code>mic_level</code></td>
+<td><code>mic_level</code></td>
+<td>Peak dB</td>
+</tr>
+<tr>
+<td><code>screen_stream</code></td>
+<td><code>screen_stream on\|off</code></td>
+<td>MJPEG :5000</td>
+</tr>
+<tr>
+<td><code>webcam</code></td>
+<td><code>webcam on\|off</code></td>
+<td>MJPEG :5001</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gui-interaction">GUI &amp; Interaction<a class="headerlink" href="#gui-interaction" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msgbox</code></td>
+<td><code>msgbox &lt;title&gt; &lt;msg&gt;</code></td>
+<td>Dialog box</td>
+</tr>
+<tr>
+<td><code>mouse_move</code></td>
+<td><code>mouse_move &lt;x&gt; &lt;y&gt; [click]</code></td>
+<td>Move/click mouse</td>
+</tr>
+<tr>
+<td><code>type_keys</code></td>
+<td><code>type_keys text &lt;text&gt;</code></td>
+<td>Input text or hotkey</td>
+</tr>
+<tr>
+<td><code>notify</code></td>
+<td><code>notify &lt;title&gt; &lt;msg&gt;</code></td>
+<td>OS notification</td>
+</tr>
+<tr>
+<td><code>open_url</code></td>
+<td><code>open_url &lt;url&gt;</code></td>
+<td>Open in browser</td>
+</tr>
+<tr>
+<td><code>play_sound</code></td>
+<td><code>play_sound &lt;file&gt;</code></td>
+<td>Play audio</td>
+</tr>
+<tr>
+<td><code>set_wallpaper</code></td>
+<td><code>set_wallpaper &lt;file&gt;</code></td>
+<td>Set wallpaper</td>
+</tr>
+<tr>
+<td><code>clip_watch</code></td>
+<td><code>clip_watch</code></td>
+<td>Monitor clipboard</td>
+</tr>
+<tr>
+<td><code>lock_screen</code></td>
+<td><code>lock_screen</code></td>
+<td>Lock workstation</td>
+</tr>
+<tr>
+<td><code>idle_time</code></td>
+<td><code>idle_time</code></td>
+<td>Seconds idle</td>
+</tr>
+</tbody>
+</table>
+<h3 id="credentials">Credentials<a class="headerlink" href="#credentials" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hashdump</code></td>
+<td><code>/etc/shadow</code> or SAM+SYSTEM dump</td>
+</tr>
+<tr>
+<td><code>browser_creds [cookies\|passwords\|all]</code></td>
+<td>Browser credential extraction</td>
+</tr>
+<tr>
+<td><code>browser_history [n]</code></td>
+<td>Browser visit history</td>
+</tr>
+<tr>
+<td><code>wifi_passwords</code></td>
+<td>Saved Wi-Fi credentials</td>
+</tr>
+<tr>
+<td><code>cred_vault</code></td>
+<td>Windows Credential Manager</td>
+</tr>
+<tr>
+<td><code>ssh_harvest</code></td>
+<td>SSH keys and history</td>
+</tr>
+<tr>
+<td><code>sudo_sniff [path]</code></td>
+<td>Fake sudo password capture</td>
+</tr>
+<tr>
+<td><code>whoami_priv</code></td>
+<td>Token privileges</td>
+</tr>
+</tbody>
+</table>
+<h3 id="privilege-escalation-evasion">Privilege Escalation &amp; Evasion<a class="headerlink" href="#privilege-escalation-evasion" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Dangerous</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make_token &lt;user&gt; &lt;pass&gt;</code></td>
+<td></td>
+<td>Impersonate user</td>
+</tr>
+<tr>
+<td><code>rev2self</code></td>
+<td></td>
+<td>Revert token</td>
+</tr>
+<tr>
+<td><code>getsystem</code></td>
+<td></td>
+<td>Service token elevation</td>
+</tr>
+<tr>
+<td><code>uac_bypass &lt;cmd&gt;</code></td>
+<td>✓</td>
+<td>fodhelper UAC bypass</td>
+</tr>
+<tr>
+<td><code>token_steal [pid]</code></td>
+<td>✓</td>
+<td>Token impersonation</td>
+</tr>
+<tr>
+<td><code>inject_shellcode &lt;pid&gt; &lt;hex&gt;</code></td>
+<td>✓</td>
+<td>Shellcode injection</td>
+</tr>
+<tr>
+<td><code>dll_inject &lt;pid&gt; &lt;dll&gt;</code></td>
+<td>✓</td>
+<td>DLL injection</td>
+</tr>
+<tr>
+<td><code>living_off_land &lt;lolbin&gt; &lt;args&gt;</code></td>
+<td></td>
+<td>LOLBin execution</td>
+</tr>
+<tr>
+<td><code>patch_amsi</code></td>
+<td></td>
+<td>Patch AMSI in-process</td>
+</tr>
+<tr>
+<td><code>disable_defender</code></td>
+<td></td>
+<td>Disable Windows Defender</td>
+</tr>
+<tr>
+<td><code>hide_file &lt;file&gt;</code></td>
+<td></td>
+<td>Set hidden attribute</td>
+</tr>
+<tr>
+<td><code>timestomp &lt;file&gt; &lt;time&gt;</code></td>
+<td></td>
+<td>Modify timestamps</td>
+</tr>
+<tr>
+<td><code>clear_logs</code></td>
+<td></td>
+<td>Clear event logs</td>
+</tr>
+<tr>
+<td><code>self_destruct</code></td>
+<td>✓</td>
+<td>Wipe agent + persistence</td>
+</tr>
+</tbody>
+</table>
+<h3 id="keylogger">Keylogger<a class="headerlink" href="#keylogger" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>keylog_start</code></td>
+<td>Start keystroke logger</td>
+</tr>
+<tr>
+<td><code>keylog_dump</code></td>
+<td>Read captured keystrokes</td>
+</tr>
+<tr>
+<td><code>keylog_stop</code></td>
+<td>Stop and clean up</td>
+</tr>
+</tbody>
+</table>
+<h3 id="persistence">Persistence<a class="headerlink" href="#persistence" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>persist &lt;name&gt; &lt;file&gt;</code></td>
+<td>Windows Run-key persistence</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pivoting-networking">Pivoting &amp; Networking<a class="headerlink" href="#pivoting-networking" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>portfwd &lt;lport&gt; &lt;rhost&gt; &lt;rport&gt;</code></td>
+<td>TCP relay in background thread</td>
+</tr>
+<tr>
+<td><code>socks5 [port]</code></td>
+<td>RFC-1928 SOCKS5 proxy (port default 1080)</td>
+</tr>
+<tr>
+<td><code>ping_sweep &lt;cidr&gt;</code></td>
+<td>ICMP ping sweep</td>
+</tr>
+<tr>
+<td><code>smb_shares &lt;host&gt;</code></td>
+<td>SMB share enumeration</td>
+</tr>
+<tr>
+<td><code>ssh_connect &lt;host&gt; &lt;port&gt; &lt;user&gt; &lt;pass&gt;</code></td>
+<td>SSH connect</td>
+</tr>
+<tr>
+<td><code>rdp_enable</code></td>
+<td>Enable Remote Desktop</td>
+</tr>
+<tr>
+<td><code>exfil_dns &lt;data&gt; &lt;domain&gt;</code></td>
+<td>DNS exfiltration</td>
+</tr>
+<tr>
+<td><code>exfil_http &lt;url&gt; &lt;file&gt;</code></td>
+<td>HTTP exfiltration</td>
+</tr>
+<tr>
+<td><code>reverse_shell &lt;ip&gt; &lt;port&gt;</code></td>
+<td>✓ PTY reverse shell</td>
+</tr>
+</tbody>
+</table>
+<h3 id="toolbox-in-session">Toolbox (In-Session)<a class="headerlink" href="#toolbox-in-session" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>toolbox_run &lt;name&gt; [args]</code></td>
+<td>Run tool locally against session IP</td>
+</tr>
+<tr>
+<td><code>toolbox_deploy &lt;name&gt; [args]</code></td>
+<td>Upload + run tool on target</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="module-context-options-table">Module Context Options Table<a class="headerlink" href="#module-context-options-table" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>  Option    Type     Value         Req  Description
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  ──────────────────────────────────────────────────────
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  RHOSTS    string   (not set)     yes  Target IP or CIDR
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>  PORTS     string   21-23,80...   yes  Ports to scan
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>  THREADS   integer  100           no   Concurrent threads
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>  TIMEOUT   integer  2             no   Connect timeout
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  VERBOSE   boolean  False         no   Print closed ports
+</span></code></pre></div>
+<p>Option types: <code>string</code>, <code>integer</code>, <code>boolean</code>, <code>address</code>, <code>cidr</code>, <code>port</code>, <code>enum</code></p>
+<hr />
+<h2 id="tab-completion">Tab Completion<a class="headerlink" href="#tab-completion" title="Permanent link">&para;</a></h2>
+<p>Tab completion (via <code>readline</code>) is available for:
+- All global commands including <code>pipeline</code>, <code>stage0</code>
+- All session commands
+- <code>use &lt;tab&gt;</code> → completes module names
+- <code>toolbox_run &lt;tab&gt;</code> → completes installed tool names
+- Plugin command names</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ARCHITECTURE/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Architecture">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Architecture
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../MODULE_SYSTEM/" class="md-footer__link md-footer__link--next" aria-label="Next: Module System">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Module System
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

