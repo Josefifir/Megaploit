@@ -123,7 +123,7 @@ class JobManager:
 
         def _runner() -> None:
             job.status  = JobStatus.RUNNING
-            job.started = datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
+            job.started = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
             try:
                 # Inject stop_event if the callable accepts it
                 import inspect
@@ -136,7 +136,7 @@ class JobManager:
                 job.status = JobStatus.FAILED
                 job.error  = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
             finally:
-                job.finished = datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
+                job.finished = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
         t = threading.Thread(target=_runner, name=f"job-{jid}", daemon=True)
         job._thread = t

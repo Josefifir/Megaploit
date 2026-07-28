@@ -28,7 +28,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 TOOLS_DIR  = "tools"
@@ -138,7 +138,7 @@ class ToolRegistry:
             json.dump([t.to_dict() for t in self._tools.values()], f, indent=2)
 
     def add(self, tool: Tool) -> None:
-        tool.installed_at = datetime.utcnow().isoformat()
+        tool.installed_at = datetime.now(timezone.utc).isoformat()
         self._tools[tool.name] = tool
         self._save()
 

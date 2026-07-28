@@ -404,7 +404,7 @@ def _write_json(path: str, name: str, desc: str, start: float, sessions: list) -
             "desc":  desc,
             "start": datetime.datetime.utcfromtimestamp(start).isoformat() if start else "",
         },
-        "generated_at": datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
         "sessions": [],
     }
     for sess in sessions:
@@ -430,7 +430,7 @@ def _write_html(path: str, name: str, desc: str, start: float, sessions: list) -
         datetime.datetime.utcfromtimestamp(start).strftime("%Y-%m-%d %H:%M UTC")
         if start else "unknown"
     )
-    generated_at = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    generated_at = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     sessions_table, unique_hosts = _build_sessions_table(sessions)
     creds_table, n_creds         = _build_creds_table(sessions)

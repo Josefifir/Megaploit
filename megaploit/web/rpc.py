@@ -438,7 +438,7 @@ class RpcError(Exception):
 
 
 def _now() -> str:
-    return datetime.datetime.utcnow().strftime("%H:%M:%S")
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%H:%M:%S")
 
 
 def _sess_dict(s: Any) -> dict:

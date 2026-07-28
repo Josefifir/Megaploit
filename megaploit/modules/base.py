@@ -143,7 +143,7 @@ class ModuleResult:
     message:   str
     data:      dict[str, Any]    = field(default_factory=dict)
     timestamp: str               = field(
-        default_factory=lambda: datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
+        default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     )
 
     def __str__(self) -> str:
