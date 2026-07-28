@@ -569,6 +569,11 @@ Any language can connect to the C2 server as an agent as long as it follows the 
 | **AES-256-GCM layout** | `nonce (12 bytes) ‖ ciphertext ‖ tag (16 bytes)` — nonce comes first |
 | **Protocol handshake** | Server sends `0x4D` ('M') for v2 encrypted, agent echoes it back; if it matches and both have the key, encryption is active |
 | **HMAC auth** | Server sends 16 random bytes; agent replies with `HMAC-SHA256(key, challenge)` |
+| **TLS receive buffer — any single record** | Allocate **16,384 bytes** minimum (RFC 5246 §6.2.1 hard cap per record) |
+| **TLS receive buffer — server handshake flight** | Allocate **8,192 bytes**; the coalesced `ServerHello + Certificate (RSA-4096 ≈ 1,900 B) + ServerKeyExchange (ECDHE sig ≈ 400 B) + ServerHelloDone` fits comfortably |
+| **TLS send buffer — ClientHello** | Allocate **1,024 bytes**; generous for all extensions the server requires |
+| **Post-handshake C2 app buffer** | **65,536 bytes** — matches `config.py:BUFFER_SIZE` (64 KiB); raised from 4 KiB to handle large plugin output without fragmentation |
+| **Per-frame allocation ceiling** | **268,435,456 bytes (256 MiB)** — matches `config.py:MAX_PLUGIN_MSG_SIZE`; reject any frame header claiming more than this before allocating, to prevent memory exhaustion |
 
 See [`megaploit/core/protocol.py`](megaploit/core/protocol.py) for the authoritative Python implementation and [`plugins/native_sdk/megaploit_protocol.h`](plugins/native_sdk/megaploit_protocol.h) for the C/C++ equivalent.
 
