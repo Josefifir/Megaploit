@@ -95,7 +95,8 @@ threading.Thread(target=self._handshake, args=(conn, addr), daemon=True).start()
 | Constant | Default | Meaning |
 |---|---|---|
 | `AUTH_TIMEOUT` | 10 s | Socket deadline during HMAC auth; prevents connection-hold attacks |
-| `BUFFER_SIZE` | 4096 | Internal read buffer for low-level receives |
+| `BUFFER_SIZE` | 65536 | General socket read buffer — 64 KiB covers the largest post-handshake C2 frame without thrashing the kernel |
+| `MAX_PLUGIN_MSG_SIZE` | 268,435,456 (256 MiB) | Hard cap enforced by `_recv_framed`; prevents memory exhaustion from malformed or hostile peers; sized for large plugin output, screenshots, and zip transfers |
 | `RECONNECT_DELAY` | 10 s | Agent base reconnect interval |
 | `RECONNECT_JITTER` | 5 s | Max random jitter added to reconnect delay |
 
@@ -725,5 +726,42 @@ while (1) {
 | Wrong nonce position (after ciphertext) | `_decrypt()` reads the first 12 bytes as nonce → wrong nonce, decryption fails |
 | Missing 16-byte GCM tag | `AESGCM.decrypt()` raises `InvalidTag`; server raises `ConnectionError` |
 | Not echoing the version byte | Server never activates AES-GCM state; all subsequent frames are sent encrypted but received as plaintext |
+| TLS recv buffer too small | Short-read during server handshake flight; `SSL_read` / `recv` returns partial record, frame parser desyncs |
+
+### TLS buffer sizing for a C client
+
+The cipher suite restriction (`ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20`) means every session uses an **ephemeral (EC)DH key exchange** — a fresh keypair is generated per connection, so the handshake includes a `ServerKeyExchange` message carrying the server's ECDHE public key signed with the long-term RSA-4096 cert key. That makes the server's opening flight the largest thing you will ever receive in a single burst.
+
+**Per-message size breakdown:**
+
+| TLS message | Direction | Typical size |
+|---|---|---|
+| `ClientHello` | Client → Server | 200–350 bytes |
+| `ServerHello` | Server → Client | ~80 bytes |
+| `Certificate` (RSA-4096 self-signed) | Server → Client | **~1,900 bytes** |
+| `ServerKeyExchange` (ECDHE pub key + RSA-4096 signature) | Server → Client | ~350–512 bytes |
+| `ServerHelloDone` | Server → Client | 4 bytes |
+| `ClientKeyExchange` (ECDHE client pub key) | Client → Server | ~70 bytes |
+| `ChangeCipherSpec` + `Finished` | Both directions | ~90 bytes each |
+
+The server may coalesce `ServerHello + Certificate + ServerKeyExchange + ServerHelloDone` into a single TCP segment. That burst peaks at roughly **2,500 bytes**, well within 8 KiB.
+
+**Allocate these buffers in your C agent** (all defined in [`megaploit_protocol.h`](../plugins/native_sdk/megaploit_protocol.h)):
+
+```c
+/* TLS handshake buffers */
+#define TLS_BUF_RECORD        16384   /* RFC 5246 §6.2.1 hard cap per record          */
+#define TLS_BUF_SERVER_FLIGHT  8192   /* server handshake burst: cert + KX + done     */
+#define TLS_BUF_CLIENT_HELLO   1024   /* ClientHello with all required extensions      */
+
+/* Post-handshake application buffers */
+#define C2_APP_BUF            65536   /* matches config.py:BUFFER_SIZE (64 KiB)        */
+#define MP_MAX_MSG    (256*1024*1024) /* matches config.py:MAX_PLUGIN_MSG_SIZE (256 MiB) */
+                                      /* reject any frame header larger than this       */
+```
+
+If you are using **OpenSSL** (`SSL_connect` / `SSL_read` / `SSL_write`), OpenSSL manages all internal TLS record buffers itself. You only need to size your application-layer read buffer — use `C2_APP_BUF` (65,536) for normal traffic and `MP_MAX_MSG` as the sanity ceiling before allocating a receive buffer for an incoming frame.
+
+If you are calling `recv()` directly on the raw socket and parsing TLS records yourself, `TLS_BUF_SERVER_FLIGHT` (8,192) is sufficient for the largest inbound handshake flight, and `TLS_BUF_RECORD` (16,384) is the safe ceiling for any single TLS record from a conformant peer.
 
 A complete C/C++ single-header implementation of all these layers is available in [`plugins/native_sdk/megaploit_protocol.h`](../plugins/native_sdk/megaploit_protocol.h).

@@ -92,14 +92,49 @@
 #  include <openssl/rand.h>
 #endif
 
-/* ── Constants ─────────────────────────────────────────────────────────── */
-#define MP_HDR_LEN    4          /* outer 4-byte big-endian length prefix   */
+/* ── Protocol constants ─────────────────────────────────────────────────── */
+#define MP_HDR_LEN    4          /* outer 4-byte big-endian length prefix    */
 #define MP_SEQ_LEN    8          /* 8-byte big-endian uint64 sequence stamp  */
 #define MP_NONCE_LEN  12         /* AES-GCM nonce                            */
 #define MP_TAG_LEN    16         /* AES-GCM authentication tag               */
 #define MP_KEY_LEN    32         /* AES-256 key length                       */
-#define MP_MAX_MSG    (4*1024*1024) /* 4 MB per-message safety cap           */
-#define MP_V2_MAGIC   0x4D      /* 'M' — encrypted v2 handshake byte        */
+#define MP_V2_MAGIC   0x4D       /* 'M' — encrypted v2 handshake byte       */
+
+/*
+ * MP_MAX_MSG — hard cap on a single framed payload (must match
+ * MAX_PLUGIN_MSG_SIZE in megaploit/core/config.py).
+ *
+ * 256 MiB accommodates:
+ *   - large C/C++ plugin output blobs
+ *   - screenshot JPEG frames  (~200–400 KB at quality 85)
+ *   - zip / timelapse archives transferred in one shot
+ * Any frame header advertising more than this is rejected immediately
+ * to prevent memory exhaustion from a malformed or hostile peer.
+ */
+#define MP_MAX_MSG    (256*1024*1024)   /* 256 MiB — matches config.py      */
+
+/* ── TLS buffer sizing (C agent, raw OpenSSL or manual record parsing) ──── */
+/*
+ * Use these when allocating recv/send buffers around SSL_read / SSL_write,
+ * or when parsing TLS records directly on the raw socket.
+ *
+ * The server's cipher suite (ECDHE+AESGCM / ECDHE+CHACHA20) forces an
+ * ephemeral ECDH key exchange on every connection, which means the server
+ * sends a coalesced flight of:
+ *   ServerHello       ~  80 B
+ *   Certificate       ~1900 B  (RSA-4096 self-signed DER)
+ *   ServerKeyExchange ~ 400 B  (ECDHE public key + RSA-4096 signature)
+ *   ServerHelloDone      4 B
+ *                   ────────
+ *   Total           ~2400 B   → TLS_BUF_SERVER_FLIGHT (8 KiB) is safe
+ *
+ * RFC 5246 §6.2.1 caps any single TLS record at 2^14 = 16 384 bytes.
+ * Use TLS_BUF_RECORD for any recv() that may read a full record at once.
+ */
+#define TLS_BUF_RECORD        16384   /* RFC 5246 §6.2.1 hard cap per record */
+#define TLS_BUF_SERVER_FLIGHT  8192   /* largest inbound handshake burst      */
+#define TLS_BUF_CLIENT_HELLO   1024   /* ClientHello with all extensions      */
+#define C2_APP_BUF            65536   /* post-handshake C2 frames (= BUFFER_SIZE in config.py) */
 
 /* ── Connection state ──────────────────────────────────────────────────── */
 typedef struct {
