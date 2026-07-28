@@ -283,13 +283,13 @@ _BANNER_LINES = [
     r"  ██╔████╔██║█████╗  ██║  ███╗███████║██████╔╝██║     ██║   ██║██║   ██║   ",
     r"  ██║╚██╔╝██║██╔══╝  ██║   ██║██╔══██║██╔═══╝ ██║     ██║   ██║██║   ██║   ",
     r"  ██║ ╚═╝ ██║███████╗╚██████╔╝██║  ██║██║     ███████╗╚██████╔╝██║   ██║   ",
-    r"  ╚═╝     ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚══════╝ ╚═════╝ ╚═╝   ╚═╝  ",
+    r"  ╚═╝     ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚══════╝ ╚═════╝ ╚═╝   ╚═╝   ",
 ]
 
 # 256-colour gradient: bright red → dark red per line
 _BANNER_COLOURS = [196, 160, 124, 88, 52, 238]
 
-_VERSION  = "v4.1.0"
+_VERSION  = "v4.0.0"
 _SUBTITLE = "Professional C2 & Exploit Framework"
 _TAGLINE  = "For Authorized Penetration Testing Only"
 
@@ -306,7 +306,7 @@ _BADGES = [
 # ---------------------------------------------------------------------------
 
 _CHANGELOG: list[tuple[str, list[str]]] = [
-    ("Kiwi  [NEW v4.1]", [
+    ("Kiwi  [NEW v4]", [
         "kiwi logonpasswords — LSASS ReadProcessMemory scan, NTLM hash + SHA1 extraction",
         "kiwi sam            — SAM hive offline dump via RegSaveKey + bootkey recovery",
         "kiwi lsa            — LSA secrets enumeration (SECURITY\\Policy\\Secrets)",
@@ -316,12 +316,12 @@ _CHANGELOG: list[tuple[str, list[str]]] = [
         "kiwi dpapi          — DPAPI masterkey GUID enumeration",
         "Compiled from C source on first use — MinGW / MSVC auto-detected",
     ]),
-    ("Privilege Escalation  [v4.1]", [
+    ("Privilege Escalation  [v4]", [
         "getsystem: 3-technique cascade — named-pipe impersonation (primary, like Metasploit),",
         "  SeDebugPrivilege token steal, then unquoted service path discovery",
         "Named-pipe technique: schtasks SYSTEM lure + ImpersonateNamedPipeClient",
     ]),
-    ("TLS Auto-Cert  [v4.1]", [
+    ("TLS Auto-Cert  [v4]", [
         "--tls flag: auto-generates self-signed RSA-2048 cert (loot/tls/) on startup",
         "tls auto / tls regen / tls status  console commands",
         "generate --tls  auto-generates cert when none is configured",
