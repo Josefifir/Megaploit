@@ -289,7 +289,7 @@ _BANNER_LINES = [
 # 256-colour gradient: bright red → dark red per line
 _BANNER_COLOURS = [196, 160, 124, 88, 52, 238]
 
-_VERSION  = "v4.0.0"
+_VERSION  = "v4.1.0"
 _SUBTITLE = "Professional C2 & Exploit Framework"
 _TAGLINE  = "For Authorized Penetration Testing Only"
 
@@ -298,7 +298,7 @@ _BADGES = [
     ("Meterpreter-class Shell", 39),   # sky blue
     ("20 Exploit Modules",       82),   # bright green
     ("AES-256-GCM",             220),   # gold
-    ("507 Tests ✓",              46),   # green
+    ("553 Tests ✓",              46),   # green
 ]
 
 # ---------------------------------------------------------------------------
@@ -306,6 +306,28 @@ _BADGES = [
 # ---------------------------------------------------------------------------
 
 _CHANGELOG: list[tuple[str, list[str]]] = [
+    ("Kiwi  [NEW v4.1]", [
+        "kiwi logonpasswords — LSASS ReadProcessMemory scan, NTLM hash + SHA1 extraction",
+        "kiwi sam            — SAM hive offline dump via RegSaveKey + bootkey recovery",
+        "kiwi lsa            — LSA secrets enumeration (SECURITY\\Policy\\Secrets)",
+        "kiwi credman        — Windows Credential Manager via CredEnumerateW",
+        "kiwi tickets        — Kerberos TGT/TGS cache via LsaCallAuthenticationPackage",
+        "kiwi wdigest        — Re-enable WDigest cleartext (UseLogonCredential=1)",
+        "kiwi dpapi          — DPAPI masterkey GUID enumeration",
+        "Compiled from C source on first use — MinGW / MSVC auto-detected",
+    ]),
+    ("Privilege Escalation  [v4.1]", [
+        "getsystem: 3-technique cascade — named-pipe impersonation (primary, like Metasploit),",
+        "  SeDebugPrivilege token steal, then unquoted service path discovery",
+        "Named-pipe technique: schtasks SYSTEM lure + ImpersonateNamedPipeClient",
+    ]),
+    ("TLS Auto-Cert  [v4.1]", [
+        "--tls flag: auto-generates self-signed RSA-2048 cert (loot/tls/) on startup",
+        "tls auto / tls regen / tls status  console commands",
+        "generate --tls  auto-generates cert when none is configured",
+        "SHA-256 fingerprint shown in startup config box",
+        "Uses cryptography package; falls back to openssl subprocess",
+    ]),
     ("Advanced Shell  [NEW v4]", [
         "MeterpreterSession interactive console — tab-complete, per-session history",
         "migrate <pid>  — inject agent into another process (Windows + POSIX)",
@@ -327,7 +349,7 @@ _CHANGELOG: list[tuple[str, list[str]]] = [
         "C++ probe support: .cpp .cc .cxx .hpp added to c_probe verb extractor",
         "datetime.utcnow() deprecation fixed in 8 locations (Python 3.12+ safe)",
         "MkDocs + Material theme auto-deployed to GitHub Pages on push to main",
-        "507 tests passing — 69 meterp + 156 exploit module + 282 core tests",
+        "553 tests passing — 40 kiwi + 6 TLS + 69 meterp + 156 exploit + 282 core",
     ]),
     ("Capture & Streaming  [v3]", [
         "screenshot: mss+cv2 JPEG q85 in-memory — ~10× smaller, no tmp file",

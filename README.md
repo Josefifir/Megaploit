@@ -11,7 +11,7 @@
 [![Docs](https://github.com/Josefifir/Megaploit/actions/workflows/docs.yml/badge.svg)](https://josefifir.github.io/Megaploit/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
 [![License](https://img.shields.io/github/license/Josefifir/Megaploit)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-513%20passing-brightgreen)](#running-tests)
+[![Tests](https://img.shields.io/badge/tests-553%20passing-brightgreen)](#running-tests)
 
 ---
 

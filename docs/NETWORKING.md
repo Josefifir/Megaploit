@@ -143,9 +143,9 @@ threading.Thread(target=self._handshake, args=(conn, addr), daemon=True).start()
 
 ## 3. Layer 1 — TLS (optional)
 
-**Source:** [`megaploit/server/listener.py:267`](../megaploit/server/listener.py) — `build_ssl_context()` / `build_agent_ssl_context()`
+**Source:** [`megaploit/server/listener.py:267`](../megaploit/server/listener.py) — `build_ssl_context()` / `build_agent_ssl_context()` / `generate_self_signed_cert()`
 
-When `--cert` / `--key` are passed to the server, the raw socket is wrapped with a hardened TLS context **before** any authentication bytes are exchanged:
+When TLS is enabled, the raw socket is wrapped with a hardened TLS context **before** any authentication bytes are exchanged:
 
 ```python
 conn = ssl_context.wrap_socket(raw_conn, server_side=True)
@@ -162,12 +162,29 @@ conn = ssl_context.wrap_socket(raw_conn, server_side=True)
 | `OP_SINGLE_DH_USE` + `OP_SINGLE_ECDH_USE` | set | Fresh DH parameters per session (forward secrecy) |
 | `OP_NO_RENEGOTIATION` | set (Python ≥ 3.7) | Prevents renegotiation-based attacks |
 
-The agent-side context (`build_agent_ssl_context`) uses `CERT_NONE` + `check_hostname=False` because the server typically uses a self-signed certificate. TLS 1.2+ and AEAD-only ciphers are still enforced on the agent side.
+The agent-side context (`build_agent_ssl_context`) uses `CERT_NONE` + `check_hostname=False` because the server uses a self-signed certificate. TLS 1.2+ and AEAD-only ciphers are still enforced on the agent side.
 
-**Generate a self-signed cert:**
+### Auto-cert (recommended)
+
+Megaploit can generate and manage the TLS certificate itself — no `openssl` command needed:
+
+```bash
+# Startup flag — generates loot/tls/megaploit.crt + loot/tls/megaploit.key
+python3 server.py -lh 10.0.0.1 -p 4444 --tls
+
+# Or from the console at any time:
+megaploit [0] » tls auto     # generate & activate immediately
+megaploit [0] » tls status   # cert path + SHA-256 fingerprint
+megaploit [0] » tls regen    # force new cert
+```
+
+The auto-cert is RSA-2048, valid for 365 days, stored in `loot/tls/`. The SHA-256 fingerprint is printed in the startup config box and reused on subsequent runs. Uses the `cryptography` Python package if installed; falls back to `openssl req` subprocess.
+
+### Manual cert
+
 ```bash
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
-python3 server.py --cert cert.pem --key key.pem
+python3 server.py -lh 10.0.0.1 -p 4444 --cert cert.pem --key key.pem
 ```
 
 ---

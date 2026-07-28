@@ -25,12 +25,26 @@ Complete reference for all commands available in the Megaploit console.
 | `set key <file>` | TLS private key PEM file |
 | `set auto_update on\|off` | Toggle background tool auto-update |
 
+### TLS
+
+| Command | Description |
+|---|---|
+| `tls auto` | Auto-generate a self-signed cert (`loot/tls/`) and enable TLS immediately. Requires `cryptography` pip package or `openssl` on PATH. SHA-256 fingerprint printed. |
+| `tls regen` | Force-regenerate the auto-cert even if one already exists |
+| `tls status` | Show current TLS mode (auto/manual/disabled), cert path, and SHA-256 fingerprint |
+
+You can also start the server with `--tls` to auto-generate on launch:
+
+```bash
+python3 server.py -lh 10.0.0.1 -p 4444 --tls
+```
+
 ### Agent Generation
 
 | Command | Description |
 |---|---|
 | `generate` | Patch `connection.py` with current LHOST/PORT |
-| `generate --tls` | Patch with TLS enabled |
+| `generate --tls` | Patch with TLS enabled (auto-generates server cert if none configured) |
 | `generate -c` | Patch + byte-compile `agent.py` |
 
 ### Module System
@@ -333,24 +347,41 @@ toolbox config <name> set <k> <v>   Set config value
 | `sudo_sniff [path]` | Fake sudo password capture |
 | `whoami_priv` | Token privileges |
 
+### Kiwi — Native C Credential Dumper
+
+Kiwi is a compiled C binary (`megaploit_kiwi.exe`) that runs on the Windows target. It is compiled from source on first use (requires MinGW-w64 `gcc` or MSVC `cl.exe`).
+
+| Command | Dangerous | Description |
+|---|---|---|
+| `kiwi logonpasswords` | ✓ | LSASS ReadProcessMemory — NTLM hashes + SHA1. Needs SYSTEM or SeDebugPrivilege. |
+| `kiwi sam` | ✓ | SAM hive offline dump via `RegSaveKey`. Needs backup privilege / SYSTEM. |
+| `kiwi lsa` | ✓ | LSA secrets from `SECURITY\Policy\Secrets`. Needs SYSTEM. |
+| `kiwi credman` | | Windows Credential Manager via `CredEnumerateW`. Current user. |
+| `kiwi tickets` | | Kerberos TGT/TGS cache via `LsaCallAuthenticationPackage`. |
+| `kiwi wdigest` | | Set `UseLogonCredential=1` — cleartext cached on next logon. Needs admin. |
+| `kiwi dpapi` | | DPAPI masterkey GUID enumeration for all user profiles. |
+| `kiwi all` | ✓ | Run every module in sequence. |
+
+> **Tip:** Run `getsystem` first to escalate to SYSTEM, then use `kiwi logonpasswords` / `kiwi sam` / `kiwi lsa`.
+
 ### Privilege Escalation & Evasion
 
 | Command | Dangerous | Description |
 |---|---|---|
 | `make_token <user> <pass>` | | Impersonate user |
 | `rev2self` | | Revert token |
-| `getsystem` | | Service token elevation |
-| `uac_bypass <cmd>` | ✓ | fodhelper UAC bypass |
-| `token_steal [pid]` | ✓ | Token impersonation |
-| `inject_shellcode <pid> <hex>` | ✓ | Shellcode injection |
-| `dll_inject <pid> <dll>` | ✓ | DLL injection |
-| `living_off_land <lolbin> <args>` | | LOLBin execution |
-| `patch_amsi` | | Patch AMSI in-process |
-| `disable_defender` | | Disable Windows Defender |
-| `hide_file <file>` | | Set hidden attribute |
-| `timestomp <file> <time>` | | Modify timestamps |
-| `clear_logs` | | Clear event logs |
-| `self_destruct` | ✓ | Wipe agent + persistence |
+| `getsystem` | ✓ | 3-technique cascade: named-pipe impersonation → SeDebugPrivilege token steal → unquoted service path discovery |
+| `uac_bypass <cmd>` | ✓ | fodhelper registry hijack UAC bypass (Windows 10/11) |
+| `token_steal [pid]` | ✓ | SeDebugPrivilege + DuplicateToken impersonation |
+| `inject_shellcode <pid> <hex>` | ✓ | Shellcode injection via WriteProcessMemory + CreateRemoteThread |
+| `dll_inject <pid> <dll>` | ✓ | LoadLibraryA remote thread DLL injection |
+| `living_off_land <lolbin> <args>` | | Signed Windows LOLBin execution |
+| `patch_amsi` | | Byte-patch AmsiScanBuffer (VirtualProtect + memmove) |
+| `disable_defender` | | Disable Windows Defender via registry + service |
+| `hide_file <file>` | | Set FILE_ATTRIBUTE_HIDDEN |
+| `timestomp <file> <ref>` | | Copy timestamps from reference file (Windows FILETIME + utime) |
+| `clear_logs` | | Wipe Windows event logs or Linux syslog/auth.log |
+| `self_destruct` | ✓ | Remove persistence registry key, delete EXE, exit |
 
 ### Keylogger
 
