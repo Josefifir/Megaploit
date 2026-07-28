@@ -1,7 +1,46 @@
 # Megaploit — Networking & Communication Stack
 
-> **Canonical reference for every layer between the operator console and a running agent.**  
+> **Canonical reference for every layer between the operator console and a running agent.**
 > File references point to the implementation so this document stays grounded.
+
+---
+
+## TL;DR
+
+Everything that travels between the operator and an agent passes through these steps in order:
+
+```
+TCP connect
+  └─► (optional) TLS 1.2+ — ECDHE+AESGCM / ECDHE+CHACHA20 only
+        └─► HMAC-SHA256 challenge/response  (16-byte nonce → 32-byte response)
+              └─► 1-byte version handshake  (0x4D = v2 encrypted, 0x00 = v1 plain)
+                    └─► per-message framing:
+                          [ 4-byte BE length ]
+                          [ 12-byte AES-GCM nonce ][ ciphertext ][ 16-byte tag ]
+                                └─► inside plaintext:
+                                      [ 8-byte BE seq ][ JSON-quoted string ]
+```
+
+**Five numbers to memorise if you're writing a client:**
+
+| What | Value |
+|---|---|
+| Length prefix | 4 bytes, big-endian `uint32` |
+| Sequence stamp | 8 bytes, big-endian `uint64`, starts at 1, never repeats |
+| AES-GCM nonce | 12 bytes, random, prepends every ciphertext |
+| AES-GCM tag | 16 bytes, appended after ciphertext |
+| Payload encoding | JSON **string** — `"command"` or `"response"`, never an object |
+
+**Four buffer sizes to `#define` in a C agent:**
+
+| Constant | Size | Purpose |
+|---|---|---|
+| `TLS_BUF_RECORD` | 16,384 B | RFC 5246 hard cap on any single TLS record |
+| `TLS_BUF_SERVER_FLIGHT` | 8,192 B | Server's coalesced handshake burst (cert + key exchange) |
+| `C2_APP_BUF` | 65,536 B | Normal post-handshake C2 frames (matches `BUFFER_SIZE`) |
+| `MP_MAX_MSG` | 256 MiB | Hard ceiling — reject any frame claiming more than this |
+
+Full details in [`plugins/native_sdk/megaploit_protocol.h`](../plugins/native_sdk/megaploit_protocol.h).
 
 ---
 
