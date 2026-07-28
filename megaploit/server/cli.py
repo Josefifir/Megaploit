@@ -119,7 +119,7 @@ class _CommandHistory:
 
     def record(self, raw: str, context: str = "global", session_id: int = 0) -> None:
         entry = {
-            "ts":         datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
+            "ts":         datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
             "context":    context,
             "session_id": session_id,
             "cmd":        raw,

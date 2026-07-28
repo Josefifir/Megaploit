@@ -102,11 +102,13 @@ class ModuleRegistry:
             scan_path = os.path.join(base_dir, subdir)
             if not os.path.isdir(scan_path):
                 continue
-            for fname in sorted(os.listdir(scan_path)):
-                if not fname.endswith(".py") or fname.startswith("_"):
-                    continue
-                fpath = os.path.join(scan_path, fname)
-                self._load_file(fpath, subdir)
+            for dirpath, _dirs, filenames in os.walk(scan_path):
+                _dirs[:] = sorted(d for d in _dirs if not d.startswith("_"))
+                for fname in sorted(filenames):
+                    if not fname.endswith(".py") or fname.startswith("_"):
+                        continue
+                    fpath = os.path.join(dirpath, fname)
+                    self._load_file(fpath, subdir)
 
         return len(self._modules), len(self._errors)
 

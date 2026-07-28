@@ -258,7 +258,7 @@ class ProbeResult:
 
 def probe(root_dir: str) -> ProbeResult:
     """
-    Scan all .c and .h files under *root_dir* and return a ProbeResult.
+    Scan all .c/.h and .cpp/.cc/.cxx/.hpp files under *root_dir* and return a ProbeResult.
 
     Parameters
     ----------
@@ -280,7 +280,7 @@ def probe(root_dir: str) -> ProbeResult:
         # Skip .git and build artefact directories
         _dirs[:] = [d for d in _dirs if d not in (".git", "build", "Release", "Debug")]
         for fname in filenames:
-            if fname.lower().endswith((".c", ".h")):
+            if fname.lower().endswith((".c", ".h", ".cpp", ".cc", ".cxx", ".hpp")):
                 fpath = os.path.join(dirpath, fname)
                 try:
                     with open(fpath, "r", encoding="utf-8", errors="replace") as f:
@@ -321,7 +321,7 @@ _STRNCMP_RE = re.compile(
 
 def extract_verbs(root_dir: str) -> list[str]:
     """
-    Scan all .c files under *root_dir* for ``strncmp("VERB", …)`` calls
+    Scan all .c/.cpp/.cc/.cxx files under *root_dir* for ``strncmp("VERB", …)`` calls
     and return the unique set of verb strings found, in discovery order.
 
     These are the exact wire strings the C client will accept — no
@@ -340,7 +340,7 @@ def extract_verbs(root_dir: str) -> list[str]:
         _dirs[:] = [d for d in _dirs if d not in (".git", "build",
                                                     "Release", "Debug")]
         for fname in sorted(filenames):
-            if not fname.lower().endswith(".c"):
+            if not fname.lower().endswith((".c", ".cpp", ".cc", ".cxx")):
                 continue
             fpath = os.path.join(dirpath, fname)
             try:
