@@ -615,6 +615,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#agent-generation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -812,6 +823,17 @@
     <span class="md-ellipsis">
       
         Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kiwi-native-c-credential-dumper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kiwi — Native C Credential Dumper
       
     </span>
   </a>
@@ -1179,6 +1201,32 @@
 </tr>
 </tbody>
 </table>
+<h3 id="tls">TLS<a class="headerlink" href="#tls" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tls auto</code></td>
+<td>Auto-generate a self-signed cert (<code>loot/tls/</code>) and enable TLS immediately. Requires <code>cryptography</code> pip package or <code>openssl</code> on PATH. SHA-256 fingerprint printed.</td>
+</tr>
+<tr>
+<td><code>tls regen</code></td>
+<td>Force-regenerate the auto-cert even if one already exists</td>
+</tr>
+<tr>
+<td><code>tls status</code></td>
+<td>Show current TLS mode (auto/manual/disabled), cert path, and SHA-256 fingerprint</td>
+</tr>
+</tbody>
+</table>
+<p>You can also start the server with <code>--tls</code> to auto-generate on launch:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python3<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">10</span>.0.0.1<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span><span class="w"> </span>--tls
+</span></code></pre></div>
 <h3 id="agent-generation">Agent Generation<a class="headerlink" href="#agent-generation" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -1194,7 +1242,7 @@
 </tr>
 <tr>
 <td><code>generate --tls</code></td>
-<td>Patch with TLS enabled</td>
+<td>Patch with TLS enabled (auto-generates server cert if none configured)</td>
 </tr>
 <tr>
 <td><code>generate -c</code></td>
@@ -1258,87 +1306,87 @@
 </tbody>
 </table>
 <h3 id="payload-builder">Payload Builder<a class="headerlink" href="#payload-builder" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>payload &lt;format&gt; [options]
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Formats:
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  py            Pure Python source agent
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  ps1           PowerShell dropper
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  hta           HTML Application dropper
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  vba           VBA macro dropper
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  sh            Bash/sh dropper
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  bat           Windows batch dropper
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  raw           Same as py (for piping)
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>  exe           PyInstaller Windows EXE (requires pyinstaller)
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  elf           PyInstaller Linux ELF (requires pyinstaller)
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>  go_exe        Go agent compiled for Windows (requires go)  ← NEW v3
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  go_elf        Go agent compiled for Linux/macOS (requires go)  ← NEW v3
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  oneliner_py   Single Python one-liner (gzip+base64)
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>  oneliner_ps1  Single PowerShell one-liner (gzip+base64)
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>Options:
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>  --out &lt;file&gt;       Write to file instead of printing
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>  --tls              Agent uses TLS
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>  --encoder &lt;name&gt;   Apply encoder (can be repeated)
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>  --upx              UPX-pack binary (exe/elf only; requires upx on PATH)
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>Encoders:
-</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>  xor_rolling    XOR with rolling 32-byte key (key prepended to output)
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>  rc4            RC4 stream cipher (16-byte key prepended)
-</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>  b64gzip        Gzip compress → base64 encode
-</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>  rev            Reverse byte sequence
-</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>  zlib_b64       Zlib compress → base64 encode
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>  rot13_src      ROT-13 printable ASCII chars
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>  null_pad       Insert null byte after every real byte
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>  comment_spam   Insert random inline comments (~40% of lines)
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>  varname_rand   Randomise short Python variable names
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>  ps1_concat     PowerShell string concat obfuscation
-</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>Examples:
-</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>  payload ps1 --out agent.ps1
-</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>  payload exe --out agent.exe --upx
-</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>  payload go_exe --out agent.exe
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>  payload go_elf --out agent_linux
-</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>  payload py --encoder comment_spam --encoder varname_rand --out obf.py
-</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>  payload oneliner_py
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>payload &lt;format&gt; [options]
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Formats:
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  py            Pure Python source agent
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  ps1           PowerShell dropper
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  hta           HTML Application dropper
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  vba           VBA macro dropper
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  sh            Bash/sh dropper
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  bat           Windows batch dropper
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>  raw           Same as py (for piping)
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>  exe           PyInstaller Windows EXE (requires pyinstaller)
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>  elf           PyInstaller Linux ELF (requires pyinstaller)
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>  go_exe        Go agent compiled for Windows (requires go)  ← NEW v3
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>  go_elf        Go agent compiled for Linux/macOS (requires go)  ← NEW v3
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>  oneliner_py   Single Python one-liner (gzip+base64)
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>  oneliner_ps1  Single PowerShell one-liner (gzip+base64)
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>Options:
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>  --out &lt;file&gt;       Write to file instead of printing
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>  --tls              Agent uses TLS
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>  --encoder &lt;name&gt;   Apply encoder (can be repeated)
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>  --upx              UPX-pack binary (exe/elf only; requires upx on PATH)
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>Encoders:
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>  xor_rolling    XOR with rolling 32-byte key (key prepended to output)
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>  rc4            RC4 stream cipher (16-byte key prepended)
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>  b64gzip        Gzip compress → base64 encode
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>  rev            Reverse byte sequence
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>  zlib_b64       Zlib compress → base64 encode
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>  rot13_src      ROT-13 printable ASCII chars
+</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>  null_pad       Insert null byte after every real byte
+</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>  comment_spam   Insert random inline comments (~40% of lines)
+</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>  varname_rand   Randomise short Python variable names
+</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>  ps1_concat     PowerShell string concat obfuscation
+</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>
+</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>Examples:
+</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>  payload ps1 --out agent.ps1
+</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>  payload exe --out agent.exe --upx
+</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>  payload go_exe --out agent.exe
+</span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>  payload go_elf --out agent_linux
+</span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>  payload py --encoder comment_spam --encoder varname_rand --out obf.py
+</span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>  payload oneliner_py
 </span></code></pre></div>
 <h3 id="staged-delivery-new-v3">Staged Delivery — NEW v3<a class="headerlink" href="#staged-delivery-new-v3" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>stage0 generate [--minimal] [--out &lt;file&gt;] [--port N] [--start]
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>stage0 status
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>stage0 stop
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>Options:
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  --minimal      Compact single-file dropper (no threading, shorter names)
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  --out / -o     Write to file (default: print to terminal)
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  --port / -p    Staging server port (default: main_port + 1)
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  --start        Also launch StagingServer in background
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>Examples:
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>  stage0 generate --out dropper.py
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>  stage0 generate --minimal --out macro_dropper.py
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>  stage0 generate --start                          # generate + launch server
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>  stage0 generate --start --port 4445 --out d.py
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>  stage0 status
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>  stage0 stop
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>stage0 generate [--minimal] [--out &lt;file&gt;] [--port N] [--start]
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>stage0 status
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>stage0 stop
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>Options:
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>  --minimal      Compact single-file dropper (no threading, shorter names)
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>  --out / -o     Write to file (default: print to terminal)
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>  --port / -p    Staging server port (default: main_port + 1)
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>  --start        Also launch StagingServer in background
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>Examples:
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>  stage0 generate --out dropper.py
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>  stage0 generate --minimal --out macro_dropper.py
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>  stage0 generate --start                          # generate + launch server
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>  stage0 generate --start --port 4445 --out d.py
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>  stage0 status
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>  stage0 stop
 </span></code></pre></div>
 <h3 id="post-exploitation-pipeline-new-v3">Post-Exploitation Pipeline — NEW v3<a class="headerlink" href="#post-exploitation-pipeline-new-v3" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pipeline status        Show active + available profiles
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pipeline list          List all profiles with status indicators
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>pipeline enable &lt;p&gt;    Enable a profile (active on next session)
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>pipeline disable &lt;p&gt;   Disable a profile
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>pipeline reload        Reload AutoRunScript config from disk
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>Profiles:
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>  basic     sysinfo, whoami, pwd, env
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>  creds     hashdump, wifi_passwords, browser_creds, ssh_harvest, cred_vault
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>  recon     ps, installed_software, scheduled_tasks, users, os_info
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>  network   arp, netstat, ifconfig, hosts_file
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>  full      All of the above
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>Examples:
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>  pipeline enable creds
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>  pipeline enable full
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>  pipeline disable creds
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>  pipeline status
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pipeline status        Show active + available profiles
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>pipeline list          List all profiles with status indicators
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>pipeline enable &lt;p&gt;    Enable a profile (active on next session)
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>pipeline disable &lt;p&gt;   Disable a profile
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>pipeline reload        Reload AutoRunScript config from disk
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>Profiles:
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>  basic     sysinfo, whoami, pwd, env
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>  creds     hashdump, wifi_passwords, browser_creds, ssh_harvest, cred_vault
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>  recon     ps, installed_software, scheduled_tasks, users, os_info
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>  network   arp, netstat, ifconfig, hosts_file
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>  full      All of the above
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>Examples:
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>  pipeline enable creds
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>  pipeline enable full
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>  pipeline disable creds
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>  pipeline status
 </span></code></pre></div>
 <h3 id="operations">Operations<a class="headerlink" href="#operations" title="Permanent link">&para;</a></h3>
 <table>
@@ -1473,28 +1521,28 @@
 </tbody>
 </table>
 <h3 id="toolbox">Toolbox<a class="headerlink" href="#toolbox" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>toolbox install &lt;url&gt; &lt;name&gt; [desc] [--tags t1,t2]
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>toolbox catalogue [query]           Browse 203-tool catalogue
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>toolbox catalogue install &lt;name&gt;    Install from catalogue
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>toolbox list                        List installed tools
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>toolbox search &lt;query&gt;              Search by name/tag/description
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>toolbox info &lt;name&gt;                 Show tool details
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>toolbox update &lt;name&gt;               Pull latest + rebuild
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>toolbox update-all                  Update all installed tools
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>toolbox check-updates               Check for updates without applying
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>toolbox rebuild &lt;name&gt;              Re-build without git pull
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>toolbox remove &lt;name&gt;               Uninstall
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>toolbox set-entry &lt;name&gt; &lt;path&gt;     Override entry-point
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>toolbox healthcheck [name]          Verify tool is runnable
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>toolbox dockerfile &lt;name&gt;           Generate Dockerfile
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>toolbox audit &lt;name&gt;                Security audit
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>toolbox plan &lt;name|url&gt;             Dry-run install plan
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>toolbox workspace list              List named workspaces
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>toolbox workspace new &lt;name&gt;        Create new workspace
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>toolbox workspace install-all &lt;ws&gt;  Install all tools in workspace
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>toolbox workspace export &lt;ws&gt;       Export workspace to JSON
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>toolbox config &lt;name&gt;               Show per-tool runtime config
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>toolbox config &lt;name&gt; set &lt;k&gt; &lt;v&gt;   Set config value
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>toolbox install &lt;url&gt; &lt;name&gt; [desc] [--tags t1,t2]
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>toolbox catalogue [query]           Browse 203-tool catalogue
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>toolbox catalogue install &lt;name&gt;    Install from catalogue
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>toolbox list                        List installed tools
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>toolbox search &lt;query&gt;              Search by name/tag/description
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>toolbox info &lt;name&gt;                 Show tool details
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>toolbox update &lt;name&gt;               Pull latest + rebuild
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>toolbox update-all                  Update all installed tools
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>toolbox check-updates               Check for updates without applying
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>toolbox rebuild &lt;name&gt;              Re-build without git pull
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>toolbox remove &lt;name&gt;               Uninstall
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>toolbox set-entry &lt;name&gt; &lt;path&gt;     Override entry-point
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>toolbox healthcheck [name]          Verify tool is runnable
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>toolbox dockerfile &lt;name&gt;           Generate Dockerfile
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>toolbox audit &lt;name&gt;                Security audit
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>toolbox plan &lt;name|url&gt;             Dry-run install plan
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>toolbox workspace list              List named workspaces
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>toolbox workspace new &lt;name&gt;        Create new workspace
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>toolbox workspace install-all &lt;ws&gt;  Install all tools in workspace
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>toolbox workspace export &lt;ws&gt;       Export workspace to JSON
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>toolbox config &lt;name&gt;               Show per-tool runtime config
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>toolbox config &lt;name&gt; set &lt;k&gt; &lt;v&gt;   Set config value
 </span></code></pre></div>
 <h3 id="plugins">Plugins<a class="headerlink" href="#plugins" title="Permanent link">&para;</a></h3>
 <table>
@@ -1948,6 +1996,62 @@
 </tr>
 </tbody>
 </table>
+<h3 id="kiwi-native-c-credential-dumper">Kiwi — Native C Credential Dumper<a class="headerlink" href="#kiwi-native-c-credential-dumper" title="Permanent link">&para;</a></h3>
+<p>Kiwi is a compiled C binary (<code>megaploit_kiwi.exe</code>) that runs on the Windows target. It is compiled from source on first use (requires MinGW-w64 <code>gcc</code> or MSVC <code>cl.exe</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Dangerous</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kiwi logonpasswords</code></td>
+<td>✓</td>
+<td>LSASS ReadProcessMemory — NTLM hashes + SHA1. Needs SYSTEM or SeDebugPrivilege.</td>
+</tr>
+<tr>
+<td><code>kiwi sam</code></td>
+<td>✓</td>
+<td>SAM hive offline dump via <code>RegSaveKey</code>. Needs backup privilege / SYSTEM.</td>
+</tr>
+<tr>
+<td><code>kiwi lsa</code></td>
+<td>✓</td>
+<td>LSA secrets from <code>SECURITY\Policy\Secrets</code>. Needs SYSTEM.</td>
+</tr>
+<tr>
+<td><code>kiwi credman</code></td>
+<td></td>
+<td>Windows Credential Manager via <code>CredEnumerateW</code>. Current user.</td>
+</tr>
+<tr>
+<td><code>kiwi tickets</code></td>
+<td></td>
+<td>Kerberos TGT/TGS cache via <code>LsaCallAuthenticationPackage</code>.</td>
+</tr>
+<tr>
+<td><code>kiwi wdigest</code></td>
+<td></td>
+<td>Set <code>UseLogonCredential=1</code> — cleartext cached on next logon. Needs admin.</td>
+</tr>
+<tr>
+<td><code>kiwi dpapi</code></td>
+<td></td>
+<td>DPAPI masterkey GUID enumeration for all user profiles.</td>
+</tr>
+<tr>
+<td><code>kiwi all</code></td>
+<td>✓</td>
+<td>Run every module in sequence.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> Run <code>getsystem</code> first to escalate to SYSTEM, then use <code>kiwi logonpasswords</code> / <code>kiwi sam</code> / <code>kiwi lsa</code>.</p>
+</blockquote>
 <h3 id="privilege-escalation-evasion">Privilege Escalation &amp; Evasion<a class="headerlink" href="#privilege-escalation-evasion" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -1970,63 +2074,63 @@
 </tr>
 <tr>
 <td><code>getsystem</code></td>
-<td></td>
-<td>Service token elevation</td>
+<td>✓</td>
+<td>3-technique cascade: named-pipe impersonation → SeDebugPrivilege token steal → unquoted service path discovery</td>
 </tr>
 <tr>
 <td><code>uac_bypass &lt;cmd&gt;</code></td>
 <td>✓</td>
-<td>fodhelper UAC bypass</td>
+<td>fodhelper registry hijack UAC bypass (Windows 10/11)</td>
 </tr>
 <tr>
 <td><code>token_steal [pid]</code></td>
 <td>✓</td>
-<td>Token impersonation</td>
+<td>SeDebugPrivilege + DuplicateToken impersonation</td>
 </tr>
 <tr>
 <td><code>inject_shellcode &lt;pid&gt; &lt;hex&gt;</code></td>
 <td>✓</td>
-<td>Shellcode injection</td>
+<td>Shellcode injection via WriteProcessMemory + CreateRemoteThread</td>
 </tr>
 <tr>
 <td><code>dll_inject &lt;pid&gt; &lt;dll&gt;</code></td>
 <td>✓</td>
-<td>DLL injection</td>
+<td>LoadLibraryA remote thread DLL injection</td>
 </tr>
 <tr>
 <td><code>living_off_land &lt;lolbin&gt; &lt;args&gt;</code></td>
 <td></td>
-<td>LOLBin execution</td>
+<td>Signed Windows LOLBin execution</td>
 </tr>
 <tr>
 <td><code>patch_amsi</code></td>
 <td></td>
-<td>Patch AMSI in-process</td>
+<td>Byte-patch AmsiScanBuffer (VirtualProtect + memmove)</td>
 </tr>
 <tr>
 <td><code>disable_defender</code></td>
 <td></td>
-<td>Disable Windows Defender</td>
+<td>Disable Windows Defender via registry + service</td>
 </tr>
 <tr>
 <td><code>hide_file &lt;file&gt;</code></td>
 <td></td>
-<td>Set hidden attribute</td>
+<td>Set FILE_ATTRIBUTE_HIDDEN</td>
 </tr>
 <tr>
-<td><code>timestomp &lt;file&gt; &lt;time&gt;</code></td>
+<td><code>timestomp &lt;file&gt; &lt;ref&gt;</code></td>
 <td></td>
-<td>Modify timestamps</td>
+<td>Copy timestamps from reference file (Windows FILETIME + utime)</td>
 </tr>
 <tr>
 <td><code>clear_logs</code></td>
 <td></td>
-<td>Clear event logs</td>
+<td>Wipe Windows event logs or Linux syslog/auth.log</td>
 </tr>
 <tr>
 <td><code>self_destruct</code></td>
 <td>✓</td>
-<td>Wipe agent + persistence</td>
+<td>Remove persistence registry key, delete EXE, exit</td>
 </tr>
 </tbody>
 </table>
@@ -2136,13 +2240,13 @@
 </table>
 <hr />
 <h2 id="module-context-options-table">Module Context Options Table<a class="headerlink" href="#module-context-options-table" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>  Option    Type     Value         Req  Description
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  ──────────────────────────────────────────────────────
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  RHOSTS    string   (not set)     yes  Target IP or CIDR
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>  PORTS     string   21-23,80...   yes  Ports to scan
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>  THREADS   integer  100           no   Concurrent threads
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>  TIMEOUT   integer  2             no   Connect timeout
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  VERBOSE   boolean  False         no   Print closed ports
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>  Option    Type     Value         Req  Description
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  ──────────────────────────────────────────────────────
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  RHOSTS    string   (not set)     yes  Target IP or CIDR
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>  PORTS     string   21-23,80...   yes  Ports to scan
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>  THREADS   integer  100           no   Concurrent threads
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  TIMEOUT   integer  2             no   Connect timeout
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>  VERBOSE   boolean  False         no   Print closed ports
 </span></code></pre></div>
 <p>Option types: <code>string</code>, <code>integer</code>, <code>boolean</code>, <code>address</code>, <code>cidr</code>, <code>port</code>, <code>enum</code></p>
 <hr />
