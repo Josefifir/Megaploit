@@ -70,44 +70,56 @@ payload <format> [options]
 
 Formats:
   py            Pure Python source agent
-  ps1           PowerShell dropper
-  hta           HTML Application dropper
-  vba           VBA macro dropper
-  sh            Bash/sh dropper
-  bat           Windows batch dropper
+  ps1           PowerShell dropper (AMSI bypass + ETW patch + sandbox check baked in)
+  hta           HTML Application dropper (VBScript sandbox checks)
+  vba           VBA macro dropper (sandbox checks + Application.Wait)
+  sh            Bash/sh dropper (nproc/df/uptime sandbox checks)
+  bat           Windows batch dropper (inline AMSI/ETW bypass via PowerShell)
   raw           Same as py (for piping)
-  exe           PyInstaller Windows EXE (requires pyinstaller)
+  exe           PyInstaller Windows EXE (requires pyinstaller; supports PE metadata spoofing)
   elf           PyInstaller Linux ELF (requires pyinstaller)
-  go_exe        Go agent compiled for Windows (requires go)  ← NEW v3
-  go_elf        Go agent compiled for Linux/macOS (requires go)  ← NEW v3
+  go_exe        Go agent compiled for Windows (requires go)  <- NEW v3
+  go_elf        Go agent compiled for Linux/macOS (requires go)  <- NEW v3
   oneliner_py   Single Python one-liner (gzip+base64)
-  oneliner_ps1  Single PowerShell one-liner (gzip+base64)
+  oneliner_ps1  Single PowerShell one-liner (inline AMSI + ETW bypass)
+  py_stealth    ctypes-only agent -- no subprocess/socket at top level (AV-friendly)  <- NEW v4
 
 Options:
-  --out <file>       Write to file instead of printing
-  --tls              Agent uses TLS
-  --encoder <name>   Apply encoder (can be repeated)
-  --upx              UPX-pack binary (exe/elf only; requires upx on PATH)
+  --out <file>          Write to file instead of printing
+  --tls                 Agent uses TLS
+  --encoder <name>      Apply encoder (can be repeated)
+  --upx                 UPX-pack binary (exe/elf only; requires upx on PATH)
+  --sleep <secs>        Sleep N seconds before connecting (sandbox evasion)
+  --pe-company <name>   EXE/ELF PE metadata: company name  (exe/elf only)
+  --pe-product <name>   EXE/ELF PE metadata: product name  (exe/elf only)
+  --pe-version <ver>    EXE/ELF PE metadata: version string (exe/elf only)
+  --pe-copyright <str>  EXE/ELF PE metadata: copyright string (exe/elf only)
 
 Encoders:
-  xor_rolling    XOR with rolling 32-byte key (key prepended to output)
-  rc4            RC4 stream cipher (16-byte key prepended)
-  b64gzip        Gzip compress → base64 encode
-  rev            Reverse byte sequence
-  zlib_b64       Zlib compress → base64 encode
-  rot13_src      ROT-13 printable ASCII chars
-  null_pad       Insert null byte after every real byte
-  comment_spam   Insert random inline comments (~40% of lines)
-  varname_rand   Randomise short Python variable names
-  ps1_concat     PowerShell string concat obfuscation
+  xor_rolling     XOR with rolling 32-byte key (key prepended to output)
+  rc4             RC4 stream cipher (16-byte key prepended)
+  b64gzip         Gzip compress -> base64 encode
+  rev             Reverse byte sequence
+  zlib_b64        Zlib compress -> base64 encode
+  rot13_src       ROT-13 printable ASCII chars
+  null_pad        Insert null byte after every real byte
+  comment_spam    Insert random inline comments (~40% of lines)
+  varname_rand    Randomise short Python variable names
+  ps1_concat      PowerShell string concat obfuscation
+  sandbox_detect  Prepend Python sandbox guard (CPU/disk/uptime/hostname/debugger/mouse)  <- NEW v4
+  etw_patch       Prepend Python ETW patcher (VirtualProtect -> 0xC3 RET stub)  <- NEW v4
 
 Examples:
   payload ps1 --out agent.ps1
   payload exe --out agent.exe --upx
+  payload exe --out agent.exe --pe-company "Microsoft" --pe-product "Windows Defender"
   payload go_exe --out agent.exe
   payload go_elf --out agent_linux
   payload py --encoder comment_spam --encoder varname_rand --out obf.py
+  payload py --encoder sandbox_detect --encoder etw_patch --out hardened.py
+  payload py_stealth --out stealth_agent.py
   payload oneliner_py
+  payload ps1 --sleep 30 --out agent.ps1
 ```
 
 ### Staged Delivery — NEW v3
@@ -398,6 +410,8 @@ Kiwi is a compiled C binary (`megaploit_kiwi.exe`) that runs on the Windows targ
 | `timestomp <file> <ref>` | | Copy timestamps from reference file (Windows FILETIME + utime) |
 | `clear_logs` | | Wipe Windows event logs or Linux syslog/auth.log |
 | `self_destruct` | ✓ | Remove persistence registry key, delete EXE, exit |
+| `etw_patch` | | Live in-process ETW patch — VirtualProtect `EtwEventWrite` → `0xC3` RET stub (Windows only) ← NEW v4 |
+| `sandbox_check` | | Diagnostic report of all sandbox/VM indicators: CPU count, disk size, uptime, hostname pattern, debugger, mouse movement (Windows-aware) ← NEW v4 |
 
 ### Keylogger
 

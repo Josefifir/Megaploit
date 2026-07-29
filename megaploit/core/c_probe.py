@@ -382,6 +382,8 @@ _PYTHON_AGENT_VERBS: frozenset[str] = frozenset({
     "browser_creds", "exit", "q",
     # Added in v4 — kiwi native C credential dumper
     "kiwi",
+    # Added in v4 — AV evasion live handlers
+    "etw_patch", "sandbox_check",
 })
 
 

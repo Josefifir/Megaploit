@@ -102,7 +102,7 @@ Megaploit is a modular, extensible **Command & Control (C2) framework** and **pe
 | **Metasploit-style module system** | `auxiliary`, `exploit`, `post`, `payload` modules with full options lifecycle |
 | **AgentModule base class** | Session-bound post-exploitation modules with built-in `_send`, `_upload`, `_download` |
 | **8 built-in scanner modules** | TCP port scan, SMB enum, HTTP probe, SSH banner, DNS, ICMP sweep, UDP, banner grab |
-| **13-format payload builder** | py / ps1 / hta / vba / sh / bat / exe / elf / go_exe / go_elf / oneliner variants + encoder pipeline |
+| **14-format payload builder** | py / ps1 / hta / vba / sh / bat / exe / elf / go_exe / go_elf / oneliner variants / **py_stealth** + encoder pipeline |
 | **Go agent build integration** | `payload go_exe` / `payload go_elf` — compile Go agent via `go build` |
 | **Post-exploitation pipeline** | Named collection profiles auto-run on every session |
 | **Malleable C2 profile** | YAML traffic shaping — URI rotation, headers, User-Agent, sleep/jitter |
@@ -136,7 +136,7 @@ Megaploit is a modular, extensible **Command & Control (C2) framework** and **pe
 | **Post-exploitation** | 116 session commands; SOCKS5 proxy; port-forward; screenshot stream; webcam; DLL inject; AMSI patch; process migration; memory R/W | Meterpreter + post modules |
 | **Exploit modules** | 20 modules (EternalBlue, Log4Shell, BlueKeep, ProxyLogon, Spring4Shell, Heartbleed, vsFTPd, Shellshock, PrintNightmare, and more) | 2 000+ modules |
 | **Module system** | `auxiliary`, `exploit`, `post`, `payload` with full options lifecycle; `AgentModule` base class | Same architecture (the original) |
-| **Evasion** | `patch_amsi`, `disable_defender`, `timestomp`, `clear_logs`, `hide_file`, `living_off_land` | Limited built-in; mostly AV-bypass payloads |
+| **Evasion** | `patch_amsi`, `disable_defender`, `timestomp`, `clear_logs`, `hide_file`, `living_off_land`; live `etw_patch` + `sandbox_check` session commands; AMSI/ETW baked into PS1/HTA/BAT/oneliner droppers; `py_stealth` format; `sandbox_detect` + `etw_patch` encoders; PE metadata spoofing for EXE builds | Limited built-in; mostly AV-bypass payloads |
 | **Toolbox** | 203-tool catalogue — install any GitHub tool in any language | No equivalent |
 | **Plugin system** | TOML hot-reload plugins, zero Python required | Metasploit plugins (Ruby) |
 | **Malleable C2 profile** | YAML traffic shaping — URI rotation, User-Agent, sleep/jitter | Cobalt Strike concept; not native to Metasploit |
@@ -631,7 +631,7 @@ megaploit [1] » run
 ```
 megaploit [1] » payload help
 
-  Formats: py  ps1  hta  vba  sh  bat  raw  exe  elf  go_exe  go_elf  oneliner_py  oneliner_ps1
+  Formats: py  ps1  hta  vba  sh  bat  raw  exe  elf  go_exe  go_elf  oneliner_py  oneliner_ps1  py_stealth
 
 megaploit [1] » payload go_exe --out agent.exe
 megaploit [1] » payload ps1 --encoder comment_spam --encoder varname_rand --out obf.ps1
@@ -650,7 +650,7 @@ megaploit [1] » payload ps1 --encoder comment_spam --encoder varname_rand --out
 | **Network** | portfwd, arp, dns_query, routes, ifconfig, netstat, ping_sweep, smb_shares, ssh_connect, rdp_enable, socks5, port_scan |
 | **Exfil** | exfil_dns, exfil_http |
 | **Privesc** | token_steal, uac_bypass, make_token, rev2self, getsystem, whoami_priv |
-| **Evasion** | lock_screen, patch_amsi, disable_defender, hide_file, timestomp, clear_logs |
+| **Evasion** | lock_screen, patch_amsi, disable_defender, hide_file, timestomp, clear_logs, **etw_patch**, **sandbox_check** |
 | **Injection** | inject_shellcode, dll_inject, living_off_land, reverse_shell |
 | **GUI** | msgbox, mouse_move, type_keys, screenshot_region, notify, open_url, play_sound, set_wallpaper |
 | **Intelligence** | ps, kill, env, installed_software, active_windows, services, users, logged_in, os_info, idle_time |
