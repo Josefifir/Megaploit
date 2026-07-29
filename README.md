@@ -322,6 +322,9 @@ pip install -r requirements.txt
 
 ## Installation
 
+### Docker installation
+**See docs/DOCKER.md for docker installation guide.**
+
 ### Automated (Linux)
 
 ```bash
