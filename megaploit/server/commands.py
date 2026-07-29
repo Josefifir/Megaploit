@@ -1695,9 +1695,15 @@ def cmd_beacon_sleep(session: Session, args: list[str]) -> CommandResult:
 @_cmd("interactive", usage="interactive",
       help_text="Drop into a real PTY shell session on the target (Ctrl-C to detach)")
 def cmd_interactive(session: Session, args: list[str]) -> CommandResult:
-    """Handled by MeterpreterSession.interact() — this stub allows CLI fallback."""
-    send_msg(session.conn, "pty_shell")
-    return _ok(recv_msg(session.conn))
+    """
+    Handled by MeterpreterSession._interactive_pty() which owns the full
+    PTY handshake and I/O loop.  This stub is reached only from the plain
+    session loop — direct the operator to use the irb/interact command.
+    """
+    return _ok(
+        "[*] Use the  irb  command from within a session to enter interactive PTY mode.\n"
+        "    (type  use <id>  then  irb)"
+    )
 
 
 # ---------------------------------------------------------------------------

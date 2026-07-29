@@ -576,7 +576,8 @@ def _pty_unix(conn) -> str:
         )
         os.close(slave_fd)
 
-        _send_msg(conn, "PTY_READY")
+        with get_send_lock():
+            _send_msg(conn, "PTY_READY")
 
         conn.settimeout(0.1)
         while proc.poll() is None:
@@ -586,7 +587,8 @@ def _pty_unix(conn) -> str:
                 if r:
                     data = os.read(master_fd, 4096)
                     if data:
-                        _send_msg(conn, "PTY_DATA:" + data.decode("utf-8", errors="replace"))
+                        with get_send_lock():
+                            _send_msg(conn, "PTY_DATA:" + data.decode("utf-8", errors="replace"))
             except OSError:
                 break
 
@@ -632,7 +634,8 @@ def _pty_windows(conn) -> str:
             stderr=subprocess.STDOUT,
             text=False,
         )
-        _send_msg(conn, "PTY_READY")
+        with get_send_lock():
+            _send_msg(conn, "PTY_READY")
         conn.settimeout(0.1)
 
         def _reader():
@@ -640,8 +643,9 @@ def _pty_windows(conn) -> str:
                 try:
                     line = proc.stdout.read(4096)  # type: ignore[union-attr]
                     if line:
-                        _send_msg(conn, "PTY_DATA:" +
-                                  line.decode("utf-8", errors="replace"))
+                        with get_send_lock():
+                            _send_msg(conn, "PTY_DATA:" +
+                                      line.decode("utf-8", errors="replace"))
                 except OSError:
                     break
 
