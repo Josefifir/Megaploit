@@ -59,6 +59,7 @@ def start_heartbeat(
     conn: socket.socket,
     interval: float = 30.0,
     timeout: float  = 10.0,
+    send_lock: Optional[threading.Lock] = None,
 ) -> threading.Thread:
     """
     Start a daemon thread that sends ``PING`` every *interval* seconds.
@@ -68,6 +69,8 @@ def start_heartbeat(
     conn:      the live C2 socket
     interval:  seconds between PINGs (default 30)
     timeout:   socket send timeout for the PING (default 10)
+    send_lock: optional lock shared with the shell loop so that PING
+               cannot interleave with a command response on the socket.
 
     Returns
     -------
@@ -82,7 +85,11 @@ def start_heartbeat(
                 conn.settimeout(timeout)
                 try:
                     from megaploit.core.protocol import send_msg
-                    send_msg(conn, "PING")
+                    if send_lock is not None:
+                        with send_lock:
+                            send_msg(conn, "PING")
+                    else:
+                        send_msg(conn, "PING")
                 except Exception:
                     pass
                 finally:
