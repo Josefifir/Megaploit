@@ -202,7 +202,7 @@ def _screenshot(conn, args: list[str]) -> str | None:
         import numpy as np
 
         quality = 85          # JPEG quality — good balance of size vs fidelity
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             monitor = sct.monitors[1]
             raw = sct.grab(monitor)
             arr = np.array(raw)
@@ -301,7 +301,7 @@ def _screenshot_timelapse(conn, args: list[str]) -> str | None:
         quality = 85
         frames: list[bytes] = []
 
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             monitor = sct.monitors[1]
             for i in range(count):
                 raw = sct.grab(monitor)
@@ -1724,7 +1724,7 @@ def _screenshot_region(conn, args: list[str]) -> str | None:
     x, y, w, h = int(args[0]), int(args[1]), int(args[2]), int(args[3])
     try:
         import io, cv2, mss, numpy as np
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             region = {"top": y, "left": x, "width": w, "height": h}
             raw = sct.grab(region)
             arr = np.array(raw)
@@ -3390,7 +3390,7 @@ def _screenrecord(conn, args: list[str]) -> str | None:
         import mss
         import numpy as np
 
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             monitor = sct.monitors[1]
             src_w, src_h = monitor["width"], monitor["height"]
 
@@ -3407,7 +3407,7 @@ def _screenrecord(conn, args: list[str]) -> str | None:
         tick     = 1.0 / fps
         deadline = time.monotonic() + tick
 
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             monitor = sct.monitors[1]
             end_time = time.monotonic() + seconds
             while time.monotonic() < end_time:
