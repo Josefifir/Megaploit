@@ -4,10 +4,12 @@ Tests exercise the public framing helpers independently of the crypto layer.
 """
 from __future__ import annotations
 
+import importlib
 import io
 import json
 import socket
 import struct
+import sys
 import threading
 import time
 
@@ -180,3 +182,56 @@ class TestProtocolImport:
     def test_protocol_has_file_helpers(self):
         import megaploit.core.protocol as proto
         assert hasattr(proto, "send_file") or hasattr(proto, "recv_file") or True
+
+
+# ---------------------------------------------------------------------------
+# Fail-safe: no XOR-CTR fallback when cryptography is unavailable
+# ---------------------------------------------------------------------------
+
+class TestNoCryptographyFallback:
+    """Verify that the module raises ImportError (not a silent fallback) when
+    the 'cryptography' package is not available.  The XOR-CTR fallback was
+    removed; encrypted transport must refuse to load rather than degrade."""
+
+    def test_protocol_raises_on_missing_cryptography(self):
+        """Importing protocol.py without the cryptography package must raise
+        ImportError, not silently fall back to a weaker cipher."""
+
+        proto_key = "megaploit.core.protocol"
+
+        # Evict the protocol module so it re-executes on the next import.
+        saved_proto = sys.modules.pop(proto_key, None)
+
+        # Block the cryptography package by injecting None sentinels into
+        # sys.modules (None is the canonical "this module does not exist"
+        # sentinel recognised by the import machinery on all Python versions).
+        crypto_keys = [k for k in sys.modules
+                       if k == "cryptography" or k.startswith("cryptography.")]
+        saved_crypto = {k: sys.modules.pop(k) for k in crypto_keys}
+
+        # Sentinel names we must block so the protocol's
+        # `from cryptography.hazmat.primitives.ciphers.aead import AESGCM`
+        # raises ImportError rather than succeeding from a cached submodule.
+        _BLOCKED = [
+            "cryptography",
+            "cryptography.hazmat",
+            "cryptography.hazmat.primitives",
+            "cryptography.hazmat.primitives.ciphers",
+            "cryptography.hazmat.primitives.ciphers.aead",
+        ]
+        for name in _BLOCKED:
+            sys.modules[name] = None  # type: ignore[assignment]
+
+        try:
+            with pytest.raises(ImportError, match="cryptography"):
+                importlib.import_module(proto_key)
+        finally:
+            # Remove sentinels
+            for name in _BLOCKED:
+                sys.modules.pop(name, None)
+            # Restore real cryptography modules
+            sys.modules.update(saved_crypto)
+            # Restore real protocol module (or remove the failed partial import)
+            sys.modules.pop(proto_key, None)
+            if saved_proto is not None:
+                sys.modules[proto_key] = saved_proto

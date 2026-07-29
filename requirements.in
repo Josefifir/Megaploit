@@ -1,0 +1,39 @@
+# requirements.in
+# ~~~~~~~~~~~~~~~
+# Human-maintained source of truth for Megaploit's Python dependencies.
+# Intentionally loose — only minimum bounds are specified here.
+#
+# DO NOT install this file directly.  Use either:
+#   pip install -r requirements.txt                          # flexible (end-users)
+#   pip install -r requirements.txt -c constraints.txt      # pinned  (CI / reproducible installs)
+#
+# To regenerate constraints.txt after updating bounds here:
+#   pip install pip-tools
+#   pip-compile requirements.in --output-file constraints.txt
+#
+# System requirements:
+#   git must be on PATH (for toolbox clone/update and self-update checks)
+#   For exe/elf payload compilation: pip install pyinstaller
+#   For UPX packing: install upx from https://upx.github.io/
+
+# ── Core (operator console) ────────────────────────────────────────────────
+termcolor>=2.3.0
+
+# TOML plugin support — stdlib on Python ≥ 3.11; this polyfill covers 3.10
+tomli>=2.0.1; python_version < "3.11"
+
+# ── Agent capabilities ─────────────────────────────────────────────────────
+pynput>=1.7.6
+PyAutoGUI>=0.9.54
+mss>=9.0.1
+opencv-python>=4.8.0
+numpy>=1.24.0
+sounddevice>=0.4.6
+soundfile>=0.12.1
+
+# ── Transport encryption (required) ────────────────────────────────────────
+cryptography>=41.0.0
+
+# ── Web streaming (agent-side Flask MJPEG servers) ─────────────────────────
+Flask>=3.0.0
+Werkzeug>=3.0.0
