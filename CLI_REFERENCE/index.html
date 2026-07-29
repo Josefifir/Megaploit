@@ -700,6 +700,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pivot-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pivot Routes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#operations" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -910,10 +921,87 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#windows-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Windows Registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desktop-window-station" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Desktop &amp; Window Station
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Process Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pivoting-networking" class="md-nav__link">
     <span class="md-ellipsis">
       
         Pivoting &amp; Networking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background-jobs-in-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Background Jobs (In-Session)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extension-management-in-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extension Management (In-Session)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#python-repl-in-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python REPL (In-Session)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-module-runner-in-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post Module Runner (In-Session)
       
     </span>
   </a>
@@ -1220,6 +1308,26 @@
 <td>List all active sessions with ID, IP:Port, OS, hostname, username, tag, uptime</td>
 </tr>
 <tr>
+<td><code>sessions -K</code></td>
+<td>Kill <strong>all</strong> active sessions immediately</td>
+</tr>
+<tr>
+<td><code>sessions -k &lt;id&gt;</code></td>
+<td>Kill one session by ID</td>
+</tr>
+<tr>
+<td><code>sessions -u &lt;id&gt;</code></td>
+<td>Upgrade session — loads meterp extensions via <code>load_extension megaploit.agent.meterp</code></td>
+</tr>
+<tr>
+<td><code>sessions -c &lt;cmd&gt;</code></td>
+<td>Broadcast a C2 command (not just raw shell) to <strong>all</strong> active sessions</td>
+</tr>
+<tr>
+<td><code>sessions -s &lt;tag&gt;</code></td>
+<td>Filter session list by tag substring</td>
+</tr>
+<tr>
 <td><code>use &lt;session_id&gt;</code></td>
 <td>Enter session interaction loop for session <code>&lt;id&gt;</code></td>
 </tr>
@@ -1229,7 +1337,7 @@
 </tr>
 <tr>
 <td><code>broadcast &lt;cmd&gt;</code></td>
-<td>Run a shell command on ALL active sessions simultaneously</td>
+<td>Run a raw shell command on ALL active sessions simultaneously</td>
 </tr>
 </tbody>
 </table>
@@ -1463,6 +1571,13 @@
 </span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>  pipeline disable creds
 </span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>  pipeline status
 </span></code></pre></div>
+<h3 id="pivot-routes">Pivot Routes<a class="headerlink" href="#pivot-routes" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>route add    &lt;cidr&gt; &lt;session_id&gt;   Add a route through a session (e.g. route add 10.10.0.0/16 2)
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>route remove &lt;cidr&gt;                Remove a route
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>route print                        List all routes
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>route flush                        Remove all routes
+</span></code></pre></div>
+<p>Routes document the pivot topology and are consulted by toolbox tools and post modules.</p>
 <h3 id="operations">Operations<a class="headerlink" href="#operations" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -1596,28 +1711,28 @@
 </tbody>
 </table>
 <h3 id="toolbox">Toolbox<a class="headerlink" href="#toolbox" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>toolbox install &lt;url&gt; &lt;name&gt; [desc] [--tags t1,t2]
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>toolbox catalogue [query]           Browse 203-tool catalogue
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>toolbox catalogue install &lt;name&gt;    Install from catalogue
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>toolbox list                        List installed tools
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>toolbox search &lt;query&gt;              Search by name/tag/description
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>toolbox info &lt;name&gt;                 Show tool details
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>toolbox update &lt;name&gt;               Pull latest + rebuild
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>toolbox update-all                  Update all installed tools
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>toolbox check-updates               Check for updates without applying
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>toolbox rebuild &lt;name&gt;              Re-build without git pull
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>toolbox remove &lt;name&gt;               Uninstall
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>toolbox set-entry &lt;name&gt; &lt;path&gt;     Override entry-point
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>toolbox healthcheck [name]          Verify tool is runnable
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>toolbox dockerfile &lt;name&gt;           Generate Dockerfile
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>toolbox audit &lt;name&gt;                Security audit
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>toolbox plan &lt;name|url&gt;             Dry-run install plan
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>toolbox workspace list              List named workspaces
-</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>toolbox workspace new &lt;name&gt;        Create new workspace
-</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>toolbox workspace install-all &lt;ws&gt;  Install all tools in workspace
-</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>toolbox workspace export &lt;ws&gt;       Export workspace to JSON
-</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>toolbox config &lt;name&gt;               Show per-tool runtime config
-</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>toolbox config &lt;name&gt; set &lt;k&gt; &lt;v&gt;   Set config value
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>toolbox install &lt;url&gt; &lt;name&gt; [desc] [--tags t1,t2]
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>toolbox catalogue [query]           Browse 203-tool catalogue
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>toolbox catalogue install &lt;name&gt;    Install from catalogue
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>toolbox list                        List installed tools
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>toolbox search &lt;query&gt;              Search by name/tag/description
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>toolbox info &lt;name&gt;                 Show tool details
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>toolbox update &lt;name&gt;               Pull latest + rebuild
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>toolbox update-all                  Update all installed tools
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>toolbox check-updates               Check for updates without applying
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>toolbox rebuild &lt;name&gt;              Re-build without git pull
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>toolbox remove &lt;name&gt;               Uninstall
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>toolbox set-entry &lt;name&gt; &lt;path&gt;     Override entry-point
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>toolbox healthcheck [name]          Verify tool is runnable
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>toolbox dockerfile &lt;name&gt;           Generate Dockerfile
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>toolbox audit &lt;name&gt;                Security audit
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>toolbox plan &lt;name|url&gt;             Dry-run install plan
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>toolbox workspace list              List named workspaces
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>toolbox workspace new &lt;name&gt;        Create new workspace
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>toolbox workspace install-all &lt;ws&gt;  Install all tools in workspace
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>toolbox workspace export &lt;ws&gt;       Export workspace to JSON
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>toolbox config &lt;name&gt;               Show per-tool runtime config
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>toolbox config &lt;name&gt; set &lt;k&gt; &lt;v&gt;   Set config value
 </span></code></pre></div>
 <h3 id="plugins">Plugins<a class="headerlink" href="#plugins" title="Permanent link">&para;</a></h3>
 <table>
@@ -1868,12 +1983,17 @@
 <tr>
 <td><code>upload</code></td>
 <td><code>upload &lt;local_file&gt;</code></td>
-<td>Push file to target</td>
+<td>Push file to target (shows size + speed)</td>
 </tr>
 <tr>
 <td><code>download</code></td>
 <td><code>download &lt;remote_file&gt;</code></td>
-<td>Pull file to loot</td>
+<td>Pull file to loot (shows size + speed)</td>
+</tr>
+<tr>
+<td><code>verify</code></td>
+<td><code>verify &lt;local_file&gt; &lt;remote_file&gt;</code></td>
+<td>Compare SHA-256 both sides — confirm transfer integrity</td>
 </tr>
 <tr>
 <td><code>zip_download</code></td>
@@ -2304,6 +2424,86 @@
 </tr>
 </tbody>
 </table>
+<h3 id="windows-registry">Windows Registry<a class="headerlink" href="#windows-registry" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>reg query</code></td>
+<td><code>reg query &lt;HIVE\\key&gt;</code></td>
+<td>List all values + subkeys under a key</td>
+</tr>
+<tr>
+<td><code>reg get</code></td>
+<td><code>reg get &lt;HIVE\\key&gt; &lt;value&gt;</code></td>
+<td>Read one registry value</td>
+</tr>
+<tr>
+<td><code>reg set</code></td>
+<td><code>reg set &lt;HIVE\\key&gt; &lt;value&gt; REG_SZ &lt;data&gt;</code></td>
+<td>Write/create a value</td>
+</tr>
+<tr>
+<td><code>reg delete</code></td>
+<td><code>reg delete &lt;HIVE\\key&gt; [value]</code></td>
+<td>Delete a value or a whole key</td>
+</tr>
+</tbody>
+</table>
+<p>HIVE shortcuts: <code>HKLM</code>, <code>HKCU</code>, <code>HKCR</code>, <code>HKU</code>, <code>HKCC</code>
+REG types: <code>REG_SZ</code>, <code>REG_DWORD</code>, <code>REG_QWORD</code>, <code>REG_BINARY</code>, <code>REG_EXPAND_SZ</code>, <code>REG_MULTI_SZ</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>reg query  HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>reg get    HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run  MyApp
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>reg set    HKCU\\Software\\Classes\\myext  (Default)  REG_SZ  &quot;notepad.exe %1&quot;
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>reg delete HKCU\\Software\\Classes\\myext
+</span></code></pre></div>
+<h3 id="desktop-window-station">Desktop &amp; Window Station<a class="headerlink" href="#desktop-window-station" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>getdesktop</code></td>
+<td>Return the name of the current interactive desktop (Windows <code>GetUserObjectInformation</code>)</td>
+</tr>
+<tr>
+<td><code>enumdesktops</code></td>
+<td>Enumerate all desktops in the current window station (<code>EnumDesktopsW</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="process-execution">Process Execution<a class="headerlink" href="#process-execution" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>execute</code></td>
+<td><code>execute &lt;exe&gt; [args...]</code></td>
+<td>Run a binary with explicit argv (no shell) — captures stdout+stderr</td>
+</tr>
+<tr>
+<td><code>run_as</code></td>
+<td><code>run_as &lt;user&gt; &lt;pass&gt; &lt;cmd&gt;</code></td>
+<td>Run a command as a different user (<code>CreateProcessWithLogonW</code> / <code>sudo -u</code>)</td>
+</tr>
+</tbody>
+</table>
 <h3 id="pivoting-networking">Pivoting &amp; Networking<a class="headerlink" href="#pivoting-networking" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2324,6 +2524,14 @@
 <tr>
 <td><code>ping_sweep &lt;cidr&gt;</code></td>
 <td>ICMP ping sweep</td>
+</tr>
+<tr>
+<td><code>arp_scan &lt;cidr&gt;</code></td>
+<td>Active ARP scan — scapy / arp-scan / nmap fallback (finds hosts even when ICMP is blocked)</td>
+</tr>
+<tr>
+<td><code>net_view [domain]</code></td>
+<td>Domain computer / DC / share enumeration</td>
 </tr>
 <tr>
 <td><code>smb_shares &lt;host&gt;</code></td>
@@ -2351,6 +2559,84 @@
 </tr>
 </tbody>
 </table>
+<h3 id="background-jobs-in-session">Background Jobs (In-Session)<a class="headerlink" href="#background-jobs-in-session" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_bg</code></td>
+<td><code>run_bg &lt;command&gt;</code></td>
+<td>Submit a shell command as a background job; returns a job ID</td>
+</tr>
+<tr>
+<td><code>job_result</code></td>
+<td><code>job_result &lt;job_id&gt;</code></td>
+<td>Retrieve output of a completed background job</td>
+</tr>
+</tbody>
+</table>
+<h3 id="extension-management-in-session">Extension Management (In-Session)<a class="headerlink" href="#extension-management-in-session" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Usage</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>load_ext</code></td>
+<td><code>load_ext &lt;local.py&gt;</code></td>
+<td>Upload a Python extension file and register its verbs on the agent in one step</td>
+</tr>
+<tr>
+<td><code>load_extension</code></td>
+<td><code>load_extension &lt;path_or_module&gt;</code></td>
+<td>Load a Python extension by path or module name already on the agent</td>
+</tr>
+<tr>
+<td><code>unload_extension</code></td>
+<td><code>unload_extension &lt;name&gt;</code></td>
+<td>Remove a previously loaded extension</td>
+</tr>
+<tr>
+<td><code>list_extensions</code></td>
+<td><code>list_extensions</code></td>
+<td>List all currently loaded extensions and their verbs</td>
+</tr>
+</tbody>
+</table>
+<h3 id="python-repl-in-session">Python REPL (In-Session)<a class="headerlink" href="#python-repl-in-session" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>irb
+</span></code></pre></div>
+<p>Drops into an interactive Python REPL running inside the agent's interpreter.
+Multi-line blocks are accumulated until a blank line is submitted.
+Type <code>exit</code> or <code>quit</code> to leave.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>&gt;&gt;&gt; import os; print(os.getcwd())
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>/home/victim
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>&gt;&gt;&gt; for p in os.listdir(&#39;/&#39;):
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>...     print(p)
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>bin
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>boot
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>dev
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>...
+</span></code></pre></div>
+<h3 id="post-module-runner-in-session">Post Module Runner (In-Session)<a class="headerlink" href="#post-module-runner-in-session" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>run post/multi/gather/sysinfo
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>run post/linux/gather/dump_shadow
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>run post/windows/gather/hashdump
+</span></code></pre></div>
+<p>Looks up the named post module in the registry and calls <code>mod.run(session=&lt;current_session&gt;)</code>.
+Use <code>show modules</code> to list all available post modules.</p>
 <h3 id="toolbox-in-session">Toolbox (In-Session)<a class="headerlink" href="#toolbox-in-session" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2372,13 +2658,13 @@
 </table>
 <hr />
 <h2 id="module-context-options-table">Module Context Options Table<a class="headerlink" href="#module-context-options-table" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>  Option    Type     Value         Req  Description
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  ──────────────────────────────────────────────────────
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  RHOSTS    string   (not set)     yes  Target IP or CIDR
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>  PORTS     string   21-23,80...   yes  Ports to scan
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>  THREADS   integer  100           no   Concurrent threads
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  TIMEOUT   integer  2             no   Connect timeout
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>  VERBOSE   boolean  False         no   Print closed ports
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>  Option    Type     Value         Req  Description
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  ──────────────────────────────────────────────────────
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>  RHOSTS    string   (not set)     yes  Target IP or CIDR
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>  PORTS     string   21-23,80...   yes  Ports to scan
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>  THREADS   integer  100           no   Concurrent threads
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>  TIMEOUT   integer  2             no   Connect timeout
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>  VERBOSE   boolean  False         no   Print closed ports
 </span></code></pre></div>
 <p>Option types: <code>string</code>, <code>integer</code>, <code>boolean</code>, <code>address</code>, <code>cidr</code>, <code>port</code>, <code>enum</code></p>
 <hr />
