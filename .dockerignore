@@ -1,4 +1,15 @@
-# ── Python artefacts ──────────────────────────────────────────────────────────
+# =============================================================================
+#  Megaploit — .dockerignore
+#  Keeps the build context lean and keeps secrets / host cruft out of the image.
+# =============================================================================
+
+# Version control + CI
+.git/
+.gitignore
+.gitmodules
+.github/
+
+# Python bytecode / caches
 __pycache__/
 *.py[cod]
 *.pyo
@@ -10,13 +21,14 @@ dist/
 build/
 .eggs/
 
-# ── Virtual environments ──────────────────────────────────────────────────────
+# Virtual environments
 venv/
 .venv/
 env/
 .env/
 
-# ── Secrets / credentials (never bake into the image) ─────────────────────────
+# Secrets / credentials — NEVER bake into an image.
+# secret.key and TLS material are generated/mounted at runtime via /data.
 secret.key
 *.pem
 *.key
@@ -25,42 +37,51 @@ secret.key
 *.crt
 *.cer
 
-# ── Loot (collected engagement data — stays on the host) ──────────────────────
+# Operator-side collected data (persisted via the /data volume, not the image)
 loot/
+!loot/.gitkeep
 
-# ── Toolbox clones (large, rebuilt on demand) ─────────────────────────────────
+# Toolbox clones (large; rebuilt on demand by the toolbox at runtime)
 tools/*/
 !tools/tools.json
 
-# ── MkDocs build output ────────────────────────────────────────────────────────
+# Face-detection saved model (11 MB, not used by the server console)
+saved_model/
+
+# MkDocs build output
 site/
 
-# ── Tests (not needed at runtime) ─────────────────────────────────────────────
+# Test suite (not needed at runtime)
 tests/
 
-# ── IDEs / OS artefacts ────────────────────────────────────────────────────────
+# Editor / OS cruft
 .idea/
 .vscode/
+.qodo/
 *.swp
 *.swo
 *~
 .DS_Store
 Thumbs.db
 desktop.ini
-.qodo/
 
-# ── Git ───────────────────────────────────────────────────────────────────────
-.git/
-.gitignore
-.gitmodules
-.github/
+# Docker files themselves (avoid self-referential COPY confusion)
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
 
-# ── Docs source (included in image only if you want mkdocs serve) ─────────────
-# Comment these two lines out if you want docs available inside the container.
+# Build / test artefacts
+.coverage
+htmlcov/
+.pytest_cache/
+agent_compiled/
+
+# Docs source (not needed at runtime; remove to serve mkdocs inside the container)
 docs/
 mkdocs.yml
 
-# ── CI / misc ─────────────────────────────────────────────────────────────────
+# Misc project files
 *.md
 LICENSE
 CODE_OF_CONDUCT.md

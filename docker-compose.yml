@@ -1,63 +1,80 @@
-# ─── Megaploit — Docker Compose stack ────────────────────────────────────────
+# =============================================================================
+#  Megaploit — Docker Compose
 #
-# Usage:
-#   # First time — generate a secret key:
-#   python3 -c "import os,binascii; open('secret.key','wb').write(binascii.hexlify(os.urandom(32)))"
+#  Interactive C2 operator console with persistent operator state.
 #
-#   # Start:
-#   LHOST=192.168.1.10 docker compose up
+#  Quick start:
+#      LHOST=192.168.1.10 docker compose run --rm --service-ports megaploit
 #
-#   # Persistent background run:
-#   LHOST=192.168.1.10 docker compose up -d
+#  Background service (non-interactive listener only):
+#      LHOST=192.168.1.10 docker compose up -d
 #
-#   # Stop:
-#   docker compose down
+#  Stop:
+#      docker compose down
 #
-# All collected loot lands in ./loot/ on the host.
-# ──────────────────────────────────────────────────────────────────────────────
+#  One-off commands:
+#      docker compose run --rm megaploit pytest
+#      docker compose run --rm megaploit bash
+#
+#  All operator state (secret.key, loot/, tools/, settings) persists in the
+#  `megaploit-data` named volume across container restarts.
+# =============================================================================
 
 services:
   megaploit:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Uncomment to bundle the Go toolchain (+~700 MB) for go_exe / go_elf:
+      # args:
+      #   INSTALL_GO: "1"
     image: megaploit:latest
     container_name: megaploit
 
-    # Forward C2 listener port.  Change the left side to remap to a different
-    # host port, e.g. "443:4444" to receive callbacks on port 443.
-    ports:
-      - "${C2_PORT:-4444}:4444"
-
-    # LHOST is the IP/hostname the agent will connect BACK to — i.e. your
-    # machine's reachable address from the target network, NOT the container IP.
-    # Set it via:  LHOST=10.0.0.1 docker compose up
-    environment:
-      - LHOST=${LHOST:-127.0.0.1}
-      - C2_PORT=${C2_PORT:-4444}
-
-    # Persist loot and the shared secret across container restarts.
-    volumes:
-      - ./loot:/app/loot
-      - ./secret.key:/app/secret.key:ro
-      # Optional: mount your own TLS cert instead of using --tls auto-gen
-      # - ./cert.pem:/app/cert.pem:ro
-      # - ./key.pem:/app/key.pem:ro
-
-    # Pass arguments to server.py.  LHOST is mandatory.
-    # Remove --tls if you don't need TLS (or add --cert / --key for manual certs).
-    command: ["-lh", "${LHOST:-127.0.0.1}", "-p", "4444", "--tls"]
-
-    # Keep STDIN open so the interactive console works with `docker compose run`.
+    # Interactive REPL — needs a TTY + stdin open.
     stdin_open: true
     tty: true
 
-    # Restart policy — remove or change to "no" if you don't want auto-restart.
-    restart: unless-stopped
+    environment:
+      # IP the agent connects back to — set this to your reachable LAN/VPN IP.
+      LHOST: ${LHOST:-127.0.0.1}
+      # C2 listener port (must match the left side of the port mapping below).
+      PORT: ${PORT:-4444}
+      # Listener bind address (0.0.0.0 so published host ports work).
+      RHOST: ${RHOST:-0.0.0.0}
+      # TLS options (choose one):
+      #   Option A — auto-generate a self-signed cert at startup:
+      #     USE_TLS: "1"
+      #   Option B — drop cert.pem + key.pem into the volume, then set USE_TLS=1.
+      #     The entrypoint detects them automatically.
 
-    # Health-check: verify the listener port is accepting TCP connections.
+    ports:
+      - "${PORT:-4444}:${PORT:-4444}"   # C2 listener (agent callback)
+      - "8080:8080"                      # Web dashboard (web start --host 0.0.0.0)
+      - "7777:7777"                      # Multi-operator RPC (rpc start --host 0.0.0.0)
+
+    volumes:
+      # Named volume — all operator state persists here.
+      # Windows/macOS Docker Desktop: use named volumes (not bind mounts) to
+      # avoid permission issues.
+      - megaploit-data:/data
+
+    # Health-check: TCP probe of the C2 listener port.
     healthcheck:
-      test: ["CMD", "python3", "-c",
-             "import socket,sys; s=socket.socket(); s.settimeout(2); s.connect(('127.0.0.1',4444)); s.close()"]
+      test:
+        - "CMD"
+        - "python3"
+        - "-c"
+        - "import socket,os; s=socket.socket(); s.settimeout(2); s.connect(('127.0.0.1',int(os.getenv('PORT','4444')))); s.close()"
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 20s
+
+    restart: unless-stopped
+
+volumes:
+  megaploit-data:
+    # To inspect the volume: docker volume inspect megaploit_megaploit-data
+    # To back it up:         docker run --rm -v megaploit_megaploit-data:/data -v $(pwd):/backup \
+    #                          alpine tar czf /backup/megaploit-data.tar.gz /data

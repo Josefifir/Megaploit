@@ -85,4 +85,5 @@ nav:
   - Malleable C2 Profile: C2_PROFILE.md
   - Web Dashboard: WEB_DASHBOARD.md
   - Networking: NETWORKING.md
+  - Docker: DOCKER.md
   - C Plugin Development: C_PLUGIN_DEVELOPMENT.md
