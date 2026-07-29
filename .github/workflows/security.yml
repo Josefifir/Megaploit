@@ -44,12 +44,12 @@ jobs:
       - name: Run Bandit
         # -l  = low severity and above
         # -ii = medium confidence and above
-        # Exclude tests/ — intentional use of dangerous patterns in test helpers
-        # is expected; we don't want noise there.
+        # Exclude megaploit/__pycache__/ and tests/ — intentional use of dangerous
+        # patterns in test helpers and cached bytecode is expected; we don't want noise.
         run: |
           bandit -r megaploit \
             -l -ii \
-            --exclude megaploit/__pycache__ \
+            --exclude megaploit/__pycache__,tests \
             -f txt \
             -o bandit-report.txt \
             || true
