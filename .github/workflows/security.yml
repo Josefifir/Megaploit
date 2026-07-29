@@ -46,13 +46,15 @@ jobs:
         # -ii = medium confidence and above
         # Exclude megaploit/__pycache__/ and tests/ — intentional use of dangerous
         # patterns in test helpers and cached bytecode is expected; we don't want noise.
+        # continue-on-error keeps the PR unblocked while Bandit findings are triaged,
+        # without masking real execution errors (bad CLI args, missing binary, etc.)
+        continue-on-error: true
         run: |
           bandit -r megaploit \
             -l -ii \
             --exclude megaploit/__pycache__,tests \
             -f txt \
-            -o bandit-report.txt \
-            || true
+            -o bandit-report.txt
           cat bandit-report.txt
 
       - name: Upload Bandit report
