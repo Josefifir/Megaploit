@@ -80,7 +80,7 @@ class AsrepRoastModule(Module):
             from impacket.krb5.kerberosv5 import getKerberosTGT
             from impacket.krb5.types import Principal
             from impacket.krb5 import constants
-        except ImportError:
+        except (ImportError, OSError):
             return [self._fail("impacket not installed — pip install impacket")]
 
         # ── Collect target usernames ─────────────────────────────────────
