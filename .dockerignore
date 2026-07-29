@@ -1,0 +1,71 @@
+# --- Megaploit .dockerignore -------------------------------------------------
+# Keeps the build context lean and keeps secrets / host cruft out of the image.
+
+# Version control + CI
+.git/
+.github/
+
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Secrets / credentials — NEVER bake into an image.
+# secret.key and TLS material are generated/mounted at runtime via /data.
+secret.key
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# Operator-side collected data (persisted via the /data volume, not the image)
+loot/*
+!loot/.gitkeep
+tools/*/
+
+# Build / test artefacts
+build/
+dist/
+agent_compiled/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Agent-side face-detection model (11 MB) — not used by the server console.
+# Re-include by removing this line if you need it in the image.
+saved_model/
+
+# Editor / OS cruft
+.idea/
+.vscode/
+.qodo/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Transient session files
+_screenshot*.png
+_recording*.wav
+_tlapse_*/
+*_megaploit.zip
+screenshot_*.png
+
+# Docker files themselves are harmless but keep them out of the app layer
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
