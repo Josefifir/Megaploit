@@ -123,27 +123,6 @@ def _recv_file_or_err(conn, local: str, timeout: float | None = None) -> "Comman
 # Core
 # ---------------------------------------------------------------------------
 
-@_cmd("note", usage="note <text>",
-      help_text="Append a note to this session (saved with the session, included in reports)")
-def cmd_note(session: Session, args: list[str]) -> CommandResult:
-    if not args:
-        return _err("Usage: note <text>")
-    text = " ".join(args)
-    if session.notes:
-        session.notes = session.notes + "\n" + text
-    else:
-        session.notes = text
-    return _ok(f"[+] Note saved: {text[:80]}")
-
-
-@_cmd("notes", usage="notes",
-      help_text="Show all notes recorded for this session")
-def cmd_notes(session: Session, args: list[str]) -> CommandResult:
-    if not session.notes:
-        return _ok("(no notes)")
-    return _ok(session.notes)
-
-
 @_cmd("help", usage="help", help_text="Show this help message")
 def cmd_help(session: Session, args: list[str]) -> CommandResult:
     lines = ["", f"  {'COMMAND':<36}  DESCRIPTION"]
