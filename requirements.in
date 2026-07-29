@@ -17,7 +17,7 @@
 #   For UPX packing: install upx from https://upx.github.io/
 
 # ── Core (operator console) ────────────────────────────────────────────────
-termcolor>=2.3.0
+termcolor>=3.3.0
 
 # TOML plugin support — stdlib on Python ≥ 3.11; this polyfill covers 3.10
 tomli>=2.0.1; python_version < "3.11"
