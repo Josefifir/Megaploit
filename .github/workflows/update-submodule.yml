@@ -9,7 +9,8 @@
 #     that calls the repository_dispatch event on this repo after every push.
 # 2.  This workflow receives that event, checks out Megaploit with the
 #     submodule, updates the submodule ref to the latest commit on
-#     C-remote-shell/main, and commits + pushes the updated pointer.
+#     C-remote-shell/main, pushes that to a short-lived branch, and then
+#     opens a Pull Request against main so the bump is reviewed before merge.
 #
 # Setup required (one-time)
 # -------------------------
@@ -20,12 +21,14 @@
 #     the repository_dispatch event on Megaploit.
 #
 # 2.  In the Megaploit repo → Settings → Actions → General:
-#     Set "Workflow permissions" to "Read and write permissions".
-#     This allows the workflow to push the updated submodule commit.
+#     Set "Workflow permissions" to "Read and write permissions" and enable
+#     "Allow GitHub Actions to create and approve pull requests".
+#     This allows the workflow to push the bump branch and open the PR.
 #
 # Alternatively, create a fine-grained PAT with:
-#   - Contents: Read and write  (to push the submodule bump commit)
-#   - Metadata: Read-only
+#   - Contents:      Read and write  (push the bump branch)
+#   - Pull requests: Read and write  (open the PR)
+#   - Metadata:      Read-only
 # and save it as  PAT_MEGAPLOIT  in the Megaploit repo's secrets.
 
 name: Update C-remote-shell submodule
@@ -42,6 +45,10 @@ jobs:
   update-submodule:
     name: Bump C-remote-shell pointer
     runs-on: ubuntu-latest
+    # PR creation needs write access to contents and pull-requests
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       # ── 1. Check out Megaploit with the submodule ───────────────────────
@@ -50,7 +57,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           submodules: true
-          fetch-depth: 0          # full history so we can push back
+          fetch-depth: 0
 
       # ── 2. Configure git identity ────────────────────────────────────────
       - name: Configure git
@@ -74,18 +81,42 @@ jobs:
             && echo "changed=false" >> "$GITHUB_OUTPUT" \
             || echo "changed=true"  >> "$GITHUB_OUTPUT"
 
-      # ── 5. Commit and push the updated pointer ───────────────────────────
-      - name: Commit submodule bump
+      # ── 5. Push bump to a short-lived branch and open a PR ───────────────
+      - name: Open PR for submodule bump
         if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Read the new commit SHA for the commit message
           NEW_SHA=$(cd C-remote-shell && git rev-parse --short HEAD)
+          FULL_SHA=$(cd C-remote-shell && git rev-parse HEAD)
+          BRANCH="chore/bump-c-remote-shell-${NEW_SHA}"
+
+          git checkout -b "$BRANCH"
           git add C-remote-shell
           git commit -m "chore(submodule): bump C-remote-shell to ${NEW_SHA}
 
-          Automatically updated by the update-submodule workflow.
+          Automatically prepared by the update-submodule workflow.
           Triggered by: ${{ github.event.action }} (${{ github.event_name }})"
-          git push origin main
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore(submodule): bump C-remote-shell to ${NEW_SHA}" \
+            --body "## Summary
+          Automated submodule pointer bump — no manual code changes.
+
+          ## What changed
+          | Field | Value |
+          |---|---|
+          | Submodule | \`C-remote-shell\` |
+          | New commit | [\`${NEW_SHA}\`](https://github.com/${{ github.repository_owner }}/C-remote-shell/commit/${FULL_SHA}) |
+          | Triggered by | \`${{ github.event_name }}\` / \`${{ github.event.action }}\` |
+
+          ## Checklist
+          - [x] Submodule pointer verified against \`C-remote-shell/main\`
+          - [x] CI will run automatically on this PR
+          - [ ] Reviewer confirms no unexpected drift in the submodule history"
 
       # ── 6. Skip message when already up-to-date ──────────────────────────
       - name: Already up-to-date

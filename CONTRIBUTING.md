@@ -9,13 +9,14 @@ Thank you for considering a contribution! This guide gets you from zero to a mer
 ## Table of Contents
 
 1. [Quick start](#1-quick-start)
-2. [What to contribute](#2-what-to-contribute)
-3. [Adding an exploit / auxiliary module](#3-adding-an-exploit--auxiliary-module)
-4. [Adding a session command](#4-adding-a-session-command)
-5. [Adding a plugin (no Python required)](#5-adding-a-plugin-no-python-required)
-6. [Writing tests](#6-writing-tests)
-7. [Code style](#7-code-style)
-8. [Pull request checklist](#8-pull-request-checklist)
+2. [Branch workflow](#2-branch-workflow)
+3. [What to contribute](#3-what-to-contribute)
+4. [Adding an exploit / auxiliary module](#4-adding-an-exploit--auxiliary-module)
+5. [Adding a session command](#5-adding-a-session-command)
+6. [Adding a plugin (no Python required)](#6-adding-a-plugin-no-python-required)
+7. [Writing tests](#7-writing-tests)
+8. [Code style](#8-code-style)
+9. [Pull request checklist](#9-pull-request-checklist)
 
 ---
 
@@ -37,7 +38,41 @@ git checkout -b feat/my-exploit
 
 ---
 
-## 2. What to contribute
+## 2. Branch workflow
+
+**Direct pushes to `main` are not allowed.**
+Branch protection is enforced via GitHub's branch rules — see
+[`.github/branch-protection-setup.md`](.github/branch-protection-setup.md)
+for the exact configuration.
+
+Every change — however small — must go through a Pull Request:
+
+```
+main  ←  PR review + CI green  ←  your-branch
+```
+
+### Naming convention
+
+| Type | Branch name |
+|---|---|
+| New feature / module | `feat/<short-description>` |
+| Bug fix | `fix/<short-description>` |
+| Documentation | `docs/<short-description>` |
+| Refactor / cleanup | `refactor/<short-description>` |
+| Chore / tooling | `chore/<short-description>` |
+
+### PR requirements before merge
+
+1. **At least one approving review** from a Code Owner (see
+   [`.github/CODEOWNERS`](.github/CODEOWNERS)).
+2. **CI must be green** — `Syntax & Compile` and `Tests (Python 3.11)` checks.
+3. **PR description filled out** — use the template; explain *what* changed
+   and *why*, not just *what*.
+4. **No force-pushes to `main`** — rebase your branch instead.
+
+---
+
+## 3. What to contribute
 
 | Type | Where | Effort |
 |---|---|---|
@@ -51,7 +86,7 @@ git checkout -b feat/my-exploit
 
 ---
 
-## 3. Adding an exploit / auxiliary module
+## 4. Adding an exploit / auxiliary module
 
 ### Step 1 — copy the template
 
@@ -108,7 +143,7 @@ The CI pipeline will run all tests automatically on your PR.
 
 ---
 
-## 4. Adding a session command
+## 5. Adding a session command
 
 Commands have two sides: **server** (operator → C2) and **agent** (C2 → victim).
 
@@ -152,7 +187,7 @@ def _mycommand(conn, args: list[str]) -> None:
 
 ---
 
-## 5. Adding a plugin (no Python required)
+## 6. Adding a plugin (no Python required)
 
 Create `plugins/myplugin.toml`. The full annotated schema is in [`plugins/example.toml`](plugins/example.toml).
 
@@ -176,7 +211,7 @@ Drop the file in `plugins/` and run `plugins reload` in the console — no resta
 
 ---
 
-## 6. Writing tests
+## 7. Writing tests
 
 Tests live in `tests/` and use `pytest`.
 
@@ -208,7 +243,7 @@ pytest tests/ --cov=megaploit --cov-report=term-missing
 
 ---
 
-## 7. Code style
+## 8. Code style
 
 - **Python 3.10+ type hints** — `from __future__ import annotations` at the top of every file
 - **`@dataclass`** for all data structures
@@ -219,7 +254,7 @@ pytest tests/ --cov=megaploit --cov-report=term-missing
 
 ---
 
-## 8. Pull request checklist
+## 9. Pull request checklist
 
 - [ ] All existing tests pass: `pytest tests/ -v`
 - [ ] New tests added for all new functionality
