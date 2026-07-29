@@ -77,45 +77,29 @@ _audit = _setup_audit()
 
 
 # ---------------------------------------------------------------------------
-# AES-GCM helpers (same as protocol.py but self-contained for HTTP agent)
+# AES-GCM helpers — requires the 'cryptography' package (same rule as protocol.py)
 # ---------------------------------------------------------------------------
 
-def _try_aesgcm():
-    try:
-        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-        return AESGCM
-    except ImportError:
-        return None
-
-_AESGCM = _try_aesgcm()
+try:
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM as _AESGCM
+except ImportError as _crypto_err:  # pragma: no cover
+    raise ImportError(
+        "The 'cryptography' package is required for AES-256-GCM transport.\n"
+        "Install it with:  pip install cryptography\n"
+        f"Original error: {_crypto_err}"
+    ) from _crypto_err
 
 
 def _encrypt(key: bytes, plaintext: bytes) -> bytes:
     nonce = os.urandom(_NONCE)
-    if _AESGCM:
-        ct = _AESGCM(key).encrypt(nonce, plaintext, None)
-    else:
-        import hashlib as _hl
-        stream = b"".join(
-            _hl.sha256(key + nonce + i.to_bytes(8, "big")).digest()
-            for i in range((len(plaintext) + 31) // 32)
-        )
-        ct = bytes(a ^ b for a, b in zip(plaintext, stream)) + bytes(16)
+    ct    = _AESGCM(key).encrypt(nonce, plaintext, None)
     return nonce + ct
 
 
 def _decrypt(key: bytes, data: bytes) -> bytes:
     nonce  = data[:_NONCE]
     ct_tag = data[_NONCE:]
-    if _AESGCM:
-        return _AESGCM(key).decrypt(nonce, ct_tag, None)
-    import hashlib as _hl
-    ct     = ct_tag[:-16]
-    stream = b"".join(
-        _hl.sha256(key + nonce + i.to_bytes(8, "big")).digest()
-        for i in range((len(ct) + 31) // 32)
-    )
-    return bytes(a ^ b for a, b in zip(ct, stream))
+    return _AESGCM(key).decrypt(nonce, ct_tag, None)
 
 
 # ---------------------------------------------------------------------------

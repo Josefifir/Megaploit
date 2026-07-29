@@ -88,8 +88,16 @@ def get_send_lock() -> threading.Lock:
 # ---------------------------------------------------------------------------
 
 _HANDLERS: dict[str, object] = {}
+# Lock that must be held when mutating _HANDLERS at runtime.
+# The @_register decorator is only called at module-import time (single-
+# threaded), so it does not need the lock.  load_extension / unload_extension
+# in meterp.py acquire _registry_lock (which wraps this dict) for runtime
+# mutations.  Direct callers that add/remove entries outside those two paths
+# should also acquire _handlers_lock.
+_handlers_lock = threading.Lock()
 
 def _register(name: str):
+    # Import-time registration — no lock needed (single-threaded at load).
     def decorator(fn):
         _HANDLERS[name] = fn
         return fn
