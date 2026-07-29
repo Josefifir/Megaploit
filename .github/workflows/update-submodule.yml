@@ -1,0 +1,93 @@
+# .github/workflows/update-submodule.yml
+#
+# Auto-update the C-remote-shell submodule pointer in Megaploit
+# whenever the C-remote-shell repo pushes to its main branch.
+#
+# How it works
+# ------------
+# 1.  The C-remote-shell repo has a companion workflow (notify-parent.yml)
+#     that calls the repository_dispatch event on this repo after every push.
+# 2.  This workflow receives that event, checks out Megaploit with the
+#     submodule, updates the submodule ref to the latest commit on
+#     C-remote-shell/main, and commits + pushes the updated pointer.
+#
+# Setup required (one-time)
+# -------------------------
+# 1.  In the Megaploit repo → Settings → Secrets and variables → Actions:
+#     Create a secret named  PAT_MEGAPLOIT  containing a classic Personal
+#     Access Token with scopes:  repo  (full control of private repositories).
+#     This token is used by notify-parent.yml in C-remote-shell to trigger
+#     the repository_dispatch event on Megaploit.
+#
+# 2.  In the Megaploit repo → Settings → Actions → General:
+#     Set "Workflow permissions" to "Read and write permissions".
+#     This allows the workflow to push the updated submodule commit.
+#
+# Alternatively, create a fine-grained PAT with:
+#   - Contents: Read and write  (to push the submodule bump commit)
+#   - Metadata: Read-only
+# and save it as  PAT_MEGAPLOIT  in the Megaploit repo's secrets.
+
+name: Update C-remote-shell submodule
+
+on:
+  # Triggered by C-remote-shell's notify-parent.yml workflow
+  repository_dispatch:
+    types: [c-remote-shell-updated]
+
+  # Allow manual runs from the Actions UI
+  workflow_dispatch:
+
+jobs:
+  update-submodule:
+    name: Bump C-remote-shell pointer
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Check out Megaploit with the submodule ───────────────────────
+      - name: Checkout Megaploit (with submodule)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          submodules: true
+          fetch-depth: 0          # full history so we can push back
+
+      # ── 2. Configure git identity ────────────────────────────────────────
+      - name: Configure git
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # ── 3. Pull the latest commit from C-remote-shell/main ───────────────
+      - name: Update submodule to latest upstream commit
+        run: |
+          cd C-remote-shell
+          git fetch origin main
+          git checkout origin/main
+          cd ..
+
+      # ── 4. Check if the pointer actually changed ─────────────────────────
+      - name: Check for changes
+        id: check
+        run: |
+          git diff --quiet HEAD -- C-remote-shell \
+            && echo "changed=false" >> "$GITHUB_OUTPUT" \
+            || echo "changed=true"  >> "$GITHUB_OUTPUT"
+
+      # ── 5. Commit and push the updated pointer ───────────────────────────
+      - name: Commit submodule bump
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          # Read the new commit SHA for the commit message
+          NEW_SHA=$(cd C-remote-shell && git rev-parse --short HEAD)
+          git add C-remote-shell
+          git commit -m "chore(submodule): bump C-remote-shell to ${NEW_SHA}
+
+          Automatically updated by the update-submodule workflow.
+          Triggered by: ${{ github.event.action }} (${{ github.event_name }})"
+          git push origin main
+
+      # ── 6. Skip message when already up-to-date ──────────────────────────
+      - name: Already up-to-date
+        if: steps.check.outputs.changed == 'false'
+        run: echo "[+] Submodule pointer is already at the latest commit — nothing to do."
