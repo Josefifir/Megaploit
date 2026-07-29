@@ -159,28 +159,28 @@ def remove_state(conn: socket.socket) -> None:
 
 
 # ---------------------------------------------------------------------------
-# AES-256-GCM helpers (stdlib only: needs Python 3.6+ and cryptography or
-# falls back to XOR-CTR when cryptography is not installed)
+# AES-256-GCM helpers — requires the 'cryptography' package.
+#
+# The XOR-CTR fallback was removed because it provided no authentication
+# (unauthenticated stream cipher with a fake 16-byte tag) while the wire
+# protocol is documented as AES-256-GCM.  Operators relying on encrypted
+# transport must have 'cryptography' installed.
 # ---------------------------------------------------------------------------
 
-def _try_import_cryptography():
-    try:
-        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-        return AESGCM
-    except ImportError:
-        return None
-
-_AESGCM = _try_import_cryptography()
+try:
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM as _AESGCM
+except ImportError as _crypto_err:  # pragma: no cover
+    raise ImportError(
+        "The 'cryptography' package is required for AES-256-GCM transport.\n"
+        "Install it with:  pip install cryptography\n"
+        f"Original error: {_crypto_err}"
+    ) from _crypto_err
 
 
 def _encrypt(key: bytes, plaintext: bytes) -> bytes:
     """Return  nonce(12) + ciphertext+tag  using AES-256-GCM."""
     nonce = os.urandom(_NONCE_LEN)
-    if _AESGCM is not None:
-        ct = _AESGCM(key).encrypt(nonce, plaintext, None)
-    else:
-        # Fallback: XOR-CTR with SHA-256 derived keystream (not AEAD — no auth tag)
-        ct = _xor_ctr(key, nonce, plaintext) + bytes(16)   # fake 16-byte tag
+    ct    = _AESGCM(key).encrypt(nonce, plaintext, None)
     return nonce + ct
 
 
@@ -188,28 +188,7 @@ def _decrypt(key: bytes, data: bytes) -> bytes:
     """Decrypt  nonce(12) + ciphertext+tag  and return plaintext."""
     nonce  = data[:_NONCE_LEN]
     ct_tag = data[_NONCE_LEN:]
-    if _AESGCM is not None:
-        return _AESGCM(key).decrypt(nonce, ct_tag, None)
-    else:
-        ciphertext = ct_tag[:-16]   # strip fake tag
-        return _xor_ctr(key, nonce, ciphertext)
-
-
-def _xor_ctr(key: bytes, nonce: bytes, data: bytes) -> bytes:
-    """Deterministic XOR-CTR stream cipher using SHA-256 (fallback only)."""
-    import hashlib
-    out    = bytearray(len(data))
-    block  = 0
-    offset = 0
-    while offset < len(data):
-        stream = hashlib.sha256(key + nonce + block.to_bytes(8, "big")).digest()
-        for i, b in enumerate(stream):
-            if offset + i >= len(data):
-                break
-            out[offset + i] = data[offset + i] ^ b
-        offset += 32
-        block  += 1
-    return bytes(out)
+    return _AESGCM(key).decrypt(nonce, ct_tag, None)
 
 
 # ---------------------------------------------------------------------------

