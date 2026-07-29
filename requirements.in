@@ -32,7 +32,7 @@ sounddevice>=0.5.5
 soundfile>=0.14.0
 
 # ── Transport encryption (required) ────────────────────────────────────────
-cryptography>=41.0.0
+cryptography>=49.0.0
 
 # ── Web streaming (agent-side Flask MJPEG servers) ─────────────────────────
 Flask>=3.1.3
