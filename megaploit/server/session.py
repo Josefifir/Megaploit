@@ -9,10 +9,13 @@ from __future__ import annotations
 
 import os
 import socket
+import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
+
+from megaploit.core.protocol import remove_state as _remove_state
 
 
 @dataclass
@@ -26,6 +29,15 @@ class Session:
     download_count: int = 0
     upload_count: int = 0
     id: int = 0                       # set by Listener
+
+    # BUG: the counter fields above are incremented without any
+    # synchronisation.  When the operator runs two commands concurrently
+    # (e.g. screenshot + download) from the session loop, both threads
+    # read-increment-write the same int with no lock, causing lost updates
+    # and duplicate filenames.  _counter_lock serialises all counter bumps.
+    _counter_lock: threading.Lock = field(
+        default_factory=threading.Lock, init=False, repr=False, compare=False
+    )
 
     # ── Operator-assigned metadata ─────────────────────────────────────
     tag: str = ""                     # short label for this session
@@ -52,6 +64,9 @@ class Session:
         return f"{h:02d}:{m:02d}:{s:02d}"
 
     def close(self) -> None:
+        # Always remove the _ConnState entry so a future connection that
+        # reuses this fd does not inherit stale sequence numbers / key.
+        _remove_state(self.conn)
         try:
             self.conn.close()
         except OSError:
@@ -74,29 +89,29 @@ class Session:
     # ---------------------------------------------------------------
 
     def screenshot_path(self) -> str:
-        self.screenshot_count += 1
+        with self._counter_lock:
+            self.screenshot_count += 1
+            n = self.screenshot_count
         os.makedirs("loot/screenshots", exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        return os.path.join(
-            "loot", "screenshots",
-            f"shot_{self.ip}_{ts}_{self.screenshot_count}.png",
-        )
+        return os.path.join("loot", "screenshots", f"shot_{self.ip}_{ts}_{n}.png")
 
     def recording_path(self) -> str:
-        self.recording_count += 1
+        with self._counter_lock:
+            self.recording_count += 1
+            n = self.recording_count
         os.makedirs("loot/recordings", exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        return os.path.join(
-            "loot", "recordings",
-            f"rec_{self.ip}_{ts}_{self.recording_count}.wav",
-        )
+        return os.path.join("loot", "recordings", f"rec_{self.ip}_{ts}_{n}.wav")
 
     def download_path(self, remote_name: str) -> str:
-        self.download_count += 1
         base = os.path.basename(remote_name)
+        with self._counter_lock:
+            self.download_count += 1
+            n = self.download_count
         os.makedirs("loot/downloads", exist_ok=True)
         ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        return os.path.join("loot", "downloads", f"{ts}_{self.download_count}_{base}")
+        return os.path.join("loot", "downloads", f"{ts}_{n}_{base}")
 
     # ---------------------------------------------------------------
     # Summary dict (for JSON export / loot browser)

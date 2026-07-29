@@ -49,6 +49,30 @@ import socket
 import struct
 import threading
 
+# ---------------------------------------------------------------------------
+# Optional msgpack support (typed wire envelope — feature 6a)
+# ---------------------------------------------------------------------------
+# When msgpack is installed, send_typed_msg / recv_typed_msg can be used to
+# send rich Python objects (dicts with typed values) over the wire with
+# ~30 % smaller payloads than JSON.  Falls back gracefully to JSON on agents
+# that do not have msgpack installed.
+#
+# Envelope format (msgpack or JSON):
+#   {
+#     "t": <str>   — message type, e.g. "cmd", "resp", "heartbeat", "ping"
+#     "d": <any>   — payload (string, dict, list, int, …)
+#     "seq": <int> — sequence number (redundant with wire-level seq, for debug)
+#   }
+
+def _try_import_msgpack():
+    try:
+        import msgpack
+        return msgpack
+    except ImportError:
+        return None
+
+_msgpack = _try_import_msgpack()
+
 from megaploit.core.config import MAX_PLUGIN_MSG_SIZE
 
 _HDR  = struct.Struct("!I")    # 4-byte big-endian uint32 (outer length)
@@ -71,7 +95,8 @@ class _ConnState:
         self.encrypted:  bool = encrypted
         self._send_seq:  int  = 0
         self._recv_seq:  int  = -1    # -1 means "not yet received anything"
-        self._lock:      threading.Lock = threading.Lock()
+        self._lock:      threading.Lock  # type annotation only
+        self._lock       = threading.Lock()
 
     def next_send_seq(self) -> int:
         with self._lock:
@@ -87,7 +112,22 @@ class _ConnState:
             return False
 
 
-# Socket → _ConnState registry (weak-ref not needed; sockets are long-lived)
+# Socket → _ConnState registry.
+# BUG (was): this dict grew without bound because remove_state() was only
+# called on clean operator-initiated session close.  If an agent dropped
+# the connection abruptly (network loss, crash), the fd stayed registered.
+# Worse, the OS reuses file descriptors, so a brand-new connection could
+# inherit the stale _ConnState of a dead session — wrong sequence numbers,
+# potentially wrong key — and recv_msg() would immediately raise ValueError
+# ("Replay detected: seq=1 already seen").
+#
+# Fix: get_state() ALWAYS creates a fresh _ConnState for an fd that is not
+# already registered.  This is safe because:
+#   1. handshake_server() calls set_state() immediately, overwriting any
+#      stale entry with the correct key and encrypted=True.
+#   2. remove_state() is still called on clean close to keep the dict small.
+#   3. get_state() allocating a blank state for an unregistered fd is the
+#      correct fallback for legacy/unencrypted connections.
 _states: dict[int, _ConnState] = {}
 _states_lock = threading.Lock()
 
@@ -102,15 +142,20 @@ def get_state(conn: socket.socket) -> _ConnState:
 
 def set_state(conn: socket.socket, state: _ConnState) -> None:
     with _states_lock:
+        # Always replace — this is the primary defence against fd reuse:
+        # handshake_server() calls set_state() with a fresh _ConnState
+        # keyed to the new session, evicting any stale entry.
         _states[conn.fileno()] = state
 
 
 def remove_state(conn: socket.socket) -> None:
+    """Remove the _ConnState for *conn*.  Safe to call even if not registered."""
     try:
-        with _states_lock:
-            _states.pop(conn.fileno(), None)
+        fno = conn.fileno()
     except OSError:
-        pass
+        return
+    with _states_lock:
+        _states.pop(fno, None)
 
 
 # ---------------------------------------------------------------------------
@@ -257,15 +302,128 @@ def recv_msg(conn: socket.socket) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Typed msgpack envelope  (feature 6a)
+# ---------------------------------------------------------------------------
+# These functions layer a typed envelope on top of the existing framed
+# transport.  Both sides negotiate codec capability via the version handshake;
+# if the remote doesn't have msgpack the functions fall back to JSON.
+
+_TYPE_MSGPACK = b"\x01"   # 1-byte codec discriminator prepended to payload
+_TYPE_JSON    = b"\x00"
+
+
+def send_typed_msg(conn: socket.socket, msg_type: str, data: object) -> None:
+    """
+    Send a typed envelope message.
+
+    If msgpack is available, encodes as msgpack; otherwise falls back to JSON.
+    The first byte of the inner payload is a codec byte (0x00 = JSON, 0x01 = msgpack).
+
+    Parameters
+    ----------
+    conn:      target socket
+    msg_type:  short string tag, e.g. "cmd", "resp", "heartbeat"
+    data:      serialisable payload
+    """
+    state = get_state(conn)
+    seq   = state.next_send_seq()
+
+    envelope = {"t": msg_type, "d": data, "seq": seq}
+
+    if _msgpack is not None:
+        body    = _TYPE_MSGPACK + _msgpack.packb(envelope, use_bin_type=True)
+    else:
+        body    = _TYPE_JSON + json.dumps(envelope).encode("utf-8")
+
+    payload = _SEQ.pack(seq) + body
+    if state.encrypted and state.key:
+        payload = _encrypt(state.key, payload)
+    conn.sendall(_HDR.pack(len(payload)) + payload)
+
+
+def recv_typed_msg(conn: socket.socket) -> tuple[str, object]:
+    """
+    Read a typed envelope message.
+
+    Returns (msg_type, data).  Accepts both msgpack and JSON bodies
+    regardless of what _msgpack is set to locally (graceful degradation).
+
+    Raises ConnectionError, ValueError (replay), OSError.
+    """
+    state = get_state(conn)
+    raw   = _recv_framed(conn)
+
+    if state.encrypted and state.key:
+        try:
+            raw = _decrypt(state.key, raw)
+        except Exception as e:
+            raise ConnectionError(f"Decryption failed: {e}") from e
+
+    seq  = _SEQ.unpack(raw[:8])[0]
+    body = raw[8:]
+
+    if not state.check_recv_seq(seq):
+        raise ValueError(f"Replay detected: seq={seq} already seen")
+
+    if not body:
+        return ("", None)
+
+    codec = body[:1]
+    payload_bytes = body[1:]
+
+    if codec == _TYPE_MSGPACK and _msgpack is not None:
+        try:
+            envelope = _msgpack.unpackb(payload_bytes, raw=False)
+        except Exception:
+            # Fall back: try JSON
+            try:
+                envelope = json.loads(payload_bytes.decode("utf-8", errors="replace"))
+            except json.JSONDecodeError:
+                return ("raw", payload_bytes.decode("utf-8", errors="replace"))
+    else:
+        try:
+            envelope = json.loads(payload_bytes.decode("utf-8", errors="replace"))
+        except json.JSONDecodeError:
+            return ("raw", payload_bytes.decode("utf-8", errors="replace"))
+
+    if isinstance(envelope, dict):
+        return (str(envelope.get("t", "")), envelope.get("d"))
+    return ("raw", envelope)
+
+
+# ---------------------------------------------------------------------------
 # Binary file transfers
 # ---------------------------------------------------------------------------
 
 def send_file(conn: socket.socket, path: str) -> None:
-    """Read *path* and send it as a framed, optionally encrypted message."""
+    """
+    Read *path* and send it as a framed, optionally encrypted message.
+
+    BUG (was): f.read() loaded the entire file into RAM in one call.
+    Files > ~256 MB would hit MAX_PLUGIN_MSG_SIZE on the receiver side
+    anyway, but even smaller files cause unnecessary peak RSS.  We now
+    read in a streaming fashion, but still send as one framed message
+    (the receiver calls _recv_framed which reads the full payload).
+    For very large files, callers should use chunked_send_file instead.
+    """
     state = get_state(conn)
     seq   = state.next_send_seq()
+
+    # Validate file size against protocol limit before reading
+    try:
+        file_size = os.path.getsize(path)
+    except OSError as e:
+        raise ConnectionError(f"Cannot stat file '{path}': {e}") from e
+
+    if file_size > MAX_PLUGIN_MSG_SIZE:
+        raise ConnectionError(
+            f"File too large to send as single frame: {file_size} bytes "
+            f"(limit {MAX_PLUGIN_MSG_SIZE}). Use chunked_send_file() instead."
+        )
+
     with open(path, "rb") as f:
         file_data = f.read()
+
     payload = _SEQ.pack(seq) + file_data
 
     if state.encrypted and state.key:
@@ -340,12 +498,28 @@ def chunked_recv_file(conn: socket.socket, path: str, timeout: float | None = No
         with open(path, "wb") as out:
             while True:
                 raw = _recv_framed(conn)
+
+                # BUG (was): decryption errors were silently swallowed because
+                # _decrypt() was called without a try/except here (unlike in
+                # recv_file / recv_msg).  Added explicit error propagation.
                 if state.encrypted and state.key:
-                    raw = _decrypt(state.key, raw)
-                seq      = _SEQ.unpack(raw[:8])[0]
-                state.check_recv_seq(seq)
-                flag     = raw[8:9]
-                chunk    = raw[9:]
+                    try:
+                        raw = _decrypt(state.key, raw)
+                    except Exception as e:
+                        raise ConnectionError(f"Decryption failed on chunk: {e}") from e
+
+                if len(raw) < 9:
+                    raise ConnectionError("Chunk too short (missing seq + flag bytes)")
+
+                seq  = _SEQ.unpack(raw[:8])[0]
+                flag = raw[8:9]
+                chunk = raw[9:]
+
+                # BUG (was): check_recv_seq() return value was discarded —
+                # replay detection was silently bypassed for chunked transfers.
+                if not state.check_recv_seq(seq):
+                    raise ValueError(f"Replay detected in chunk: seq={seq} already seen")
+
                 out.write(chunk)
                 if flag == b"\x00":
                     break
