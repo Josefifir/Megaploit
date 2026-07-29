@@ -1,0 +1,68 @@
+# ── Python artefacts ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+
+# ── Secrets / credentials (never bake into the image) ─────────────────────────
+secret.key
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+
+# ── Loot (collected engagement data — stays on the host) ──────────────────────
+loot/
+
+# ── Toolbox clones (large, rebuilt on demand) ─────────────────────────────────
+tools/*/
+!tools/tools.json
+
+# ── MkDocs build output ────────────────────────────────────────────────────────
+site/
+
+# ── Tests (not needed at runtime) ─────────────────────────────────────────────
+tests/
+
+# ── IDEs / OS artefacts ────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+.qodo/
+
+# ── Git ───────────────────────────────────────────────────────────────────────
+.git/
+.gitignore
+.gitmodules
+.github/
+
+# ── Docs source (included in image only if you want mkdocs serve) ─────────────
+# Comment these two lines out if you want docs available inside the container.
+docs/
+mkdocs.yml
+
+# ── CI / misc ─────────────────────────────────────────────────────────────────
+*.md
+LICENSE
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+SECURITY.md

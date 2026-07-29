@@ -52,6 +52,9 @@ python server.py -lh 10.0.0.1 -p 4444 --tls
 4. [Architecture](#architecture)
 4. [Requirements](#requirements)
 5. [Installation](#installation)
+   - [Automated (Linux)](#automated-linux)
+   - [Manual](#manual)
+   - [Docker](#docker)
 6. [Quick Start](#quick-start)
 7. [Advanced Shell — Meterpreter-class](#advanced-shell--meterpreter-class)
    - [Interactive Console](#interactive-console)
@@ -336,6 +339,112 @@ cd Megaploit
 pip install -r requirements.txt
 # Optional extras:
 pip install cryptography flask impacket paramiko dnspython pyinstaller pyyaml
+```
+
+### Docker
+
+Run Megaploit entirely inside Docker — no Python install required on the host.
+
+**Requirements:** Docker 20.10+ (or Docker Desktop), `docker compose` v2.
+
+#### Quick start (single container)
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/Josefifir/Megaploit.git
+cd Megaploit
+
+# 2. Generate a shared HMAC secret (do this once; keep secret.key safe)
+python3 -c "import os,binascii; open('secret.key','wb').write(binascii.hexlify(os.urandom(32)))"
+
+# 3. Build the image
+docker build -t megaploit .
+
+# 4. Run — replace 192.168.1.10 with the IP agents will connect back to
+docker run -it --rm \
+  -p 4444:4444 \
+  -v "$(pwd)/loot:/app/loot" \
+  -v "$(pwd)/secret.key:/app/secret.key:ro" \
+  megaploit -lh 192.168.1.10 -p 4444
+```
+
+> `--rm` removes the container on exit. Drop it if you want the container to persist between sessions.
+
+#### With TLS (auto-generated cert)
+
+```bash
+docker run -it --rm \
+  -p 4444:4444 \
+  -v "$(pwd)/loot:/app/loot" \
+  -v "$(pwd)/secret.key:/app/secret.key:ro" \
+  megaploit -lh 192.168.1.10 -p 4444 --tls
+```
+
+The auto-generated cert is written to `loot/tls/` inside the container — because `loot/` is mounted, it persists on the host.
+
+#### With your own TLS cert
+
+```bash
+docker run -it --rm \
+  -p 4444:4444 \
+  -v "$(pwd)/loot:/app/loot" \
+  -v "$(pwd)/secret.key:/app/secret.key:ro" \
+  -v "$(pwd)/cert.pem:/app/cert.pem:ro" \
+  -v "$(pwd)/key.pem:/app/key.pem:ro" \
+  megaploit -lh 192.168.1.10 -p 4444 --cert cert.pem --key key.pem
+```
+
+#### Docker Compose (recommended for persistent setups)
+
+```bash
+# Set your callback IP (the address agents will call back to)
+export LHOST=192.168.1.10
+
+# Start in the foreground (interactive console)
+docker compose run --rm megaploit
+
+# Or start as a background service
+LHOST=192.168.1.10 docker compose up -d
+
+# Attach to the running console
+docker attach megaploit
+
+# Stop
+docker compose down
+```
+
+The `docker-compose.yml` default command includes `--tls`. Edit the `command:` line to remove it or add `--allow-ip` restrictions.
+
+#### Port mapping
+
+| Container port | Default host mapping | What it is |
+|---|---|---|
+| `4444/tcp` | `4444` | C2 reverse-shell listener |
+| `8080/tcp` | *(not exposed by default)* | Web dashboard (`web start`) — add `-p 8080:8080` |
+| `7777/tcp` | *(not exposed by default)* | Multi-operator RPC (`rpc start`) — add `-p 7777:7777` |
+
+#### Environment variables (docker-compose.yml)
+
+| Variable | Default | Description |
+|---|---|---|
+| `LHOST` | `127.0.0.1` | Callback IP written into the agent |
+| `C2_PORT` | `4444` | Listener port (maps host ↔ container) |
+
+#### Volumes
+
+| Host path | Container path | Purpose |
+|---|---|---|
+| `./loot` | `/app/loot` | All collected data, TLS certs, session history |
+| `./secret.key` | `/app/secret.key` | Shared HMAC secret (read-only) |
+
+#### Building for a specific platform (cross-compile)
+
+```bash
+# Build for linux/arm64 (e.g. Raspberry Pi / AWS Graviton)
+docker buildx build --platform linux/arm64 -t megaploit:arm64 .
+
+# Build for linux/amd64 explicitly
+docker buildx build --platform linux/amd64 -t megaploit:amd64 .
 ```
 
 ---
