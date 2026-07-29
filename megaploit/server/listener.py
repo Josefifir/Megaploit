@@ -277,7 +277,7 @@ def generate_self_signed_cert(
     key_path:  str = _AUTO_KEY,
     cn:        str = "megaploit",
 ) -> tuple[str, str, str]:
-    """Generate a self-signed RSA-2048 certificate valid for 365 days.
+    """Generate a self-signed RSA-3072 certificate valid for 365 days.
 
     Tries the ``cryptography`` package first; falls back to ``openssl req``
     (subprocess).  Returns ``(cert_path, key_path, sha256_fingerprint_hex)``.
@@ -292,7 +292,7 @@ def generate_self_signed_cert(
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import rsa
 
-        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        key = rsa.generate_private_key(public_exponent=65537, key_size=3072)
 
         subject = issuer = x509.Name([
             x509.NameAttribute(NameOID.COMMON_NAME, cn),
@@ -338,7 +338,7 @@ def generate_self_signed_cert(
     cmd  = [
         "openssl", "req", "-x509", "-newkey", "rsa:2048",
         "-keyout", key_path, "-out", cert_path,
-        "-days", "365", "-nodes", "-subj", subj,
+        "-days", "365", "-nodes", "-subj", subj, "-newkey", "rsa:3072",
     ]
     try:
         subprocess.run(cmd, check=True, capture_output=True)

