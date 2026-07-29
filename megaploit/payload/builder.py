@@ -983,9 +983,11 @@ class PayloadBuilder:
         """
         import shutil, subprocess, tempfile, os, hashlib, time as _time, textwrap
 
-        # Locate the C-remote-shell source tree relative to this file
+        # Locate the C-remote-shell source tree relative to this file.
+        # builder.py lives at megaploit/payload/builder.py, so two levels
+        # up (megaploit/payload → megaploit → repo root) reaches C-remote-shell.
         here   = os.path.dirname(os.path.abspath(__file__))
-        c_root = os.path.normpath(os.path.join(here, "..", "C-remote-shell"))
+        c_root = os.path.normpath(os.path.join(here, "..", "..", "C-remote-shell"))
         if not os.path.isdir(c_root):
             return BuildResult(
                 ok=False, format=cfg.format,
