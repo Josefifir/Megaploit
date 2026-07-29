@@ -103,11 +103,14 @@ megaploit (10.0.0.42) > background
 
 | Guide | Who should read it | What you'll learn |
 |---|---|---|
+| **[Quick-Start Guide](QUICKSTART.md)** | Beginners | 0-to-shell in under 10 minutes — install, generate, deliver, interact |
 | **[CLI Reference](CLI_REFERENCE.md)** | Everyone | Every single command with examples — global, session, module contexts |
+| **[Cheat Sheet](CHEATSHEET.md)** | Everyone | One-page printable reference for all major commands |
 | **[Payload Builder](PAYLOAD_BUILDER.md)** | Everyone | How to build EXE, PS1, Go binary, and 11 other payload formats |
 | **[Module System](MODULE_SYSTEM.md)** | Everyone + developers | Using exploit/scanner modules; writing your own |
 | **[Post-Exploitation Pipeline](PIPELINE.md)** | Intermediate | Auto-harvest creds and recon on every new session |
 | **[Networking & Pivoting](NETWORKING.md)** | Intermediate | SOCKS5, portfwd, pivot routes, WebSocket transport |
+| **[Troubleshooting](TROUBLESHOOTING.md)** | Everyone | Solutions to the most common installation and runtime problems |
 | **[Malleable C2 Profile](C2_PROFILE.md)** | Advanced | Shape traffic to look like legitimate software |
 | **[Web Dashboard](WEB_DASHBOARD.md)** | Advanced | Flask live dashboard + REST API |
 | **[Architecture](ARCHITECTURE.md)** | Developers | Code structure, transport protocol, session lifecycle |

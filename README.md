@@ -30,6 +30,9 @@
 ## Table of Contents
 
 - [What is Megaploit?](#what-is-megaploit)
+- [Quick Start (New Users → Read This First)](docs/QUICKSTART.md)
+- [Cheat Sheet](docs/CHEATSHEET.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Installation](#installation)
 - [Step 1 — Start the Server](#step-1--start-the-server)
 - [Step 2 — Generate an Agent](#step-2--generate-an-agent)
