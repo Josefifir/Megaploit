@@ -1255,7 +1255,28 @@ class Console:
                 result = _run_plugin_cmd(pc, args, lhost=self.lhost, port=self.port)
                 self._print_result(result)
             else:
-                print(err(f"Unknown command: {_c(cmd, _BOLD)}  — type {_c('help', _CYAN)}"))
+                # Check if this looks like a session command typed at the wrong prompt
+                _sess_cmds = all_commands()
+                if cmd in _sess_cmds:
+                    with self._sessions_lock:
+                        _sids = list(self._sessions.keys())
+                    if len(_sids) == 1:
+                        # Only one session — auto-route into it
+                        _sid = _sids[0]
+                        print(info(f"Auto-routing to session #{_sid}  (use {_c(f'use {_sid}', _CYAN)} to enter manually)"))
+                        _sess = self._sessions.get(_sid)
+                        if _sess:
+                            result = dispatch(_sess, raw)
+                            self._pruner.record_activity(_sid)
+                            self._print_result(result)
+                    elif len(_sids) > 1:
+                        print(warn(f"  '{cmd}' is a session command."))
+                        print(info(f"  Type  {_c('use <id>', _CYAN)}  to enter a session first."))
+                        print(f"  Active sessions: {', '.join(_c(str(s), _CYAN) for s in _sids)}")
+                    else:
+                        print(warn(f"  '{cmd}' is a session command — no active sessions."))
+                else:
+                    print(err(f"Unknown command: {_c(cmd, _BOLD)}  — type {_c('help', _CYAN)}"))
 
     # ---------------------------------------------------------------
     # Session interaction loop
