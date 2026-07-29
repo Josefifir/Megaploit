@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import contextlib
 import socket
-import threading
 import time
 
 from megaploit.core.protocol import send_msg, recv_msg
@@ -28,9 +27,10 @@ def run_shell(conn: socket.socket) -> None:
     """Block until the server sends 'exit' or the connection drops."""
     from megaploit.agent import handlers as _h
 
-    # Shared lock — prevents the heartbeat thread from sending a PING
-    # in the middle of a command response, which would desync the protocol.
-    _send_lock = threading.Lock()
+    # Use the module-level send lock from handlers so that every handler that
+    # calls _send_msg/_send_file directly shares the same lock as the shell
+    # loop and the heartbeat thread — no PING can interleave any send.
+    _send_lock = _h._send_lock
 
     # Start the background heartbeat PING sender (feature 6b)
     try:

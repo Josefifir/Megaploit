@@ -16,7 +16,7 @@ import socket
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-from megaploit.core.protocol import send_msg, recv_msg, send_file, recv_file
+from megaploit.core.protocol import send_msg, recv_msg as _recv_msg_raw, send_file, recv_file
 from megaploit.server.session import Session
 from megaploit.core.config import MAX_RECORD_SECONDS, AUDIT_LOG
 from megaploit.toolbox import runner as _runner
@@ -87,6 +87,20 @@ def _ok(msg: str = "") -> CommandResult:
 
 def _err(msg: str) -> CommandResult:
     return CommandResult(ok=False, output=msg)
+
+
+def recv_msg(conn) -> str:
+    """
+    recv_msg wrapper that silently discards heartbeat PING frames.
+    The agent sends ``PING`` every 30 s from a background thread.  Under
+    load (slow commands, multi-message transfers) a PING can arrive while
+    the server is blocking on the next recv_msg call.  Discarding it here
+    keeps the protocol in sync without requiring any server-side state.
+    """
+    while True:
+        msg = _recv_msg_raw(conn)
+        if msg != "PING":
+            return msg
 
 
 def _recv_file_or_err(conn, local: str, timeout: float | None = None) -> "CommandResult | None":
