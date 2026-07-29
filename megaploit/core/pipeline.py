@@ -140,6 +140,7 @@ _PROFILES["full"] = [
 def _load_config(path: str) -> dict:
     if not os.path.isfile(path):
         return {}
+    import logging as _log
     try:
         try:
             import yaml
@@ -151,7 +152,11 @@ def _load_config(path: str) -> dict:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return data if isinstance(data, dict) else {}
-    except Exception:
+    except Exception as exc:
+        # L10: log parse errors so operators know why profiles are missing
+        _log.getLogger(__name__).warning(
+            "Failed to load pipeline config %r: %s", path, exc
+        )
         return {}
 
 

@@ -1839,16 +1839,25 @@ def cmd_verify(session: Session, args: list[str]) -> CommandResult:
         return _err(f"Cannot read local file: {e}")
     local_hash = h.hexdigest()
 
-    # Ask agent for remote hash
+    # Ask agent for remote hash.
+    # The file_hash handler returns a two-line response:
+    #   "[+] SHA-256  <path>"
+    #   "    <64-hex-chars>"
+    # We anchor on the dedicated hex line immediately following the "[+]" line
+    # rather than free-scanning all text (H2 fix: avoids matching stray hex
+    # strings in error messages, certificates, or memory addresses).
     send_msg(session.conn, f"file_hash {remote_path}")
     remote_response = recv_msg(session.conn)
-    # Handler returns:  "[+] SHA-256  <path>\n    <hex>"
     remote_hash = ""
-    for line in remote_response.splitlines():
-        stripped = line.strip()
-        if len(stripped) == 64 and all(c in "0123456789abcdef" for c in stripped):
-            remote_hash = stripped
-            break
+    lines = remote_response.splitlines()
+    for idx, line in enumerate(lines):
+        if line.strip().startswith("[+]") and "SHA-256" in line:
+            # The hash is on the very next line
+            if idx + 1 < len(lines):
+                candidate = lines[idx + 1].strip()
+                if len(candidate) == 64 and all(c in "0123456789abcdef" for c in candidate):
+                    remote_hash = candidate
+                    break
 
     if not remote_hash:
         return _err(f"Could not parse remote hash from: {remote_response}")
@@ -1881,11 +1890,21 @@ def cmd_run_bg(session: Session, args: list[str]) -> CommandResult:
     from megaploit.core.protocol import send_msg as _sm, recv_msg as _rm
 
     cmd_str = " ".join(args)
-    conn    = session.conn
+    # H1: capture the session object (not the raw socket) so that the job can
+    # use session.conn at call-time rather than closing over a potentially
+    # stale socket object from submission time.  A 60-second recv timeout
+    # prevents the background thread from hanging forever on a silent agent.
+    sess_ref = session
 
     def _bg_runner():
+        conn = sess_ref.conn
         _sm(conn, cmd_str)
-        return _rm(conn)
+        old_to = conn.gettimeout()
+        conn.settimeout(60.0)
+        try:
+            return _rm(conn)
+        finally:
+            conn.settimeout(old_to)
 
     jid = job_manager.submit(f"run_bg:session#{session.id}:{cmd_str[:40]}", _bg_runner)
     return _ok(
