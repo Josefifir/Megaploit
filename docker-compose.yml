@@ -1,0 +1,55 @@
+# ===========================================================================
+#  Megaploit — Docker Compose
+#
+#  Interactive C2 operator console. Start with:
+#
+#      LHOST=192.168.1.10 docker compose run --rm --service-ports megaploit
+#
+#  or build only:
+#
+#      docker compose build
+#
+#  Operator state (secret.key, loot/, tools/, ~/.megaploit*.json) persists in
+#  the `megaploit-data` named volume.
+# ===========================================================================
+
+services:
+  megaploit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Uncomment to bundle the Go toolchain (payload go_exe / go_elf):
+      # args:
+      #   INSTALL_GO: "1"
+    image: megaploit:3.0
+    container_name: megaploit
+    # Interactive REPL — needs a TTY + stdin.
+    stdin_open: true
+    tty: true
+
+    environment:
+      # IP the agent connects back to (REQUIRED for a useful listener).
+      LHOST: ${LHOST:-127.0.0.1}
+      # C2 listener port.
+      PORT: ${PORT:-4444}
+      # Listener bind address (0.0.0.0 so published ports work).
+      RHOST: ${RHOST:-0.0.0.0}
+      # TLS: drop cert.pem + key.pem into the volume, then set USE_TLS=1
+      # (or point TLS_CERT / TLS_KEY at absolute paths).
+      # USE_TLS: "1"
+
+    ports:
+      - "4444:4444"   # C2 listener (agent callback)
+      - "8080:8080"   # web dashboard — start it with:  web start --host 0.0.0.0
+      - "7777:7777"   # multi-operator RPC — start with: rpc start --host 0.0.0.0
+
+    volumes:
+      - megaploit-data:/data
+
+    # Override entrypoint for one-off tasks, e.g.:
+    #   docker compose run --rm megaploit pytest
+    #   docker compose run --rm megaploit bash
+
+volumes:
+  megaploit-data:
+# *TODO Add configurable mount point variable optionable*
