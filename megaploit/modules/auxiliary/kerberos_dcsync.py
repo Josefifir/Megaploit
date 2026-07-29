@@ -83,7 +83,7 @@ class DcSyncModule(Module):
                 RemoteOperations, NTDSHashes, LocalOperations
             )
             from impacket.smbconnection import SMBConnection
-        except ImportError:
+        except (ImportError, OSError):
             return [self._fail("impacket not installed — pip install impacket")]
 
         # Parse hash if provided

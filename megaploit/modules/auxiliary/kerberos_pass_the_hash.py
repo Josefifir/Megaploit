@@ -88,7 +88,7 @@ class PassTheHashModule(Module):
 
         try:
             from impacket.examples.secretsdump import RemoteOperations
-        except ImportError:
+        except (ImportError, OSError):
             return [self._fail("impacket not installed — pip install impacket")]
 
         hosts = list(self.expand_cidr(rhosts)) if "/" in rhosts else [rhosts]

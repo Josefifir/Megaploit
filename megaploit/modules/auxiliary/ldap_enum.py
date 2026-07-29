@@ -106,11 +106,11 @@ class LdapEnumModule(Module):
         try:
             import ldap3
             _driver = "ldap3"
-        except ImportError:
+        except (ImportError, OSError):
             try:
                 from impacket.ldap import ldap as _impacket_ldap
                 _driver = "impacket"
-            except ImportError:
+            except (ImportError, OSError):
                 return [self._fail(
                     "No LDAP library — install ldap3:  pip install ldap3"
                 )]

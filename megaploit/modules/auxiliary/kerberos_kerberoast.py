@@ -87,7 +87,7 @@ class KerberoastModule(Module):
             from impacket.krb5.types import KerberosTime, Principal
             from impacket.ldap import ldap as _ldap
             from impacket.ldap import ldaptypes as _ldaptypes
-        except ImportError:
+        except (ImportError, OSError):
             return [self._fail(
                 "impacket not installed — run:  pip install impacket",
             )]

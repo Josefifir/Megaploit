@@ -17,7 +17,9 @@ from megaploit.modules.base import Module, ModuleType, OptionType
 try:
     from impacket.smbconnection import SMBConnection  # type: ignore
     _HAS_IMPACKET = True
-except ImportError:
+except (ImportError, OSError):
+    # OSError can be raised on Windows (Python ≥ 3.14) when impacket's package
+    # path contains characters that fail the stricter path validation.
     _HAS_IMPACKET = False
 
 
