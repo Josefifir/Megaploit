@@ -63,12 +63,12 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          # Core deps (lightweight subset — skip heavy agent deps for CI)
-          pip install termcolor
-          pip install "tomli>=2.0.1; python_version < '3.11'"
-          # Optional but useful for test coverage
-          pip install cryptography flask || true
-          # Test runner
+          # Core deps — pinned via constraints.txt for reproducible CI runs
+          pip install termcolor -c constraints.txt
+          pip install "tomli>=2.0.1; python_version < '3.11'" -c constraints.txt
+          # Encryption + web (required for the full test suite)
+          pip install cryptography flask -c constraints.txt
+          # Test runner (not in constraints — dev-only)
           pip install pytest pytest-cov
 
       - name: Run tests
@@ -121,7 +121,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install termcolor cryptography flask pytest pytest-cov pytest-timeout
+          pip install termcolor cryptography flask pytest pytest-cov pytest-timeout -c constraints.txt
 
       - name: Run core tests (Windows)
         run: |
