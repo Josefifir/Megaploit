@@ -64,7 +64,7 @@ Megaploit implements defence-in-depth across four layers on every agent connecti
 - All post-auth traffic is AES-256-GCM encrypted end-to-end
 - Each message carries a random 12-byte nonce (never reused)
 - 16-byte GCM authentication tag — any tampering causes decryption failure
-- Falls back to XOR-CTR if `cryptography` package is unavailable (not recommended for production)
+- Requires the `cryptography` package; the server and agent refuse to start without it
 
 ### Layer 4 — Replay protection
 - Every message carries a monotonic `uint64` sequence number
@@ -86,7 +86,6 @@ Megaploit implements defence-in-depth across four layers on every agent connecti
 ## Known Limitations
 
 - **No certificate pinning** on the Python agent — TLS cert is accepted without validation (by design; C2 uses a self-signed cert). The HMAC layer compensates for this.
-- **AES-256-GCM fallback** — if `cryptography` is not installed, traffic falls back to XOR-CTR which has no authentication tag. Always install `cryptography` in production.
 - **Python agent is not obfuscated** by default — the `payload` command's encoder pipeline provides obfuscation, but it is not a substitute for an AV-evasion product.
 
 ---

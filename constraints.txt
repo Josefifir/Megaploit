@@ -1,0 +1,34 @@
+# constraints.txt
+# ~~~~~~~~~~~~~~~~
+# Tested exact package versions for reproducible installs.
+# Generated from requirements.in via:
+#   pip-compile requirements.in --output-file constraints.txt
+#
+# Use alongside requirements.txt:
+#   pip install -r requirements.txt -c constraints.txt
+#
+# Update this file when you bump requirements.in:
+#   pip install pip-tools
+#   pip-compile requirements.in --output-file constraints.txt
+#
+# Last verified: 2025-07 against Python 3.10 / 3.11 / 3.12
+
+# ── Core ──────────────────────────────────────────────────────────────────
+termcolor==2.4.0
+tomli==2.0.2
+
+# ── Agent capabilities ────────────────────────────────────────────────────
+pynput==1.7.7
+PyAutoGUI==0.9.54
+mss==9.0.2
+opencv-python==4.10.0.84
+numpy==1.26.4
+sounddevice==0.4.7
+soundfile==0.12.1
+
+# ── Transport encryption ──────────────────────────────────────────────────
+cryptography==45.0.5
+
+# ── Web streaming ─────────────────────────────────────────────────────────
+Flask==3.1.1
+Werkzeug==3.1.3

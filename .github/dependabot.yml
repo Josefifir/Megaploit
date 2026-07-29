@@ -1,0 +1,42 @@
+# .github/dependabot.yml
+#
+# Dependabot keeps pip dependencies and GitHub Actions up to date.
+# Weekly PRs are opened automatically; maintainers review and merge.
+#
+# Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+
+version: 2
+
+updates:
+  # ── Python dependencies (pip) ──────────────────────────────────────────────
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "UTC"
+    # Group all non-breaking updates into one PR to reduce noise
+    groups:
+      all-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "automated"
+
+  # ── GitHub Actions ─────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated"
