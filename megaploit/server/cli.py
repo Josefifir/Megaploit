@@ -170,6 +170,37 @@ _cmd_history = _CommandHistory()
 # ANSI colour / style helpers
 # ---------------------------------------------------------------------------
 
+def _enable_windows_ansi() -> None:
+    """
+    Enable ANSI/VT100 escape-code processing on Windows consoles.
+
+    On Windows 10 v1511+ the console supports ANSI but it must be opted-in
+    via SetConsoleMode(ENABLE_VIRTUAL_TERMINAL_PROCESSING).  Without this
+    call every \033[...m sequence is printed as literal text instead of
+    producing colour.  This is a no-op on non-Windows platforms.
+    """
+    import sys
+    if sys.platform != "win32":
+        return
+    try:
+        import ctypes
+        import ctypes.wintypes
+        kernel32 = ctypes.windll.kernel32
+        # STD_OUTPUT_HANDLE = -11
+        h = kernel32.GetStdHandle(-11)
+        if h == ctypes.wintypes.HANDLE(-1).value:
+            return
+        mode = ctypes.wintypes.DWORD(0)
+        if not kernel32.GetConsoleMode(h, ctypes.byref(mode)):
+            return
+        # ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+        kernel32.SetConsoleMode(h, mode.value | 0x0004)
+    except Exception:
+        pass   # if it fails, colours just won't show — not fatal
+
+
+_enable_windows_ansi()
+
 _RESET   = "\033[0m"
 _BOLD    = "\033[1m"
 _DIM     = "\033[2m"
