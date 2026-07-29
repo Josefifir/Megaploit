@@ -512,7 +512,7 @@ def _screenshot_stream_burst(conn, args: list[str]) -> str | None:
                 sleep_t = delay - elapsed
                 if sleep_t > 0:
                     time.sleep(sleep_t)
-        with _send_lock:
+        with get_send_lock():
             _send_msg(conn, "STREAM_END")
         return None
 
@@ -528,13 +528,13 @@ def _screenshot_stream_burst(conn, args: list[str]) -> str | None:
                 buf = io.BytesIO()
                 img.save(buf, format="JPEG", quality=quality)
                 b64 = base64.b64encode(buf.getvalue()).decode()
-                with _send_lock:
+                with get_send_lock():
                     _send_msg(conn, f"FRAME:{b64}")
                 elapsed = time.monotonic() - t0
                 sleep_t = delay - elapsed
                 if sleep_t > 0:
                     time.sleep(sleep_t)
-            with _send_lock:
+            with get_send_lock():
                 _send_msg(conn, "STREAM_END")
             return None
         except Exception as exc:
