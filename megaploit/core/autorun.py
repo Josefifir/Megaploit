@@ -1,157 +1,245 @@
 """
 megaploit.core.autorun
 ~~~~~~~~~~~~~~~~~~~~~~
-AutoRunScript — automatically queue commands when a new session opens.
+AutoRunScript — automatically execute a list of C2 commands whenever a new
+session opens.
 
-Config file:  ~/.megaploit_autorun.json
+Configuration is stored in a YAML or JSON file (default ``autorun.yaml`` in
+the current working directory, or ``~/.megaploit_autorun.json`` for
+backwards compatibility).  Commands can be scoped globally, by OS family, or
+by session tag.
 
-Schema
-------
-{
-  "global": ["sysinfo", "whoami"],
-  "windows": ["os_info", "installed_software", "scheduled_tasks"],
-  "linux":   ["os_info", "find_suid", "env"],
-  "darwin":  ["os_info", "startup_items"],
-  "tags": {
-    "dc": ["hashdump", "users"],
-    "workstation": ["browser_creds", "wifi_passwords"]
-  }
-}
+Config format (YAML example)
+-----------------------------
+::
 
-Matching logic
---------------
-1.  Commands from ``global`` always run.
-2.  Commands from the platform key (``windows`` / ``linux`` / ``darwin``)
-    run if session.os_name contains that substring (case-insensitive).
-3.  Commands from ``tags[tag]`` run if session.tag matches the key.
+    global:
+      - sysinfo
+      - os_info
 
-The returned list is deduplicated (preserving order) and safe to pass
-directly to ``session.send_command()`` or a job queue.
+    windows:
+      - whoami_priv
+      - hashdump
+
+    linux:
+      - "shell id"
+      - find_suid
+
+    darwin:
+      - "shell sw_vers"
+
+    tags:
+      dev_box:
+        - "shell uname -a"
+        - installed_software
+
+Usage
+-----
+    from megaploit.core.autorun import autorun
+
+    cmds = autorun.commands_for(session)
+    for cmd in cmds:
+        dispatch(session, cmd)
+
+    autorun.reload()          # re-read the config file
+    autorun.save_default()    # write a starter config to disk
+    autorun.apply(session, send_fn=dispatch)  # resolve + dispatch in one call
 """
 
 from __future__ import annotations
 
 import json
 import os
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from megaploit.server.session import Session
+from typing import Any, Callable, Optional
 
 __all__ = ["AutoRunScript", "autorun"]
 
-_CONFIG_PATH = os.path.expanduser("~/.megaploit_autorun.json")
+_DEFAULT_PATH = "autorun.yaml"
+# Legacy path used by older versions / test infrastructure
+_LEGACY_PATH  = os.path.expanduser("~/.megaploit_autorun.json")
+
+
+# ---------------------------------------------------------------------------
+# YAML / JSON loader
+# ---------------------------------------------------------------------------
+
+def _load_config(path: str) -> dict:
+    """Load YAML or JSON config from *path*.  Returns an empty dict on error."""
+    if not os.path.isfile(path):
+        return {}
+    try:
+        # Try YAML first (needs pyyaml; falls back to JSON)
+        try:
+            import yaml
+            with open(path, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+            return data if isinstance(data, dict) else {}
+        except ImportError:
+            pass
+        # JSON fallback
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
 
 _DEFAULT_CONFIG: dict = {
     "global":  ["sysinfo"],
-    "windows": ["os_info"],
-    "linux":   ["os_info"],
-    "darwin":  ["os_info"],
+    "windows": [],
+    "linux":   [],
+    "darwin":  [],
     "tags":    {},
 }
 
+_DEFAULT_YAML = """\
+# Megaploit AutoRunScript configuration
+# Commands are sent to every new session automatically.
+# Scope: global (all), windows/linux/darwin, or by session tag.
+
+global:
+  - sysinfo
+
+windows:
+  # - whoami_priv
+  # - hashdump
+
+linux:
+  # - "shell id"
+  # - find_suid
+
+darwin:
+  # - "shell sw_vers"
+
+tags:
+  # my_tag:
+  #   - "shell hostname"
+"""
+
+
+# ---------------------------------------------------------------------------
+# AutoRunScript
+# ---------------------------------------------------------------------------
 
 class AutoRunScript:
     """
-    Loads the autorun config and resolves the command list for a session.
+    Loads and provides autorun command lists from a YAML/JSON config file.
+
+    Thread-safe for concurrent reads; reload() replaces the config atomically.
+
+    Parameters
+    ----------
+    path / config_path : str, optional
+        Path to the YAML or JSON config file.
+        ``config_path`` is the legacy keyword accepted by older code / tests.
     """
 
-    def __init__(self, config_path: str = _CONFIG_PATH) -> None:
-        self._path   = config_path
-        self._config: dict = {}
+    def __init__(
+        self,
+        path: str = _DEFAULT_PATH,
+        *,
+        config_path: str | None = None,  # backwards-compat alias
+    ) -> None:
+        # config_path wins when supplied (legacy tests / API)
+        self._path = config_path if config_path is not None else path
+        self._cfg: dict = {}
         self.reload()
 
     # ------------------------------------------------------------------
-    # Config I/O
+    # Config loading
     # ------------------------------------------------------------------
 
     def reload(self) -> None:
-        """Reload config from disk (no-op if file absent)."""
-        try:
-            with open(self._path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            self._config = {**_DEFAULT_CONFIG, **data}
-        except FileNotFoundError:
-            self._config = dict(_DEFAULT_CONFIG)
-        except (json.JSONDecodeError, OSError) as exc:
-            # Keep last known good config; don't crash the server
-            if not self._config:
-                self._config = dict(_DEFAULT_CONFIG)
+        """Re-read the config file from disk."""
+        loaded = _load_config(self._path)
+        self._cfg = {**_DEFAULT_CONFIG, **loaded}
+        # Normalise tag section to dict[str, list[str]]
+        if not isinstance(self._cfg.get("tags"), dict):
+            self._cfg["tags"] = {}
 
     def save_default(self) -> None:
-        """Write the default config to disk as a starter template."""
-        template = {
-            "global":  ["sysinfo"],
-            "windows": ["os_info", "installed_software", "ps"],
-            "linux":   ["os_info", "find_suid", "env", "users"],
-            "darwin":  ["os_info", "startup_items", "users"],
-            "tags": {
-                "dc":          ["hashdump", "users", "scheduled_tasks"],
-                "workstation": ["browser_creds", "wifi_passwords", "ps"],
-            },
-        }
-        try:
+        """
+        Write a default starter config to disk.
+
+        The format matches the file extension:
+        - ``.yaml`` / ``.yml``  → YAML
+        - anything else          → JSON (backwards-compatible for tests)
+        """
+        ext = os.path.splitext(self._path)[1].lower()
+        if ext in (".yaml", ".yml"):
+            with open(self._path, "w", encoding="utf-8") as f:
+                f.write(_DEFAULT_YAML)
+        else:
+            template = {
+                "global":  ["sysinfo"],
+                "windows": ["os_info", "installed_software", "ps"],
+                "linux":   ["os_info", "find_suid", "env", "users"],
+                "darwin":  ["os_info", "startup_items", "users"],
+                "tags": {
+                    "dc":          ["hashdump", "users", "scheduled_tasks"],
+                    "workstation": ["browser_creds", "wifi_passwords", "ps"],
+                },
+            }
             with open(self._path, "w", encoding="utf-8") as f:
                 json.dump(template, f, indent=2)
-        except OSError:
-            pass
 
     # ------------------------------------------------------------------
-    # Command resolution
+    # Command lookup
     # ------------------------------------------------------------------
 
-    def commands_for(self, session: "Session") -> list[str]:
+    def commands_for(self, session) -> list[str]:
         """
         Return the ordered, deduplicated list of commands to run for *session*.
-        """
-        seen:  set[str]  = set()
-        cmds:  list[str] = []
 
-        def _add(cmd_list: list) -> None:
-            for c in cmd_list:
+        Order: global → OS-specific → tag-specific.
+        Duplicates are removed (first occurrence wins).
+        """
+        seen: set[str]  = set()
+        cmds: list[str] = []
+
+        def _add(cmd_list) -> None:
+            for c in (cmd_list or []):
                 if isinstance(c, str) and c.strip() and c not in seen:
                     seen.add(c)
                     cmds.append(c.strip())
 
-        # 1.  Global commands
-        _add(self._config.get("global", []))
+        # 1. Global
+        _add(self._cfg.get("global"))
 
-        # 2.  Platform-specific commands
-        os_lower = (session.os_name or "").lower()
-        for platform_key in ("windows", "linux", "darwin"):
-            if platform_key in os_lower:
-                _add(self._config.get(platform_key, []))
-                break
+        # 2. OS-specific
+        os_name: str = getattr(session, "os_name", "") or ""
+        os_lower = os_name.lower()
+        if "windows" in os_lower:
+            _add(self._cfg.get("windows"))
+        elif os_lower.startswith("darwin") or "macos" in os_lower:
+            _add(self._cfg.get("darwin"))
+        elif os_lower:
+            _add(self._cfg.get("linux"))
 
-        # 3.  Tag-specific commands
-        tag = (session.tag or "").lower()
-        tags_map = self._config.get("tags", {})
-        if isinstance(tags_map, dict) and tag in tags_map:
-            _add(tags_map[tag])
+        # 3. Tag-specific
+        tag: str = getattr(session, "tag", "") or ""
+        tag_cmds = (self._cfg.get("tags") or {}).get(tag, [])
+        _add(tag_cmds)
 
         return cmds
 
     # ------------------------------------------------------------------
-    # Convenience: apply to a session's queue
+    # apply() — resolve + dispatch in one call
     # ------------------------------------------------------------------
 
-    def apply(self, session: "Session",
-              send_fn=None) -> list[str]:
+    def apply(self, session, send_fn: Callable | None = None) -> list[str]:
         """
-        Resolve commands and optionally dispatch them.
+        Resolve commands for *session* and optionally dispatch them.
 
         Parameters
         ----------
-        session : Session
-            The newly opened session.
-        send_fn : callable, optional
-            If provided, called as ``send_fn(session, cmd)`` for each command.
-            If None the list is returned without dispatching.
+        session:  the newly opened session
+        send_fn:  called as ``send_fn(session, cmd)`` for each command.
+                  If None the list is returned without dispatching.
 
         Returns
         -------
-        list[str]
-            The commands that were (or will be) dispatched.
+        list[str]  — the commands that were (or would be) dispatched.
         """
         cmds = self.commands_for(session)
         if send_fn is not None:
@@ -169,20 +257,23 @@ class AutoRunScript:
     def summary(self) -> dict:
         return {
             "path":    self._path,
-            "global":  self._config.get("global", []),
-            "windows": self._config.get("windows", []),
-            "linux":   self._config.get("linux", []),
-            "darwin":  self._config.get("darwin", []),
-            "tags":    self._config.get("tags", {}),
+            "global":  list(self._cfg.get("global") or []),
+            "windows": list(self._cfg.get("windows") or []),
+            "linux":   list(self._cfg.get("linux") or []),
+            "darwin":  list(self._cfg.get("darwin") or []),
+            "tags":    dict(self._cfg.get("tags") or {}),
         }
 
     def __repr__(self) -> str:
         n = sum(
-            len(v) for v in self._config.values()
+            len(v) for v in self._cfg.values()
             if isinstance(v, list)
         )
-        return f"<AutoRunScript  {n} command(s) configured>"
+        return f"<AutoRunScript path={self._path!r} total_cmds={n}>"
 
 
+# ---------------------------------------------------------------------------
 # Singleton
+# ---------------------------------------------------------------------------
+
 autorun = AutoRunScript()

@@ -366,6 +366,7 @@ def generate_report(
     engagement_desc: str = "",
     engagement_start: float = 0.0,
     sessions: list = None,
+    command_history: list = None,
     **_kwargs: Any,
 ) -> None:
     """
@@ -376,28 +377,37 @@ def generate_report(
     output_path : str
         Destination file path.
     fmt : str
-        ``"html"`` or ``"json"``
+        ``"html"``, ``"json"``, or ``"pdf"``
     engagement_name : str
     engagement_desc : str
     engagement_start : float
         Unix timestamp.
     sessions : list[Session]
         Active or previously active sessions.
+    command_history : list[dict]
+        Operator command history entries from ``_CommandHistory.tail()``.
     """
-    sessions = sessions or []
-    fmt      = fmt.lower()
+    sessions        = sessions or []
+    command_history = command_history or []
+    fmt             = fmt.lower()
 
     if fmt == "json":
         _write_json(output_path, engagement_name, engagement_desc,
-                    engagement_start, sessions)
+                    engagement_start, sessions, command_history)
+        return
+
+    if fmt == "pdf":
+        _write_pdf(output_path, engagement_name, engagement_desc,
+                   engagement_start, sessions, command_history)
         return
 
     # HTML
     _write_html(output_path, engagement_name, engagement_desc,
-                engagement_start, sessions)
+                engagement_start, sessions, command_history)
 
 
-def _write_json(path: str, name: str, desc: str, start: float, sessions: list) -> None:
+def _write_json(path: str, name: str, desc: str, start: float, sessions: list,
+                command_history: list) -> None:
     data: dict[str, Any] = {
         "engagement": {
             "name":  name,
@@ -406,6 +416,7 @@ def _write_json(path: str, name: str, desc: str, start: float, sessions: list) -
         },
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
         "sessions": [],
+        "command_timeline": command_history,
     }
     for sess in sessions:
         try:
@@ -425,7 +436,53 @@ def _write_json(path: str, name: str, desc: str, start: float, sessions: list) -
         json.dump(data, f, indent=2, default=str)
 
 
-def _write_html(path: str, name: str, desc: str, start: float, sessions: list) -> None:
+def _build_timeline_section(command_history: list) -> str:
+    """Build an HTML table of the command timeline from history entries."""
+    if not command_history:
+        return "<p>No command history available.</p>"
+    rows = []
+    for entry in command_history:
+        ts      = _esc(str(entry.get("ts", "")))
+        ctx     = _esc(str(entry.get("context", "")))
+        sid     = _esc(str(entry.get("session_id", "")))
+        cmd     = _esc(str(entry.get("cmd", ""))[:120])
+        rows.append(
+            f"<tr><td>{ts}</td><td>{ctx}</td><td>{sid}</td>"
+            f"<td><code>{cmd}</code></td></tr>"
+        )
+    return (
+        "<table><thead><tr>"
+        "<th>Timestamp</th><th>Context</th><th>Session</th><th>Command</th>"
+        "</tr></thead><tbody>"
+        + "\n".join(rows)
+        + "</tbody></table>"
+    )
+
+
+def _write_pdf(path: str, name: str, desc: str, start: float, sessions: list,
+               command_history: list) -> None:
+    """Generate a PDF report via weasyprint (optional dep).  Falls back to HTML."""
+    try:
+        from weasyprint import HTML as _WH  # type: ignore[import]
+    except ImportError:
+        # weasyprint not installed — write HTML and rename to .pdf so the caller
+        # at least gets something useful
+        html_path = path + ".html"
+        _write_html(html_path, name, desc, start, sessions, command_history)
+        import os as _os
+        _os.rename(html_path, path)
+        return
+
+    # Build the HTML in memory then convert to PDF
+    import io as _io
+    buf = _io.StringIO()
+    _write_html_to_stream(buf, name, desc, start, sessions, command_history)
+    html_str = buf.getvalue()
+    _WH(string=html_str).write_pdf(path)
+
+
+def _write_html(path: str, name: str, desc: str, start: float, sessions: list,
+                command_history: list) -> None:
     start_str = (
         datetime.datetime.utcfromtimestamp(start).strftime("%Y-%m-%d %H:%M UTC")
         if start else "unknown"
@@ -436,13 +493,20 @@ def _write_html(path: str, name: str, desc: str, start: float, sessions: list) -
     creds_table, n_creds         = _build_creds_table(sessions)
     loot_table, n_loot           = _build_loot_table(sessions)
     notes_section                = _build_notes_section(sessions)
+    timeline_section             = _build_timeline_section(command_history)
 
     desc_html = (
         f'<div class="card"><p>{_esc(desc)}</p></div>'
         if desc else ""
     )
 
-    html = _HTML_TEMPLATE.format(
+    # Append timeline section to the template (injected before the footer)
+    template = _HTML_TEMPLATE.replace(
+        '<div class="footer">',
+        '<h2>&#x23F1; Command Timeline</h2>\n  {timeline_section}\n\n  <div class="footer">',
+    ).replace('{timeline_section}', timeline_section)
+
+    html = template.format(
         engagement_name     = _esc(name or "Untitled Engagement"),
         engagement_name_esc = _esc(name or "Untitled Engagement"),
         engagement_start_str= start_str,
@@ -460,3 +524,20 @@ def _write_html(path: str, name: str, desc: str, start: float, sessions: list) -
 
     with open(path, "w", encoding="utf-8") as f:
         f.write(html)
+
+
+def _write_html_to_stream(stream, name: str, desc: str, start: float, sessions: list,
+                          command_history: list) -> None:
+    """Write the HTML report to an in-memory stream (used by PDF generation)."""
+    import io as _io
+    tmp_path = "__megaploit_tmp_report__.html"
+    _write_html(tmp_path, name, desc, start, sessions, command_history)
+    import os as _os
+    try:
+        with open(tmp_path, "r", encoding="utf-8") as f:
+            stream.write(f.read())
+    finally:
+        try:
+            _os.remove(tmp_path)
+        except OSError:
+            pass

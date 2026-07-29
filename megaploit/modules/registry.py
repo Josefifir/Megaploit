@@ -172,12 +172,91 @@ class ModuleRegistry:
         return [e for e in self.all() if e.module_type == mtype]
 
     def search(self, query: str) -> list[ModuleEntry]:
-        """Case-insensitive substring search over name + description."""
-        q = query.lower()
-        return [
-            e for e in self.all()
-            if q in e.name.lower() or q in e.description.lower()
-        ]
+        """
+        Search modules supporting both plain substring and structured filters.
+
+        Structured filter tokens (Metasploit-compatible):
+            type:<exploit|auxiliary|post|payload>
+            platform:<windows|linux|…>
+            cve:<partial-cve-string>
+            rank:>N  rank:<N  rank:N  (numeric comparison)
+            author:<substring>
+            name:<substring>
+
+        Any remaining non-filter tokens are matched as plain substrings against
+        name + description.
+
+        Examples::
+
+            search type:exploit platform:windows
+            search cve:2024 rank:>400
+            search type:auxiliary ldap
+        """
+        import re as _re
+
+        tokens = query.split()
+        plain_tokens: list[str] = []
+        filters: dict[str, str] = {}
+
+        _FILTER_RE = _re.compile(r'^(type|platform|cve|rank|author|name):(.+)$', _re.IGNORECASE)
+        for tok in tokens:
+            m = _FILTER_RE.match(tok)
+            if m:
+                filters[m.group(1).lower()] = m.group(2)
+            else:
+                plain_tokens.append(tok.lower())
+
+        def _matches(e: "ModuleEntry") -> bool:
+            # --- structured filters ---
+            if "type" in filters:
+                if filters["type"].lower() not in e.module_type.value.lower():
+                    return False
+            if "platform" in filters:
+                plat_q = filters["platform"].lower()
+                # module.platform is list[str]; ModuleEntry doesn't have it directly —
+                # use the instance's class attribute via klass.platform
+                plats = [p.lower() for p in getattr(e.klass, "platform", [])]
+                if not any(plat_q in p for p in plats):
+                    return False
+            if "cve" in filters:
+                cve_q = filters["cve"].lower()
+                refs = " ".join(getattr(e.klass, "references", [])).lower()
+                if cve_q not in refs and cve_q not in e.name.lower() and cve_q not in e.description.lower():
+                    return False
+            if "author" in filters:
+                if filters["author"].lower() not in e.author.lower():
+                    return False
+            if "name" in filters:
+                if filters["name"].lower() not in e.name.lower():
+                    return False
+            if "rank" in filters:
+                raw_rank = filters["rank"]
+                m_rank = _re.match(r'^([<>]?)(\d+)$', raw_rank)
+                if m_rank:
+                    op, threshold = m_rank.group(1), int(m_rank.group(2))
+                    if op == ">":
+                        if not (e.rank > threshold):
+                            return False
+                    elif op == "<":
+                        if not (e.rank < threshold):
+                            return False
+                    else:
+                        if e.rank != threshold:
+                            return False
+
+            # --- plain substring tokens (all must match) ---
+            if plain_tokens:
+                haystack = (e.name + " " + e.description + " " + e.author).lower()
+                if not all(t in haystack for t in plain_tokens):
+                    return False
+
+            return True
+
+        # If query was empty / whitespace return everything
+        if not tokens:
+            return self.all()
+
+        return [e for e in self.all() if _matches(e)]
 
     def errors(self) -> list[tuple[str, str]]:
         return list(self._errors)

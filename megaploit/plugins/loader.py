@@ -427,12 +427,28 @@ class PluginLoader:
             try:
                 snapshot = self._dir_snapshot()
                 if snapshot != last_snapshot:
+                    # Determine which changed paths are module files vs plugin descriptors
+                    changed = {p for p in snapshot if snapshot.get(p) != last_snapshot.get(p)}
                     last_snapshot = snapshot
+
                     loaded, errors = self.load_all()
                     _LOG.info(
                         "Plugin reload triggered by file change: %d loaded, %d errors.",
                         loaded, errors
                     )
+
+                    # Hot-reload module registry if any .py in megaploit/modules/ changed
+                    if any(p.endswith(".py") for p in changed):
+                        try:
+                            from megaploit.modules.registry import module_registry as _mr
+                            mod_count, mod_errors = _mr.reload()
+                            _LOG.info(
+                                "Module registry reloaded: %d modules, %d errors.",
+                                mod_count, mod_errors,
+                            )
+                        except Exception as exc:
+                            _LOG.debug("Module registry reload error: %s", exc)
+
                     if self._on_reload:
                         try:
                             self._on_reload(loaded, errors)
@@ -449,6 +465,8 @@ class PluginLoader:
           - .toml / .json descriptor files in the plugins/ root
           - .c / .cpp source files referenced by loaded native commands
             (so a recompile is triggered whenever the source changes)
+          - .py module files under megaploit/modules/ (feature 6c)
+            (so a module hot-reload is triggered when a module is edited)
         """
         snapshot: dict[str, float] = {}
         if not os.path.isdir(PLUGINS_DIR):
@@ -473,6 +491,26 @@ class PluginLoader:
                         snapshot[src] = os.path.getmtime(src)
                     except OSError:
                         pass
+
+        # Python module files under megaploit/modules/ (feature 6c)
+        # Walk the modules directory and record every .py file's mtime so
+        # any edit or new file triggers a module_registry.reload().
+        _modules_dir = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),   # plugins/
+            "..",                                          # megaploit/
+            "modules",
+        )
+        _modules_dir = os.path.normpath(_modules_dir)
+        if os.path.isdir(_modules_dir):
+            for dirpath, _dirs, filenames in os.walk(_modules_dir):
+                _dirs[:] = [d for d in _dirs if not d.startswith("_")]
+                for fname in filenames:
+                    if fname.endswith(".py") and not fname.startswith("_"):
+                        fpath = os.path.join(dirpath, fname)
+                        try:
+                            snapshot[fpath] = os.path.getmtime(fpath)
+                        except OSError:
+                            pass
 
         return snapshot
 

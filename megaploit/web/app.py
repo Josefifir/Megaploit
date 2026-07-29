@@ -103,6 +103,20 @@ _DASHBOARD_HTML = """<!DOCTYPE html>
   #events-log p{margin:1px 0;border-bottom:1px solid #21262d;padding:2px 0;}
   footer{text-align:center;color:#484f58;font-size:11px;
          margin-top:40px;padding:12px;border-top:1px solid #21262d;}
+  /* Terminal widget */
+  .terminal-wrap{display:flex;gap:8px;margin-top:10px;}
+  #term-input{flex:1;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;
+              padding:6px 10px;font-family:monospace;font-size:13px;border-radius:4px;}
+  #term-btn{background:#1f6feb;color:#fff;border:none;padding:6px 14px;
+            border-radius:4px;cursor:pointer;font-size:13px;}
+  #term-btn:hover{background:#388bfd;}
+  #term-output{background:#0d1117;border:1px solid #30363d;border-radius:4px;
+               padding:10px;font-family:monospace;font-size:12px;color:#c9d1d9;
+               min-height:80px;max-height:300px;overflow-y:auto;white-space:pre-wrap;
+               margin-top:8px;}
+  #term-sid-wrap{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  #term-sid{width:80px;background:#161b22;border:1px solid #30363d;color:#c9d1d9;
+            padding:4px 8px;font-size:13px;border-radius:4px;}
 </style>
 </head>
 <body>
@@ -127,6 +141,19 @@ _DASHBOARD_HTML = """<!DOCTYPE html>
       </tr></thead>
       <tbody id="sessions-tbody"><tr><td colspan="7" style="color:#484f58">Loading…</td></tr></tbody>
     </table>
+  </div>
+
+  <div class="card">
+    <h2>&#x1F4BB; Session Terminal</h2>
+    <div id="term-sid-wrap">
+      <label style="color:#8b949e;font-size:12px;">Session ID:</label>
+      <input id="term-sid" type="number" min="1" placeholder="1">
+    </div>
+    <div class="terminal-wrap">
+      <input id="term-input" type="text" placeholder="Type a command and press Enter or Send…">
+      <button id="term-btn">Send</button>
+    </div>
+    <div id="term-output" style="display:none"></div>
   </div>
 
   <div class="card">
@@ -237,6 +264,29 @@ function connectSSE(){
     }catch(e){}
   });
 }
+
+// Terminal widget
+function sendTermCmd(){
+  const sid = parseInt(document.getElementById("term-sid").value||"0");
+  const cmd = document.getElementById("term-input").value.trim();
+  if(!sid||!cmd) return;
+  const out = document.getElementById("term-output");
+  out.style.display="block";
+  out.textContent += "\n$ " + cmd + "\n";
+  fetch(API+"/api/sessions/"+sid+"/cmd",{
+    method:"POST",
+    headers:{...hdr(),"Content-Type":"application/json"},
+    body:JSON.stringify({cmd:cmd})
+  }).then(r=>r.json()).then(d=>{
+    out.textContent += (d.output||"(no output)")+"\n";
+    out.scrollTop=out.scrollHeight;
+  }).catch(e=>{out.textContent+="[error] "+e+"\n";});
+  document.getElementById("term-input").value="";
+}
+document.getElementById("term-btn").addEventListener("click",sendTermCmd);
+document.getElementById("term-input").addEventListener("keydown",function(e){
+  if(e.key==="Enter") sendTermCmd();
+});
 
 // Initial load + periodic refresh
 refreshSessions(); refreshJobs(); refreshCreds(); refreshLoot();

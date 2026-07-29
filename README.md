@@ -12,6 +12,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
 [![License](https://img.shields.io/github/license/Josefifir/Megaploit)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-553%20passing-brightgreen)](#running-tests)
+[![Commands](https://img.shields.io/badge/session%20commands-135-blue)](#session-commands)
 [![GitHub Stars](https://img.shields.io/github/stars/Josefifir/Megaploit?style=social)](https://github.com/Josefifir/Megaploit/stargazers)
 
 **[📖 Docs](https://josefifir.github.io/Megaploit/) · [🐛 Report Bug](https://github.com/Josefifir/Megaploit/issues/new?template=bug_report.md) · [💡 Request Feature](https://github.com/Josefifir/Megaploit/issues/new?template=feature_request.md) · [📦 Request a Module](https://github.com/Josefifir/Megaploit/issues/new?template=module_request.md)**
@@ -38,7 +39,7 @@ python server.py -lh 10.0.0.1 -p 4444 --tls
 - 🪟 **Hardened C Windows agent** ([C-remote-shell](https://github.com/Levon-Volodin/C-remote-shell)) — SChannel TLS, BCrypt GCM, NT syscall post-exploitation
 - 🧩 **TOML plugin system** — add new commands without writing Python
 - 🏗️ **Metasploit-style module API** — copy a template, fill in the blanks, open a PR
-- 📊 **116 session commands** · 20 exploit modules · 8 scanners · 203-tool toolbox
+- 📊 **135 session commands** · 20 exploit modules · 8 scanners · 203-tool toolbox
 
 > ⭐ **If Megaploit saves you time on an engagement, a star helps others find it.**
 
@@ -51,6 +52,8 @@ python server.py -lh 10.0.0.1 -p 4444 --tls
   - [Table of Contents](#table-of-contents)
   - [What is Megaploit](#what-is-megaploit)
   - [Megaploit vs Metasploit](#megaploit-vs-metasploit)
+  - [v4.1 Changelog](#v41-changelog)
+    - [New in v4.1 — Closing the Metasploit Gaps](#new-in-v41--closing-the-metasploit-gaps)
   - [v4.0 Changelog](#v40-changelog)
     - [New in v4.0 — Advanced Meterpreter-class Shell](#new-in-v40--advanced-meterpreter-class-shell)
       - [`megaploit/agent/meterp.py` — 16 new agent-side post-exploitation handlers](#megaploitagentmeterppy--16-new-agent-side-post-exploitation-handlers)
@@ -81,7 +84,7 @@ python server.py -lh 10.0.0.1 -p 4444 --tls
     - [Global Commands](#global-commands)
     - [Module System](#module-system)
     - [Payload Builder](#payload-builder)
-    - [Session Commands (full 116-command list)](#session-commands-full-116-command-list)
+    - [Session Commands (full 135-command list)](#session-commands-full-135-command-list)
     - [Operations Commands](#operations-commands)
   - [Toolbox](#toolbox)
   - [Plugin System](#plugin-system)
@@ -151,29 +154,89 @@ Megaploit is a modular, extensible **Command & Control (C2) framework** and **pe
 
 ## Megaploit vs Metasploit
 
-| Category | Megaploit v4 | Metasploit Framework |
+| Category | Megaploit v4.1 | Metasploit Framework |
 |---|---|---|
 | **Language / runtime** | Pure Python 3.10+ — single file agent, zero C deps | Ruby + C + native extensions |
 | **Agent delivery** | 13 payload formats (py, ps1, hta, vba, sh, bat, exe, elf, Go binary, oneliner…) | Staged/stageless PE/ELF via msfvenom |
 | **Encrypted transport** | AES-256-GCM + sequence numbers + WebSocket framing | AES via `--encrypt aes256` (optional) |
 | **TLS** | `--tls` auto-cert (self-signed, SHA-256 fingerprint shown); or bring-your-own PEM | Manual cert required |
 | **Authentication** | HMAC-SHA256 challenge/response on every connection | No built-in agent authentication |
-| **Sessions** | Multi-session, tag + OS column, background/foreground | Multi-session (`sessions -i`) |
-| **Shell quality** | PTY + resize, PowerShell exec, in-agent Python exec | Meterpreter PTY |
-| **Privilege escalation** | `getsystem` — 3 techniques: **named-pipe impersonation**, SeDebugPrivilege token steal, unquoted service path; `uac_bypass` fodhelper hijack (W10/11); `token_steal`; `dll_inject`; `patch_amsi` | `getsystem` (named pipe + token duplicate + service + more); `bypassuac`; kiwi/mimikatz built-in |
-| **Credential harvesting** | `hashdump`, `wifi_passwords`, `cred_vault` (Credential Manager), `browser_creds`, `ssh_harvest`, `sudo_sniff`, `keylog_*` | Mimikatz, hashdump, `post/multi/gather` |
+| **Sessions** | Multi-session, tag + OS column, `-K`/`-k`/`-u`/`-c`/`-s` flags | Multi-session (`sessions -i`) |
+| **Shell quality** | PTY + resize, PowerShell exec, in-agent Python REPL (`irb`) | Meterpreter PTY + `irb` |
+| **Privilege escalation** | `getsystem` (3 techniques) · `uac_bypass` · `token_steal` · `run_as` · `make_token` · `dll_inject` · `patch_amsi` | `getsystem` + `bypassuac` + kiwi/mimikatz |
+| **Credential harvesting** | `hashdump`, `wifi_passwords`, `cred_vault`, `browser_creds`, `ssh_harvest`, `sudo_sniff`, `keylog_*` | Mimikatz, hashdump, `post/multi/gather` |
 | **Persistence** | `persist`, `startup_items`, `scheduled_tasks`, `keylog_*` | `post/*/manage/persistence` |
-| **Post-exploitation** | 116 session commands; SOCKS5 proxy; port-forward; screenshot stream; webcam; DLL inject; AMSI patch; process migration; memory R/W | Meterpreter + post modules |
+| **Post-exploitation** | **135 session commands**; SOCKS5 · portfwd · screenshot stream · webcam · DLL inject · AMSI · process migration · memory R/W · `reg` · `execute` · `run_as` · `getdesktop` · `net_view` · `arp_scan` | Meterpreter + post modules |
+| **Registry** | Full CRUD via `reg query/get/set/delete` (Windows) | `reg` command in Meterpreter |
+| **Domain recon** | `net_view [domain]` — computers, DCs, shares | `net view` + AD modules |
+| **ARP discovery** | `arp_scan <cidr>` — scapy / arp-scan / nmap fallback | `post/multi/gather/arp_scanner` |
+| **Background tasks** | `run_bg <cmd>` → jobs engine; poll with `job_result <id>` | `execute -b` + background threads |
+| **Transfer integrity** | `verify <local> <remote>` — compare SHA-256 both sides | SHA1 built into Meterpreter upload |
+| **Transfer progress** | Upload/download shows file size, elapsed time, and speed | Progress bar in Meterpreter |
+| **Extension management** | `load_ext <local.py>` — one-step upload + register verbs | `load` in Meterpreter session |
+| **Post module integration** | `run post/multi/gather/sysinfo` inside any session | `run post/…` in Meterpreter |
 | **Exploit modules** | 20 modules (EternalBlue, Log4Shell, BlueKeep, ProxyLogon, Spring4Shell, Heartbleed, vsFTPd, Shellshock, PrintNightmare, and more) | 2 000+ modules |
 | **Module system** | `auxiliary`, `exploit`, `post`, `payload` with full options lifecycle; `AgentModule` base class | Same architecture (the original) |
-| **Evasion** | `patch_amsi`, `disable_defender`, `timestomp`, `clear_logs`, `hide_file`, `living_off_land`; live `etw_patch` + `sandbox_check` session commands; AMSI/ETW baked into PS1/HTA/BAT/oneliner droppers; `py_stealth` format; `sandbox_detect` + `etw_patch` encoders; PE metadata spoofing for EXE builds | Limited built-in; mostly AV-bypass payloads |
+| **Evasion** | `patch_amsi`, `disable_defender`, `timestomp`, `clear_logs`, `hide_file`, `living_off_land`; live `etw_patch` + `sandbox_check`; AMSI/ETW baked into droppers; `py_stealth`; encoders; PE metadata spoofing | Limited built-in; mostly AV-bypass payloads |
+| **Pivot routes** | `route add/remove/print/flush` — server-side CIDR→session route table | `route add/remove` in Metasploit |
 | **Toolbox** | 203-tool catalogue — install any GitHub tool in any language | No equivalent |
 | **Plugin system** | TOML hot-reload plugins, zero Python required | Metasploit plugins (Ruby) |
 | **Malleable C2 profile** | YAML traffic shaping — URI rotation, User-Agent, sleep/jitter | Cobalt Strike concept; not native to Metasploit |
 | **Reporting** | Built-in HTML/Markdown/JSON engagement report | `db_export` + community reports |
-| **Maturity** | v4 — actively developed, Python-native | 20+ years, battle-tested |
+| **Maturity** | v4.1 — actively developed, Python-native | 20+ years, battle-tested |
 
-> **Summary:** Megaploit matches Metasploit on all core post-exploitation primitives (multi-technique `getsystem`, token impersonation, UAC bypass, DLL injection, AMSI bypass) and surpasses it on transport security, toolbox breadth, and Python-native extensibility. Metasploit remains ahead on raw exploit count.
+> **Summary:** Megaploit v4.1 closes the remaining gaps vs Metasploit on session management, Windows registry, domain recon, ARP discovery, background execution, transfer verification, and extension loading — while keeping the Python-native, zero-dependency agent model. Metasploit remains ahead on raw exploit count.
+
+---
+
+## v4.1 Changelog
+
+### New in v4.1 — Closing the Metasploit Gaps
+
+15 features that were present in Metasploit but missing from Megaploit are now fully implemented:
+
+#### New agent handlers (`megaploit/agent/handlers.py`)
+
+| Verb | Description |
+|---|---|
+| `run_as <user> <pass> <cmd>` | Execute as a different user — `CreateProcessWithLogonW` (Windows) or `sudo -u`/`su -c` (Unix) |
+| `execute <exe> [args]` | Run an explicit binary+argv; no shell expansion, captures stdout+stderr |
+| `reg query\|get\|set\|delete <HIVE\\key>` | Windows registry CRUD with full type support (REG_SZ, REG_DWORD, REG_BINARY, REG_MULTI_SZ…) |
+| `getdesktop` | Current interactive desktop name (`GetUserObjectInformation`) |
+| `enumdesktops` | All desktops in the current window station (`EnumDesktopsW`) |
+| `net_view [domain]` | List domain computers, DCs, shares — `net view`/`nltest` (Windows) or `nmblookup`/DNS SRV (Linux) |
+| `arp_scan <cidr>` | Active ARP subnet scan — prefers `arp-scan`, falls back to scapy, Windows ping sweep, or nmap |
+
+#### New server commands (`megaploit/server/commands.py`)
+
+| Command | Description |
+|---|---|
+| `run_as` / `execute` | Wire new agent handlers |
+| `reg` | Wire Windows registry CRUD |
+| `getdesktop` / `enumdesktops` | Wire desktop commands |
+| `verify <local> <remote>` | Compare SHA-256 hashes both sides — confirm transfer integrity |
+| `run_bg <cmd>` | Submit shell command to the jobs engine; returns job ID |
+| `job_result <id>` | Retrieve output of a completed background job |
+| `net_view` | Wire domain enumeration (30s timeout) |
+| `arp_scan <cidr>` | Wire active ARP scan (60s timeout) |
+| `load_ext <local.py>` | One-step: upload extension file then `load_extension` it on the agent |
+| `upload` / `download` | Now show file size, elapsed time, and transfer speed (Gap 5) |
+
+#### New CLI features (`megaploit/server/cli.py`)
+
+| Feature | Description |
+|---|---|
+| `sessions -K` | Kill **all** active sessions |
+| `sessions -k <id>` | Kill a single session by ID |
+| `sessions -u <id>` | Upgrade session — load meterp extensions via `load_extension` |
+| `sessions -c <cmd>` | Broadcast a C2 command to all sessions (not just shell) |
+| `sessions -s <tag>` | Filter and list sessions by tag |
+| `route add <cidr> <sid>` | Add a server-side pivot route mapping a CIDR to a session |
+| `route remove <cidr>` | Remove a pivot route |
+| `route print` | List all pivot routes |
+| `route flush` | Remove all routes |
+| `irb` (in session) | Interactive Python REPL on the agent — multi-line buffer, blank line executes |
+| `run <post/module>` (in session) | Look up a post module in the registry and call `mod.run(session=…)` live |
 
 ---
 
@@ -245,6 +308,7 @@ Megaploit is a modular, extensible **Command & Control (C2) framework** and **pe
 - **Registry recursion fix** — `ModuleRegistry.reload()` now uses `os.walk()` for deep subdirectory discovery
 - **`datetime.utcnow()` deprecation** — fixed in 8 locations across the codebase (Python 3.12+ compatible)
 - **507 tests passing** — 69 new tests covering all meterp handlers, command stubs, and `MeterpreterSession`
+- See [v4.1 Changelog](#v41-changelog) for the 15 Metasploit-gap features added after v4.0
 
 ### Previous Systems (v3.x)
 
@@ -668,6 +732,11 @@ python3 server.py -lh <callback-ip> -p <port> [options]
 | Command | Description |
 |---|---|
 | `sessions` | List active sessions (ID, IP, OS, hostname, tag, uptime) |
+| `sessions -K` | Kill **all** active sessions |
+| `sessions -k <id>` | Kill one session by ID |
+| `sessions -u <id>` | Upgrade session to meterp (load extensions) |
+| `sessions -c <cmd>` | Broadcast a C2 command to all sessions |
+| `sessions -s <tag>` | Filter session list by tag |
 | `use <id>` | Enter **MeterpreterSession** interactive console |
 | `use <module/path>` | Load a module |
 | `generate [-c] [--tls]` | Patch agent with LHOST/PORT |
@@ -678,6 +747,9 @@ python3 server.py -lh <callback-ip> -p <port> [options]
 | `show modules [query]` | Browse loaded module catalogue |
 | `run` / `check` / `info` | Execute / pre-check / describe active module |
 | `broadcast <cmd>` | Run shell command on ALL active sessions |
+| `route add <cidr> <sid>` | Add a pivot route through a session |
+| `route remove <cidr>` | Remove a pivot route |
+| `route print` | List all pivot routes |
 | `payload <format> [opts]` | Build payload |
 | `stage0 generate [opts]` | Generate stage-0 dropper |
 | `pipeline enable\|disable <profile>` | Toggle post-exploitation collection profile |
@@ -709,24 +781,26 @@ megaploit [1] » payload go_exe --out agent.exe
 megaploit [1] » payload ps1 --encoder comment_spam --encoder varname_rand --out obf.ps1
 ```
 
-### Session Commands (full 116-command list)
+### Session Commands (full 135-command list)
 
 | Category | Commands |
 |---|---|
 | **Core** | sysinfo, cd, shell, exit, whoami, getpid, getuid |
-| **File** | upload, download, zip_download, zip_upload, ls, cat, find_files, find_writable, find_suid, file_hash, tail, write_file, mkdir, rm, chmod, search |
+| **File** | upload *(+progress)*, download *(+progress)*, verify, zip_download, zip_upload, ls, cat, find_files, find_writable, find_suid, file_hash, tail, write_file, mkdir, rm, chmod, search |
 | **Screen/Audio** | screenshot, screenshot_region, screenshot_timelapse, screenshot_stream, record, mic_level, screen_stream, webcam, screenrecord |
 | **Persistence** | persist, keylog_start, keylog_dump, keylog_stop, startup_items, scheduled_tasks |
 | **Creds** | hashdump, wifi_passwords, browser_creds, browser_history, cred_vault, ssh_harvest, sudo_sniff |
 | **Clipboard** | getclip, setclip, clip_watch |
-| **Network** | portfwd, arp, dns_query, routes, ifconfig, netstat, ping_sweep, smb_shares, ssh_connect, rdp_enable, socks5, port_scan |
+| **Network** | portfwd, arp, arp_scan, dns_query, routes, ifconfig, netstat, ping_sweep, smb_shares, ssh_connect, rdp_enable, socks5, port_scan, net_view |
 | **Exfil** | exfil_dns, exfil_http |
-| **Privesc** | token_steal, uac_bypass, make_token, rev2self, getsystem, whoami_priv |
+| **Privesc** | token_steal, uac_bypass, make_token, rev2self, getsystem, whoami_priv, run_as |
 | **Evasion** | lock_screen, patch_amsi, disable_defender, hide_file, timestomp, clear_logs, **etw_patch**, **sandbox_check** |
-| **Injection** | inject_shellcode, dll_inject, living_off_land, reverse_shell |
-| **GUI** | msgbox, mouse_move, type_keys, screenshot_region, notify, open_url, play_sound, set_wallpaper |
+| **Injection** | inject_shellcode, dll_inject, living_off_land, reverse_shell, execute |
+| **GUI** | msgbox, mouse_move, type_keys, screenshot_region, notify, open_url, play_sound, set_wallpaper, getdesktop, enumdesktops |
 | **Intelligence** | ps, kill, env, installed_software, active_windows, services, users, logged_in, os_info, idle_time |
-| **Advanced** | migrate, memory_read, memory_write, run_psh, run_python, load_extension, unload_extension, list_extensions, sleep, beacon_sleep, interactive |
+| **Registry** | reg (query / get / set / delete) |
+| **Advanced** | migrate, memory_read, memory_write, run_psh, run_python, irb, run_bg, job_result, load_extension, load_ext, unload_extension, list_extensions, sleep, beacon_sleep, interactive |
+| **Post Modules** | `run post/multi/gather/sysinfo` and any registered post module |
 | **Loot** | loot_list, note, notes |
 | **Staging** | load_stage |
 | **Destructive** | forkbomb, self_destruct |

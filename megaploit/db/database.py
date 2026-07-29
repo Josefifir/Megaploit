@@ -320,7 +320,11 @@ class Database:
                 (ip, hostname, os_name, os_version, mac, domain, info, state,
                  now, now, json.dumps(tags or [])),
             )
-            row = self._conn().execute("SELECT id FROM hosts WHERE ip=?", (ip,)).fetchone()
+            # BUG (was): called self._conn() INSIDE the _write() context manager,
+            # which tries to acquire self._lock again → deadlock on non-reentrant
+            # Lock.  Use the cursor's connection directly via cur.connection
+            # to stay inside the same transaction without re-acquiring the lock.
+            row = cur.execute("SELECT id FROM hosts WHERE ip=?", (ip,)).fetchone()
         return row["id"]
 
     def update_host(self, host_id: int, **kwargs) -> None:
@@ -396,7 +400,8 @@ class Database:
                 (host_id, port, proto, name, product, version, banner, state,
                  json.dumps(extra or {}), now),
             )
-            row = self._conn().execute(
+            # BUG (was): same _conn()-inside-_write() deadlock as add_host.
+            row = cur.execute(
                 "SELECT id FROM services WHERE host_id=? AND port=? AND proto=?",
                 (host_id, port, proto)
             ).fetchone()
