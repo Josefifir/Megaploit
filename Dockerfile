@@ -4,12 +4,15 @@
 #
 #  For authorised security research / penetration testing only.
 #
-#  Build (lean, no Go toolchain):
+#  Build (default — includes MinGW-w64 for `payload c_exe`):
 #      docker build -t megaploit .
 #
-#  Build with Go toolchain (enables `payload go_exe` / `payload go_elf`,
+#  Build with Go toolchain too (enables `payload go_exe` / `payload go_elf`,
 #  adds ~700 MB to the image):
 #      docker build --build-arg INSTALL_GO=1 -t megaploit:full .
+#
+#  Lean build (drop MinGW-w64, saves ~130 MB — `payload c_exe` unavailable):
+#      docker build --build-arg INSTALL_MINGW=0 -t megaploit:slim .
 #
 #  Run (interactive console):
 #      docker run -it --rm \
@@ -33,7 +36,8 @@ LABEL org.opencontainers.image.title="Megaploit" \
 # Optional: install the Go toolchain for `payload go_exe` / `payload go_elf`
 # Off by default — adds ~700 MB.  Enable with: --build-arg INSTALL_GO=1
 # ---------------------------------------------------------------------------
-ARG INSTALL_GO=0
+ARG INSTALL_GO=1
+ARG INSTALL_MINGW=1
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
@@ -62,6 +66,9 @@ RUN set -eux; \
         build-essential \
         upx-ucl \
         gosu; \
+    if [ "$INSTALL_MINGW" = "1" ]; then \
+        apt-get install -y --no-install-recommends mingw-w64; \
+    fi; \
     if [ "$INSTALL_GO" = "1" ]; then \
         apt-get install -y --no-install-recommends golang-go; \
     fi; \
