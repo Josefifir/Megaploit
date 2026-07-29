@@ -66,6 +66,8 @@ jobs:
   # ---------------------------------------------------------------------------
   # Dependency Review — block PRs that introduce packages with known CVEs
   # Requires: Settings → Code security → Dependency graph → enabled
+  #   Go to: https://github.com/Josefifir/Megaploit/settings/security_analysis
+  #   and turn on "Dependency graph".
   # Docs: https://github.com/actions/dependency-review-action
   # ---------------------------------------------------------------------------
   dependency-review:
@@ -73,6 +75,10 @@ jobs:
     runs-on: ubuntu-latest
     # This action only works on pull_request events
     if: github.event_name == 'pull_request'
+    # continue-on-error: keeps the PR unblocked if the Dependency Graph
+    # feature is not yet enabled in repo settings.  Remove this line once
+    # Settings → Code security → Dependency graph is turned on.
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
