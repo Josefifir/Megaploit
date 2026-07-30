@@ -152,7 +152,7 @@ The default image includes MinGW-w64 so `payload c_exe` works out of the box.
 # Build image (includes MinGW-w64 by default — enables payload c_exe)
 docker build -t megaploit .
 
-# NOTE: `--built-arg INSTALL_GO=1` would not be needed since Go deps are installed automatically-
+# NOTE: `--build-arg INSTALL_GO=1` would not be needed since Go deps are installed automatically-
 # -to omit Go deps, use `--build-arg INSTALL_GO=0`, to omit MinGW-w64, use `--build-arg INSTALL_MINGW=0`
 # Build with Go toolchain too (enables payload go_exe / go_elf, +~700 MB)
 docker build --build-arg INSTALL_GO=1 -t megaploit:full .
