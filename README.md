@@ -7,7 +7,7 @@
 *A Metasploit-class post-exploitation framework — Python-native, extensible, and built for modern infrastructure.*
 
 [![CI](https://github.com/Josefifir/Megaploit/actions/workflows/ci.yml/badge.svg)](https://github.com/Josefifir/Megaploit/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/Josefifir/Megaploit/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Josefifir/Megaploit/actions/workflows/codeql-analysis.yml)
+[![CodeQL](https://github.com/Josefifir/Megaploit/actions/workflows/ci.yml/badge.svg?label=CodeQL)](https://github.com/Josefifir/Megaploit/actions/workflows/ci.yml)
 [![Docs](https://github.com/Josefifir/Megaploit/actions/workflows/docs.yml/badge.svg)](https://josefifir.github.io/Megaploit/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
 [![License](https://img.shields.io/github/license/Josefifir/Megaploit)](LICENSE)
