@@ -155,6 +155,9 @@ docker build -t megaploit .
 # Build with Go toolchain too (enables payload go_exe / go_elf, +~700 MB)
 docker build --build-arg INSTALL_GO=1 -t megaploit:full .
 
+# Note: `--built-arg INSTALL_GO=1` would not be needed since Go deps are installed automatically-
+# -to omit Go deps, use `--build-arg INSTALL_GO=0`, to omit MinGW-w64, use `--build-arg INSTALL_MINGW=0`
+
 # Run — replace 192.168.1.10 with your actual IP
 docker run -it --rm \
   -p 4444:4444 -p 8080:8080 \
