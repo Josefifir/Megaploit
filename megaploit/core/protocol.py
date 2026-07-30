@@ -73,7 +73,11 @@ def _try_import_msgpack():
 
 _msgpack = _try_import_msgpack()
 
-from megaploit.core.config import MAX_PLUGIN_MSG_SIZE, ALLOW_PLAINTEXT_FALLBACK
+from megaploit.core.config import (
+    MAX_PLUGIN_MSG_SIZE,
+    MAX_WEBSOCKET_FRAME_SIZE,
+    ALLOW_PLAINTEXT_FALLBACK,
+)
 
 _HDR  = struct.Struct("!I")    # 4-byte big-endian uint32 (outer length)
 _SEQ  = struct.Struct("!Q")    # 8-byte big-endian uint64 (sequence number)
@@ -817,7 +821,13 @@ class WsTransport:
         return bytes(header) + payload
 
     def _read_frame(self) -> tuple[int, bytes]:
-        """Read and parse one WebSocket frame.  Returns (opcode, payload)."""
+        """Read and parse one WebSocket frame.  Returns (opcode, payload).
+
+        Enforces:
+        - Frame payload size ≤ MAX_WEBSOCKET_FRAME_SIZE before allocating memory
+        - RFC 6455 masking rules: client→server frames MUST be masked;
+          server→client frames MUST NOT be masked
+        """
         header = _recv_exactly(self._conn, 2)
         if header is None:
             raise ConnectionError("WsTransport: connection closed in frame header")
@@ -837,6 +847,27 @@ class WsTransport:
             if ext is None:
                 raise ConnectionError("WsTransport: truncated 64-bit length")
             length = struct.unpack(">Q", ext)[0]
+
+        # Enforce frame size limit BEFORE allocating the payload buffer.
+        # Without this check a peer can send a frame header claiming an
+        # arbitrarily large length and cause a memory exhaustion DoS.
+        if length > MAX_WEBSOCKET_FRAME_SIZE:
+            raise ConnectionError(
+                f"WsTransport: frame too large: {length} bytes exceeds "
+                f"MAX_WEBSOCKET_FRAME_SIZE ({MAX_WEBSOCKET_FRAME_SIZE} bytes)"
+            )
+
+        # Enforce RFC 6455 §5.1 masking rules:
+        #   - client→server (server_side=True  → we are reading from a client) MUST mask
+        #   - server→client (server_side=False → we are reading from a server) MUST NOT mask
+        if self._server_side and not masked:
+            raise ConnectionError(
+                "WsTransport: RFC 6455 violation — client frame must be masked"
+            )
+        if not self._server_side and masked:
+            raise ConnectionError(
+                "WsTransport: RFC 6455 violation — server frame must not be masked"
+            )
 
         masking_key = b""
         if masked:

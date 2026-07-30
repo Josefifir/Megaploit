@@ -23,6 +23,11 @@ RECONNECT_JITTER: int = 5  # seconds — random 0..JITTER added so multiple agen
 # 256 MiB is generous for all of the above while still catching runaway allocations.
 MAX_PLUGIN_MSG_SIZE: int = 256 * 1024 * 1024   # 256 MiB hard cap per framed message
 
+# WebSocket frame size cap — applied before allocating the payload buffer in
+# WsTransport._read_frame().  Reuses MAX_PLUGIN_MSG_SIZE as the ceiling so the
+# two limits stay consistent; override here if WS frames need a tighter bound.
+MAX_WEBSOCKET_FRAME_SIZE: int = MAX_PLUGIN_MSG_SIZE
+
 # Listener hardening
 MAX_AUTH_ATTEMPTS_PER_MIN: int = 5   # per source IP; excess connections are dropped
 IP_BAN_DURATION: int = 300           # seconds an IP stays banned after exceeding the limit
