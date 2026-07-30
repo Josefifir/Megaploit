@@ -905,6 +905,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#mingw-w64-cross-compiler-payload-c_exe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MinGW-w64 cross-compiler (payload c_exe)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MinGW-w64 cross-compiler (payload c_exe)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisite-initialise-the-c-remote-shell-submodule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisite: initialise the C-remote-shell submodule
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dropping-mingw-to-shrink-the-image-130-mb-saved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dropping MinGW to shrink the image (~130 MB saved)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#one-off-tasks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1010,7 +1049,7 @@ operator state (secret key, loot, toolbox, settings) persisted across restarts.<
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/Josefifir/Megaploit.git
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nb">cd</span><span class="w"> </span>Megaploit
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># 2. Build the image (lean, no Go toolchain)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># 2. Build the image (includes MinGW-w64 for `payload c_exe` by default)</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>megaploit<span class="w"> </span>.
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># 3. Run the interactive console</span>
@@ -1173,31 +1212,51 @@ toolchain build arg.</p>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>docker<span class="w"> </span>compose<span class="w"> </span>build
 </span></code></pre></div>
 <hr />
+<h2 id="mingw-w64-cross-compiler-payload-c_exe">MinGW-w64 cross-compiler (<code>payload c_exe</code>)<a class="headerlink" href="#mingw-w64-cross-compiler-payload-c_exe" title="Permanent link">&para;</a></h2>
+<p><strong>Included by default.</strong> The image ships <code>mingw-w64</code> so <code>payload c_exe</code> can
+cross-compile the C-remote-shell client into a Windows <code>.exe</code> from inside the
+container. The builder probes for <code>x86_64-w64-mingw32-gcc</code> automatically.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>megaploit &gt; payload c_exe --out /data/agent.exe
+</span></code></pre></div>
+<h3 id="prerequisite-initialise-the-c-remote-shell-submodule">Prerequisite: initialise the C-remote-shell submodule<a class="headerlink" href="#prerequisite-initialise-the-c-remote-shell-submodule" title="Permanent link">&para;</a></h3>
+<p>The C client source lives in a git submodule and is <strong>not</strong> part of the main
+clone. You must check it out <em>before</em> building the Docker image, otherwise the
+source tree is empty and the build fails with <em>"C-remote-shell source not found"</em>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># In your local clone (before `docker build`):</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>git<span class="w"> </span>submodule<span class="w"> </span>update<span class="w"> </span>--init<span class="w"> </span>C-remote-shell
+</span></code></pre></div>
+<p>The <code>.c</code> / <code>.h</code> files are then copied into the image by <code>COPY . .</code> (the
+<code>.dockerignore</code> does not exclude them).</p>
+<h3 id="dropping-mingw-to-shrink-the-image-130-mb-saved">Dropping MinGW to shrink the image (~130 MB saved)<a class="headerlink" href="#dropping-mingw-to-shrink-the-image-130-mb-saved" title="Permanent link">&para;</a></h3>
+<p>If you don't need <code>payload c_exe</code>, build lean:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">INSTALL_MINGW</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>-t<span class="w"> </span>megaploit:slim<span class="w"> </span>.
+</span></code></pre></div>
+<hr />
 <h2 id="one-off-tasks">One-off tasks<a class="headerlink" href="#one-off-tasks" title="Permanent link">&para;</a></h2>
 <p>The entrypoint passes any arguments verbatim when provided:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Run the test suite</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span>megaploit-data:/data<span class="w"> </span>megaploit<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-q
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Open a shell</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span>megaploit-data:/data<span class="w"> </span>megaploit<span class="w"> </span>bash
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Run server.py with explicit flags (bypasses env-var assembly)</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span>:4444<span class="w"> </span>-v<span class="w"> </span>megaploit-data:/data<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span>megaploit<span class="w"> </span>python3<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">10</span>.0.0.1<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span><span class="w"> </span>--allow-ip<span class="w"> </span><span class="m">10</span>.0.0.5
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="c1"># Back up the entire /data volume to a tarball</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">    </span>-v<span class="w"> </span>megaploit-data:/data<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">    </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>:/backup<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span>alpine<span class="w"> </span>tar<span class="w"> </span>czf<span class="w"> </span>/backup/megaploit-data-<span class="k">$(</span>date<span class="w"> </span>+%Y%m%d<span class="k">)</span>.tar.gz<span class="w"> </span>/data
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Run the test suite</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span>megaploit-data:/data<span class="w"> </span>megaploit<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-q
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Open a shell</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span>megaploit-data:/data<span class="w"> </span>megaploit<span class="w"> </span>bash
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Run server.py with explicit flags (bypasses env-var assembly)</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span>:4444<span class="w"> </span>-v<span class="w"> </span>megaploit-data:/data<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">    </span>megaploit<span class="w"> </span>python3<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">10</span>.0.0.1<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span><span class="w"> </span>--allow-ip<span class="w"> </span><span class="m">10</span>.0.0.5
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="c1"># Back up the entire /data volume to a tarball</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">    </span>-v<span class="w"> </span>megaploit-data:/data<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="w">    </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>:/backup<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">    </span>alpine<span class="w"> </span>tar<span class="w"> </span>czf<span class="w"> </span>/backup/megaploit-data-<span class="k">$(</span>date<span class="w"> </span>+%Y%m%d<span class="k">)</span>.tar.gz<span class="w"> </span>/data
 </span></code></pre></div>
 <hr />
 <h2 id="cross-platform-builds-buildx">Cross-platform builds (<code>buildx</code>)<a class="headerlink" href="#cross-platform-builds-buildx" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># linux/amd64 (explicit)</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>docker<span class="w"> </span>buildx<span class="w"> </span>build<span class="w"> </span>--platform<span class="w"> </span>linux/amd64<span class="w"> </span>-t<span class="w"> </span>megaploit:amd64<span class="w"> </span>.
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># linux/arm64 (Raspberry Pi / AWS Graviton)</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>docker<span class="w"> </span>buildx<span class="w"> </span>build<span class="w"> </span>--platform<span class="w"> </span>linux/arm64<span class="w"> </span>-t<span class="w"> </span>megaploit:arm64<span class="w"> </span>.
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># linux/amd64 (explicit)</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>docker<span class="w"> </span>buildx<span class="w"> </span>build<span class="w"> </span>--platform<span class="w"> </span>linux/amd64<span class="w"> </span>-t<span class="w"> </span>megaploit:amd64<span class="w"> </span>.
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># linux/arm64 (Raspberry Pi / AWS Graviton)</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>docker<span class="w"> </span>buildx<span class="w"> </span>build<span class="w"> </span>--platform<span class="w"> </span>linux/arm64<span class="w"> </span>-t<span class="w"> </span>megaploit:arm64<span class="w"> </span>.
 </span></code></pre></div>
 <hr />
 <h2 id="security-notes">Security notes<a class="headerlink" href="#security-notes" title="Permanent link">&para;</a></h2>
