@@ -4,12 +4,15 @@ RFC 6455 WebSocket transport layer.
 
 from __future__ import annotations
 
+import logging
 import os
 import socket
 import struct
 
 from megaploit.core.config import MAX_WEBSOCKET_FRAME_SIZE
 from megaploit.core.framing import _recv_exactly
+
+_LOG = logging.getLogger(__name__)
 
 
 class WsTransport:
@@ -183,13 +186,13 @@ class WsTransport:
         if not self._closed:
             try:
                 self._conn.sendall(self._build_frame(b"", opcode=self._OP_CLOSE))
-            except OSError:
-                pass
+            except OSError as exc:
+                _LOG.debug("WsTransport.close(): failed to send CLOSE frame", exc_info=True)
         self._closed = True
         try:
             self._conn.close()
-        except OSError:
-            pass
+        except OSError as exc:
+            _LOG.debug("WsTransport.close(): failed to close underlying socket", exc_info=True)
 
     # ------------------------------------------------------------------
     # Internal helpers
