@@ -12,9 +12,8 @@ from __future__ import annotations
 import hashlib
 import os
 import sys
-import tempfile
 import types
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -147,8 +146,10 @@ class TestGenerateCertCryptography:
 
         assert os.path.exists(cert_out)
         assert os.path.exists(key_out)
-        assert open(cert_out, "rb").read() == b"FAKE-CERT-PEM"
-        assert open(key_out,  "rb").read() == b"FAKE-KEY-PEM"
+        with open(cert_out, "rb") as f:
+            assert f.read() == b"FAKE-CERT-PEM"
+        with open(key_out, "rb") as f:
+            assert f.read() == b"FAKE-KEY-PEM"
 
     def test_creates_parent_directory(self, tmp_path):
         cert_der = b"DER"
@@ -178,7 +179,8 @@ class TestGenerateCertOpenSSLFallback:
         der_bytes = b"OPENSSL-DER"
 
         # Write fake cert so the file-read path works
-        open(cert_out, "wb").write(b"FAKE-PEM")
+        with open(cert_out, "wb") as f:
+            f.write(b"FAKE-PEM")
 
         with patch.dict(sys.modules, {"cryptography": None}):
             with patch("megaploit.server.listener.subprocess.run") as mock_run:
@@ -197,7 +199,6 @@ class TestGenerateCertOpenSSLFallback:
         cert_out = str(tmp_path / "err.crt")
         key_out  = str(tmp_path / "err.key")
 
-        import subprocess as _sp
 
         with patch.dict(sys.modules, {"cryptography": None}):
             with patch("megaploit.server.listener.subprocess.run",

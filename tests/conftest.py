@@ -5,8 +5,6 @@ from __future__ import annotations
 
 import os
 import sys
-import tempfile
-import threading
 
 import pytest
 
@@ -27,7 +25,6 @@ def tmp_dir(tmp_path):
 @pytest.fixture
 def mock_session():
     """A minimal mock session object for testing commands and modules."""
-    import socket
     from unittest.mock import MagicMock
 
     sess = MagicMock()

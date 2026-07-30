@@ -50,7 +50,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Any, Callable, Optional
+from typing import Callable, Optional
 
 __all__ = ["AutoRunScript", "autorun"]
 
@@ -243,11 +243,18 @@ class AutoRunScript:
         """
         cmds = self.commands_for(session)
         if send_fn is not None:
+            import logging as _log
+            _logger = _log.getLogger(__name__)
             for cmd in cmds:
                 try:
                     send_fn(session, cmd)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    # M3: surface failures so operators know autorun commands
+                    # did not run — swallowing silently made debugging impossible.
+                    _logger.warning(
+                        "autorun command %r failed for session %r: %s",
+                        cmd, getattr(session, "id", session), exc,
+                    )
         return cmds
 
     # ------------------------------------------------------------------

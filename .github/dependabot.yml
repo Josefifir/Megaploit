@@ -1,0 +1,60 @@
+# .github/dependabot.yml
+#
+# Dependabot keeps pip dependencies and GitHub Actions up to date.
+# Weekly PRs are opened automatically; maintainers review and merge.
+#
+# IMPORTANT — file layout:
+#   requirements.txt  loose >=  bounds  (end-user install, DO NOT pin)
+#   requirements.in   loose >=  bounds  (source of truth for pip-compile, DO NOT pin)
+#   constraints.txt   exact ==  versions (CI reproducibility, Dependabot target)
+#
+# Dependabot is pointed at constraints.txt so it only updates the pinned file.
+# requirements.txt and requirements.in must never be touched by Dependabot.
+#
+# Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+
+version: 2
+
+updates:
+  # ── Python dependencies (pip) ──────────────────────────────────────────────
+  # Dependabot reads constraints.txt (exact pins) and opens PRs to bump them.
+  # It must NOT touch requirements.txt or requirements.in (loose bounds).
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "UTC"
+    # Increase versions in constraints.txt only — never widen the loose bounds
+    # in requirements.txt or requirements.in.
+    versioning-strategy: "increase"
+    # Group all non-breaking updates into one PR to reduce noise
+    groups:
+      all-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
+    # Ignore requirements.txt and requirements.in — only constraints.txt
+    # should receive pinned version bumps from Dependabot.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "automated"
+
+  # ── GitHub Actions ─────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated"

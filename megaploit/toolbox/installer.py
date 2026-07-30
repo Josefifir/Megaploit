@@ -80,7 +80,6 @@ import concurrent.futures
 import hashlib
 import json
 import os
-import platform
 import re
 import shutil
 import subprocess
@@ -89,7 +88,7 @@ import textwrap
 import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Callable, Iterator, Optional
+from typing import Callable, Optional
 
 from megaploit.toolbox.registry import (
     Tool, registry, TOOLS_DIR,

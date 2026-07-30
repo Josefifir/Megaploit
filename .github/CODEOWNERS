@@ -1,0 +1,18 @@
+# CODEOWNERS
+#
+# Every PR that touches any file in this repo requires a review from at least
+# one of the listed owners before it can be merged into main.
+#
+# GitHub uses the *most-specific* matching rule, so add finer-grained entries
+# below the catch-all if certain paths need a different reviewer.
+#
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# ── Default: all files require a review from a maintainer ───────────────────
+*   @Josefifir
+
+# ── Submodule pointer — also flag to a maintainer ───────────────────────────
+C-remote-shell   @Josefifir
+
+# ── CI / workflow changes need extra scrutiny ────────────────────────────────
+.github/workflows/   @Josefifir

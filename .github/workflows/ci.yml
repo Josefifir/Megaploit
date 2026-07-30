@@ -17,10 +17,10 @@ jobs:
     name: Syntax & Compile
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -52,10 +52,10 @@ jobs:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -63,12 +63,12 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          # Core deps (lightweight subset — skip heavy agent deps for CI)
-          pip install termcolor
-          pip install "tomli>=2.0.1; python_version < '3.11'"
-          # Optional but useful for test coverage
-          pip install cryptography flask || true
-          # Test runner
+          # Core deps — pinned via constraints.txt for reproducible CI runs
+          pip install termcolor -c constraints.txt
+          pip install "tomli>=2.0.1; python_version < '3.11'" -c constraints.txt
+          # Encryption + web (required for the full test suite)
+          pip install cryptography flask -c constraints.txt
+          # Test runner (not in constraints — dev-only)
           pip install pytest pytest-cov
 
       - name: Run tests
@@ -96,7 +96,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == '3.11'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
           file: coverage.xml
           fail_ci_if_error: false
@@ -110,10 +110,10 @@ jobs:
     needs: lint
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -121,7 +121,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install termcolor cryptography flask pytest pytest-cov pytest-timeout
+          pip install termcolor cryptography flask pytest pytest-cov pytest-timeout -c constraints.txt
 
       - name: Run core tests (Windows)
         run: |
@@ -149,15 +149,15 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: python
           queries: security-and-quality
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: /language:python

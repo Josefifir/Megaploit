@@ -6,10 +6,9 @@ from __future__ import annotations
 import os
 import textwrap
 
-import pytest
 
 from megaploit.modules.base import Module, ModuleType
-from megaploit.modules.registry import ModuleRegistry, ModuleEntry
+from megaploit.modules.registry import ModuleRegistry
 
 
 def _write_module(directory: str, filename: str, content: str) -> str:

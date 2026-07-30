@@ -1,0 +1,39 @@
+# .github/workflows/sourcery.yml
+#
+# Sourcery AI code review — runs on every PR and push to main.
+# Sourcery analyses Python code and posts inline suggestions as PR review
+# comments (refactoring, simplification, code quality).
+#
+# Setup required (one-time)
+# -------------------------
+# 1. Sign in at https://sourcery.ai and go to Account → Sourcery Token.
+# 2. In this repo: Settings → Secrets and variables → Actions
+#    → New repository secret → Name: SOURCERY_TOKEN  Value: <your token>
+
+name: Sourcery
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  sourcery:
+    name: Sourcery AI Review
+    runs-on: ubuntu-latest
+    # Needs write access to post review comments on PRs
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Full history lets Sourcery diff against the base branch correctly
+          fetch-depth: 0
+
+      - name: Run Sourcery
+        uses: sourcery-ai/action@v1
+        with:
+          token: ${{ secrets.SOURCERY_TOKEN }}

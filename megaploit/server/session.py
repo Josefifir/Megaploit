@@ -13,7 +13,6 @@ import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Optional
 
 from megaploit.core.protocol import remove_state as _remove_state
 

@@ -14,13 +14,11 @@ no real I/O is needed.
 from __future__ import annotations
 
 import json
-import os
 import socket
 import struct
 import threading
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-import pytest
 
 from megaploit.server.commands import (
     CommandResult,
@@ -101,7 +99,7 @@ def _make_session_with_agent(responses: list[str]) -> tuple[Session, socket.sock
     — avoids replay-detection failures when the OS reuses a file-descriptor
     number across successive tests.
     """
-    from megaploit.core.protocol import _ConnState, set_state, remove_state
+    from megaploit.core.protocol import _ConnState, set_state
 
     agent_conn, client_conn = _socket_pair()
     t = threading.Thread(target=_agent_side, args=(agent_conn, responses), daemon=True)

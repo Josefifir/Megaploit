@@ -1,5 +1,16 @@
 # Megaploit requirements
-# Install: pip install -r requirements.txt
+#
+# Two install modes
+# -----------------
+# Flexible (end-users, development):
+#   pip install -r requirements.txt
+#
+# Reproducible / pinned (CI, staging, deployments):
+#   pip install -r requirements.txt -c constraints.txt
+#
+# Updating pinned versions after changing bounds here:
+#   pip install pip-tools
+#   pip-compile requirements.in --output-file constraints.txt
 #
 # System requirements:
 #   git must be on PATH (for toolbox clone/update and self-update checks)
@@ -7,7 +18,7 @@
 #   For UPX packing: install upx from https://upx.github.io/
 #
 # Optional extras that unlock additional capabilities:
-#   pip install cryptography          # AES-256-GCM transport (strongly recommended)
+#   pip install cryptography          # AES-256-GCM transport (required for encrypted sessions)
 #   pip install flask                 # Web dashboard (web start)
 #   pip install impacket              # SMB share enumeration module
 #   pip install dnspython             # DNS resolver module (all record types)
@@ -31,9 +42,9 @@ numpy>=1.24.0               # array bridge for mss/opencv
 sounddevice>=0.4.6
 soundfile>=0.12.1
 
-# ── Transport encryption (strongly recommended) ────────────────────────────
-# Unlocks AES-256-GCM per-session encryption + sequence numbers
-# Falls back to XOR-CTR if absent.
+# ── Transport encryption (required) ────────────────────────────────────────
+# AES-256-GCM per-session encryption.  Missing this package causes the server
+# and agent to raise ImportError on startup rather than fall back to a weaker cipher.
 cryptography>=41.0.0
 
 # ── Web streaming (agent-side Flask MJPEG servers) ─────────────────────────
