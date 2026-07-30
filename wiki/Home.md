@@ -1,6 +1,6 @@
 # Megaploit Wiki
 
-Welcome to the Megaploit documentation wiki.
+Welcome to the Megaploit **v4.2.0** documentation wiki.
 
 > ⚠️ **For authorised security research and penetration testing only.**
 > You must have explicit written permission before using this tool against any system.

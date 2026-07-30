@@ -34,3 +34,15 @@ The shared `secret.key` is used for HMAC-SHA256 authentication before the sessio
 ```bash
 python3 -c "import os,binascii; open('secret.key','wb').write(binascii.hexlify(os.urandom(32)))"
 ```
+
+## Protocol downgrade policy
+
+By default, encryption is **required** when a shared secret is configured. If the peer does not agree to v2 encrypted protocol the connection is refused rather than silently falling back to plaintext.
+
+To re-enable the plaintext fallback for legacy agents that do not support the v2 protocol, set in `megaploit/core/config.py`:
+
+```python
+ALLOW_PLAINTEXT_FALLBACK = True   # WARNING: allows a MITM to strip encryption
+```
+
+This is off by default (`False`). Only enable it when connecting to an agent that predates the v2 protocol.
