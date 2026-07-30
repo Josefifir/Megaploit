@@ -59,14 +59,17 @@ import time
 from typing import Callable, Optional
 
 from megaploit.core.exceptions import PluginTrustError
+from megaploit.plugins import loader as _loader
 from megaploit.plugins.schema import (
     PluginCommand,
     PluginContext,
 )
 from megaploit.server.commands import CommandResult
 
-# Plugins directory — source_file paths must resolve inside this root.
-_PLUGINS_ABS = os.path.abspath("plugins")
+# Plugins directory — source_file paths must resolve inside the configured
+# plugin root.  Use loader.PLUGINS_DIR so this stays consistent if the
+# directory is ever reconfigured rather than hardcoding "plugins" here.
+_PLUGINS_ABS = os.path.abspath(_loader.PLUGINS_DIR)
 
 OutputFn = Callable[[str], None]
 _NOOP: OutputFn = lambda _: None
