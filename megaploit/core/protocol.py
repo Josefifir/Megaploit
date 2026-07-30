@@ -73,7 +73,7 @@ def _try_import_msgpack():
 
 _msgpack = _try_import_msgpack()
 
-from megaploit.core.config import MAX_PLUGIN_MSG_SIZE
+from megaploit.core.config import MAX_PLUGIN_MSG_SIZE, ALLOW_PLAINTEXT_FALLBACK
 
 _HDR  = struct.Struct("!I")    # 4-byte big-endian uint32 (outer length)
 _SEQ  = struct.Struct("!Q")    # 8-byte big-endian uint64 (sequence number)
@@ -195,41 +195,103 @@ def _decrypt(key: bytes, data: bytes) -> bytes:
 # Protocol version handshake
 # ---------------------------------------------------------------------------
 
-def handshake_server(conn: socket.socket, key: bytes | None = None) -> bool:
+def handshake_server(
+    conn: socket.socket,
+    key: bytes | None = None,
+    allow_plaintext_fallback: bool | None = None,
+) -> bool:
     """
     Server side: send V2_MAGIC, wait for echo.
-    If client echoes V2_MAGIC and a key is provided → enable encryption.
-    Returns True if v2 negotiated, False if v1 fallback.
+
+    If the client echoes V2_MAGIC and a key is provided, v2 encrypted mode
+    is enabled and True is returned.
+
+    If a key is configured and the client does NOT echo V2_MAGIC:
+      - ``allow_plaintext_fallback=True``  → fall back to v1 (legacy)
+      - ``allow_plaintext_fallback=False`` → raise ConnectionError (default)
+
+    This prevents a silent protocol downgrade attack where a MITM strips the
+    V2_MAGIC byte and forces plaintext transport even though both sides have
+    a shared secret configured.
+
+    Parameters
+    ----------
+    conn                    : authenticated socket
+    key                     : shared AES-256-GCM key, or None for no encryption
+    allow_plaintext_fallback: override for config.ALLOW_PLAINTEXT_FALLBACK
     """
+    if allow_plaintext_fallback is None:
+        allow_plaintext_fallback = ALLOW_PLAINTEXT_FALLBACK
+
     try:
         conn.sendall(_V2_MAGIC)
         reply = conn.recv(1)
-        if reply == _V2_MAGIC and key is not None:
-            state = _ConnState(key=key, encrypted=True)
-            set_state(conn, state)
-            return True
-    except OSError:
-        pass
-    # v1 fallback
+    except OSError as exc:
+        raise ConnectionError(f"Protocol handshake failed: {exc}") from exc
+
+    if reply == _V2_MAGIC and key is not None:
+        state = _ConnState(key=key, encrypted=True)
+        set_state(conn, state)
+        return True
+
+    # Encryption downgrade path
+    if key is not None and not allow_plaintext_fallback:
+        raise ConnectionError(
+            "Encryption negotiation failed: shared secret is configured but the "
+            "peer did not agree to v2 encrypted protocol. Refusing plaintext "
+            "fallback. Set ALLOW_PLAINTEXT_FALLBACK=True for legacy compatibility."
+        )
+
+    # v1 fallback (no key, or key + explicit opt-in to plaintext)
     state = _ConnState(key=None, encrypted=False)
     set_state(conn, state)
     return False
 
 
-def handshake_agent(conn: socket.socket, key: bytes | None = None) -> bool:
+def handshake_agent(
+    conn: socket.socket,
+    key: bytes | None = None,
+    allow_plaintext_fallback: bool | None = None,
+) -> bool:
     """
     Agent side: read server's version byte; echo it back.
-    Returns True if v2 negotiated.
+
+    If the server sends V2_MAGIC and a key is provided, v2 encrypted mode
+    is enabled and True is returned.
+
+    If a key is configured and the server does NOT send V2_MAGIC:
+      - ``allow_plaintext_fallback=True``  → fall back to v1 (legacy)
+      - ``allow_plaintext_fallback=False`` → raise ConnectionError (default)
+
+    Parameters
+    ----------
+    conn                    : authenticated socket
+    key                     : shared AES-256-GCM key, or None for no encryption
+    allow_plaintext_fallback: override for config.ALLOW_PLAINTEXT_FALLBACK
     """
+    if allow_plaintext_fallback is None:
+        allow_plaintext_fallback = ALLOW_PLAINTEXT_FALLBACK
+
     try:
         server_ver = conn.recv(1)
         conn.sendall(server_ver)
-        if server_ver == _V2_MAGIC and key is not None:
-            state = _ConnState(key=key, encrypted=True)
-            set_state(conn, state)
-            return True
-    except OSError:
-        pass
+    except OSError as exc:
+        raise ConnectionError(f"Protocol handshake failed: {exc}") from exc
+
+    if server_ver == _V2_MAGIC and key is not None:
+        state = _ConnState(key=key, encrypted=True)
+        set_state(conn, state)
+        return True
+
+    # Encryption downgrade path
+    if key is not None and not allow_plaintext_fallback:
+        raise ConnectionError(
+            "Encryption negotiation failed: shared secret is configured but the "
+            "server did not offer v2 encrypted protocol. Refusing plaintext "
+            "fallback. Set ALLOW_PLAINTEXT_FALLBACK=True for legacy compatibility."
+        )
+
+    # v1 fallback (no key, or key + explicit opt-in to plaintext)
     state = _ConnState(key=None, encrypted=False)
     set_state(conn, state)
     return False
