@@ -34,6 +34,7 @@
 - [Cheat Sheet](docs/CHEATSHEET.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Installation](#installation)
+- [Running on Docker](#docker)
 - [Step 1 — Start the Server](#step-1--start-the-server)
 - [Step 2 — Generate an Agent](#step-2--generate-an-agent)
 - [Step 3 — Deploy the Agent](#step-3--deploy-the-agent)
@@ -144,9 +145,15 @@ pip install pyyaml          # Malleable C2 profiles
 
 ### Docker
 
+Run Megaploit entirely inside Docker — no Python install required on the host.
+The default image includes MinGW-w64 so `payload c_exe` works out of the box.
+
 ```bash
-# Build image
+# Build image (includes MinGW-w64 by default — enables payload c_exe)
 docker build -t megaploit .
+
+# Build with Go toolchain too (enables payload go_exe / go_elf, +~700 MB)
+docker build --build-arg INSTALL_GO=1 -t megaploit:full .
 
 # Run — replace 192.168.1.10 with your actual IP
 docker run -it --rm \
@@ -155,6 +162,16 @@ docker run -it --rm \
   -e LHOST=192.168.1.10 \
   megaploit
 ```
+
+**Compiling the C agent (`payload c_exe`):** the C client source is a git
+submodule — check it out before building the image, or the build fails with
+*"C-remote-shell source not found"*:
+
+```bash
+git submodule update --init C-remote-shell   # then docker build
+```
+
+Full Docker reference: [docs/DOCKER.md](docs/DOCKER.md)
 
 ---
 
