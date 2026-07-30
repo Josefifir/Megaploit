@@ -46,15 +46,16 @@ indefinitely.  Two mitigations are now in place:
    released.  The timeout is cleared (reset to blocking) as soon as the
    handshake succeeds so that normal request I/O is unaffected.
 
-2. Unauthenticated-connection cap (_MAX_UNAUTH_CONNS = 64)
+2. In-flight connection cap (_MAX_INFLIGHT_CONNS = 64)
    A ``threading.Semaphore`` is acquired in ``process_request()`` before a
    worker thread is spawned.  If all 64 slots are occupied the incoming
    connection is closed immediately and a warning is logged — no thread is
    allocated.  The semaphore is always released in a ``finally`` block inside
    ``process_request_thread()`` once the request completes.
 
-   The semaphore counts *all* in-flight HTTP requests (not just pre-auth
-   ones), which is the conservative choice: an attacker that holds 64
+   The semaphore counts *all* in-flight HTTP connections (pre-auth and
+   authenticated alike), which is the conservative choice: an attacker
+   that holds 64
    connections open at the HTTP layer is just as disruptive as one that
    stalls at TLS.
 
@@ -91,7 +92,7 @@ _NONCE = 12
 _TAG   = 16
 
 _HANDSHAKE_TIMEOUT  = 5      # seconds to complete TLS handshake (or first read)
-_MAX_UNAUTH_CONNS   = 64     # max concurrent unauthenticated connections
+_MAX_INFLIGHT_CONNS = 64     # max concurrent in-flight HTTP connections (all, not just pre-auth)
 
 # ---------------------------------------------------------------------------
 # Audit logger
@@ -359,13 +360,15 @@ class _HttpSessionSocket:
         self._timeout = t
 
     def sendall(self, data: bytes) -> None:
-        """Called by send_msg() — decode the framed payload and queue the command."""
-        # The protocol layer has already encrypted + framed the data.
-        # We need to unwrap it back to the JSON string so we can queue it.
-        # Since we control both ends of this shim we just intercept before encryption.
-        # NOTE: This is handled differently — see _HttpSocket.send_msg below.
-        # Raw bytes path is not used for HTTP sessions.
-        pass
+        """Not used for HTTP sessions — commands are queued via _HttpSocketAdapter.
+
+        Raises NotImplementedError so any accidental caller fails loudly
+        instead of silently discarding data.
+        """
+        raise NotImplementedError(
+            "_HttpSessionSocket.sendall must not be called directly; "
+            "use _HttpSocketAdapter for HTTP agent I/O."
+        )
 
     def recv(self, n: int) -> bytes:
         """Blocking read from response queue."""
@@ -432,8 +435,8 @@ class HttpListener:
         self._running = False
         # Simple ban set
         self._bans: set[str] = set()
-        # Semaphore: limits concurrent unauthenticated connections
-        self._unauth_sem = threading.Semaphore(_MAX_UNAUTH_CONNS)
+        # Semaphore: limits concurrent in-flight HTTP connections
+        self._unauth_sem = threading.Semaphore(_MAX_INFLIGHT_CONNS)
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -447,7 +450,7 @@ class HttpListener:
 
         class _HardenedServer(http.server.HTTPServer):
             """HTTPServer subclass that enforces a pre-handshake timeout and
-            caps concurrent unauthenticated connections via a semaphore."""
+            caps concurrent in-flight HTTP connections via a semaphore."""
 
             ssl_context   = listener_self.ssl_context
             unauth_sem    = listener_self._unauth_sem
@@ -471,9 +474,9 @@ class HttpListener:
             def process_request(self, request, client_address):
                 """Acquire the semaphore before spawning the handler thread."""
                 if not self.unauth_sem.acquire(blocking=False):
-                    # Too many unauthenticated connections; drop this one.
+                    # Connection cap reached; drop this one.
                     _LOG.warning(
-                        "Too many unauthenticated connections; dropping %s",
+                        "Too many concurrent connections; dropping %s",
                         client_address[0],
                     )
                     request.close()
