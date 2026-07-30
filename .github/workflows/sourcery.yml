@@ -28,7 +28,7 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # Full history lets Sourcery diff against the base branch correctly
           fetch-depth: 0
