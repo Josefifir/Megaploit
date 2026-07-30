@@ -35,12 +35,10 @@ except ImportError:
     _HAS_READLINE = False
     _readline = None  # type: ignore[assignment]
 import sys
-import threading
-import time
 from datetime import datetime, timezone
 from typing import Optional
 
-from megaploit.core.protocol import send_msg, recv_msg, recv_file, send_file
+from megaploit.core.protocol import send_msg, recv_msg
 from megaploit.server.session import Session
 from megaploit.server import commands as _cmds
 

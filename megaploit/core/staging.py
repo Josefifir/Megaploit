@@ -41,7 +41,7 @@ import socket
 import ssl
 import textwrap
 import threading
-from typing import Optional
+from typing import Optional  # noqa: F401
 
 
 # ---------------------------------------------------------------------------

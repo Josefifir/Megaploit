@@ -30,8 +30,6 @@ from __future__ import annotations
 
 import base64
 import gzip
-import hashlib
-import hmac
 import os
 import random
 import re

@@ -34,8 +34,6 @@ from __future__ import annotations
 import base64
 import os
 import sys
-import threading
-import tempfile
 
 from megaploit.agent.handlers import _register
 
@@ -270,7 +268,6 @@ def _execute_assembly(conn, args: list[str]) -> str:
 
     try:
         import ctypes
-        import ctypes.wintypes as wt
 
         # ── Load the CLR ─────────────────────────────────────────────
         # Try .NET 4+ first (CLRCreateInstance in mscoree.dll)
@@ -298,7 +295,6 @@ def _execute_assembly(conn, args: list[str]) -> str:
         if hr not in (0, 1):  # S_OK or S_FALSE
             # If CorBindToRuntimeEx fails, try Python's clr module (pythonnet)
             try:
-                import clr as _clr
                 import System
                 from System.Reflection import Assembly
                 from System.IO import MemoryStream

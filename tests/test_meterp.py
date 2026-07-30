@@ -10,13 +10,9 @@ No live connections are made.
 from __future__ import annotations
 
 import base64
-import io
 import os
 import sys
-import threading
-import time
-import types
-from unittest.mock import MagicMock, Mock, patch, call
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -393,7 +389,6 @@ class TestMemoryReadWrite:
     def test_memory_read_mocked_windows(self, conn):
         """Mock ctypes to simulate a successful memory read."""
         data = b"AAAA"
-        import ctypes as _ctypes
 
         with patch("sys.platform", "win32"):
             import ctypes

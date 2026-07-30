@@ -36,8 +36,6 @@ DNS data caps each label at 63 bytes and total query at 253 bytes per DNS spec.
 from __future__ import annotations
 
 import base64
-import hashlib
-import hmac as _hmac_mod
 import json
 import logging
 import os

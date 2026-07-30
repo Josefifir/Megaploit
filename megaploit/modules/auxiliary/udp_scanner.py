@@ -10,7 +10,6 @@ for a response.  Unknown ports get an empty datagram.
 from __future__ import annotations
 
 import socket
-import struct
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from megaploit.modules.base import Module, ModuleType, OptionType
