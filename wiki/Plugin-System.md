@@ -2,6 +2,8 @@
 
 Drop a `.toml` (or `.json`) file into `plugins/` to add custom commands — no Python required.
 
+> **v4.2.0 security note:** Remote plugin loading (`load_url`) is disabled by default. Pass `allow_remote=True` explicitly to permit it (see [Remote loading](#remote-loading) below).
+
 ## Example plugin
 
 ```toml
@@ -62,3 +64,18 @@ megaploit [0] » crs_verbs       # list all wire verbs
 megaploit session(1) » forceOff     # force power-off via NtSetSystemPowerState ⚠
 megaploit session(1) » blueScreen   # trigger BSOD via NtRaiseHardError ⚠
 ```
+
+## Remote loading
+
+Load a plugin directly from a URL:
+
+```python
+# Disabled by default — must opt in explicitly
+plugin_loader.load_url("https://example.com/plugin.toml", allow_remote=True)
+```
+
+From the console there is no built-in remote-load command — remote loading is an API-level feature intentionally gated behind `allow_remote=True` to prevent implicit network fetches from untrusted sources.
+
+## Path traversal protection
+
+Native (`kind = "native"`) plugin `source_file` paths are resolved to an absolute path and must stay inside the `plugins/` directory. Any path that escapes `plugins/` (e.g. `../../etc/passwd`) raises `PluginTrustError` and is never compiled.
