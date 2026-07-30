@@ -233,7 +233,6 @@ class WsTransport:
         if header is None:
             raise ConnectionError("WsTransport: connection closed in frame header")
 
-        fin    = (header[0] & 0x80) != 0
         opcode = header[0] & 0x0F
         masked = (header[1] & 0x80) != 0
         length = header[1] & 0x7F
