@@ -18,7 +18,7 @@ _SEQ  = struct.Struct("!Q")    # 8-byte big-endian uint64 (sequence number)
 _NONCE_LEN  = 12
 _TAG_LEN    = 16
 _V2_MAGIC   = b"M"             # version byte sent in handshake
-_V1_MAGIC   = b"\x00"
+_unused_v1_magic = b"\x00"
 
 # ---------------------------------------------------------------------------
 # Per-connection encryption state (thread-local is NOT correct here —
