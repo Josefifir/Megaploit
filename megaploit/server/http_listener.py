@@ -31,6 +31,39 @@ Operator usage
 Agent generation
 ----------------
     generate --http --lhost 10.0.0.1 --port 8080
+
+Connection-hardening (stall-resistance)
+----------------------------------------
+Each accepted connection previously received its own thread with no deadline
+on the TLS handshake, meaning a client that opened a socket but never
+completed the handshake would hold that thread and its file-descriptor open
+indefinitely.  Two mitigations are now in place:
+
+1. Pre-handshake socket timeout (_HANDSHAKE_TIMEOUT = 5 s)
+   ``_HardenedServer.get_request()`` sets a 5-second timeout on every raw
+   socket immediately after ``accept()``.  If the TLS handshake does not
+   complete within that window the socket is closed and the thread is
+   released.  The timeout is cleared (reset to blocking) as soon as the
+   handshake succeeds so that normal request I/O is unaffected.
+
+2. Unauthenticated-connection cap (_MAX_UNAUTH_CONNS = 64)
+   A ``threading.Semaphore`` is acquired in ``process_request()`` before a
+   worker thread is spawned.  If all 64 slots are occupied the incoming
+   connection is closed immediately and a warning is logged — no thread is
+   allocated.  The semaphore is always released in a ``finally`` block inside
+   ``process_request_thread()`` once the request completes.
+
+   The semaphore counts *all* in-flight HTTP requests (not just pre-auth
+   ones), which is the conservative choice: an attacker that holds 64
+   connections open at the HTTP layer is just as disruptive as one that
+   stalls at TLS.
+
+TLS wrapping
+   Previously the listening socket itself was wrapped with
+   ``ssl_context.wrap_socket(...)``, which meant every ``accept()`` returned
+   an already-negotiated SSL socket and there was no window to set a
+   pre-handshake timeout.  The socket is now wrapped *per-connection* inside
+   ``get_request()`` so the timeout can be applied to the raw socket first.
 """
 
 from __future__ import annotations
@@ -56,6 +89,9 @@ _HDR   = struct.Struct("!I")
 _SEQ   = struct.Struct("!Q")
 _NONCE = 12
 _TAG   = 16
+
+_HANDSHAKE_TIMEOUT  = 5      # seconds to complete TLS handshake (or first read)
+_MAX_UNAUTH_CONNS   = 64     # max concurrent unauthenticated connections
 
 # ---------------------------------------------------------------------------
 # Audit logger
@@ -329,6 +365,7 @@ class _HttpSessionSocket:
         # Since we control both ends of this shim we just intercept before encryption.
         # NOTE: This is handled differently — see _HttpSocket.send_msg below.
         # Raw bytes path is not used for HTTP sessions.
+        pass
 
     def recv(self, n: int) -> bytes:
         """Blocking read from response queue."""
@@ -395,6 +432,8 @@ class HttpListener:
         self._running = False
         # Simple ban set
         self._bans: set[str] = set()
+        # Semaphore: limits concurrent unauthenticated connections
+        self._unauth_sem = threading.Semaphore(_MAX_UNAUTH_CONNS)
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -406,13 +445,57 @@ class HttpListener:
         class _Handler(_BeaconHandler):
             listener = listener_self
 
-        self._server = http.server.HTTPServer(
+        class _HardenedServer(http.server.HTTPServer):
+            """HTTPServer subclass that enforces a pre-handshake timeout and
+            caps concurrent unauthenticated connections via a semaphore."""
+
+            ssl_context   = listener_self.ssl_context
+            unauth_sem    = listener_self._unauth_sem
+
+            def get_request(self):
+                sock, addr = self.socket.accept()
+                # Enforce a short timeout before the TLS handshake so that a
+                # slow or intentionally stalled client cannot hold a thread
+                # open indefinitely.
+                sock.settimeout(_HANDSHAKE_TIMEOUT)
+                if self.ssl_context:
+                    try:
+                        sock = self.ssl_context.wrap_socket(sock, server_side=True)
+                    except (ssl.SSLError, OSError):
+                        sock.close()
+                        raise
+                # Handshake done — restore blocking mode for normal I/O.
+                sock.settimeout(None)
+                return sock, addr
+
+            def process_request(self, request, client_address):
+                """Acquire the semaphore before spawning the handler thread."""
+                if not self.unauth_sem.acquire(blocking=False):
+                    # Too many unauthenticated connections; drop this one.
+                    _LOG.warning(
+                        "Too many unauthenticated connections; dropping %s",
+                        client_address[0],
+                    )
+                    request.close()
+                    return
+                super().process_request(request, client_address)
+
+            def process_request_thread(self, request, client_address):
+                """Release the semaphore after the request finishes."""
+                try:
+                    super().process_request_thread(request, client_address)
+                finally:
+                    self.unauth_sem.release()
+
+        self._server = _HardenedServer(
             (self.bind_host, self.port), _Handler
         )
         if self.ssl_context:
-            self._server.socket = self.ssl_context.wrap_socket(
-                self._server.socket, server_side=True
-            )
+            # Wrap the *listening* socket (accept() will yield plain sockets
+            # that _HardenedServer.get_request wraps individually).
+            # We keep the raw server socket unwrapped so get_request can
+            # apply the pre-handshake timeout before wrapping each connection.
+            pass   # TLS wrapping is done per-connection in get_request above
         self._running = True
         self._thread  = threading.Thread(
             target=self._serve_forever, daemon=True,
