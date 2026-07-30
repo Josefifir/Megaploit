@@ -14,7 +14,7 @@ import threading
 # ---------------------------------------------------------------------------
 
 _HDR  = struct.Struct("!I")    # 4-byte big-endian uint32 (outer length)
-_SEQ  = struct.Struct("!Q")    # 8-byte big-endian uint64 (sequence number)
+_unused_seq  = struct.Struct("!Q")    # 8-byte big-endian uint64 (sequence number)
 _NONCE_LEN  = 12
 _TAG_LEN    = 16
 _V2_MAGIC   = b"M"             # version byte sent in handshake
