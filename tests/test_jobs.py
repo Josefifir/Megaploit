@@ -6,7 +6,6 @@ from __future__ import annotations
 import time
 import threading
 
-import pytest
 
 from megaploit.core.jobs import Job, JobManager, JobStatus
 

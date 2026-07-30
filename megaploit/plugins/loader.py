@@ -33,19 +33,16 @@ Usage
 from __future__ import annotations
 
 import importlib
-import io
 import json
 import logging
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
 import threading
-import time
 import urllib.request
 import zipfile
-from typing import Callable, Iterator, Optional
+from typing import Callable, Optional
 
 from megaploit.plugins.schema import Plugin, PluginCommand, version_meets_minimum
 

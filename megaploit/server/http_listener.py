@@ -36,7 +36,6 @@ Agent generation
 from __future__ import annotations
 
 import base64
-import hashlib
 import http.server
 import json
 import logging
@@ -49,8 +48,7 @@ import threading
 import time
 from typing import Callable, Optional
 
-from megaploit.core.crypto import server_authenticate
-from megaploit.core.config import AUTH_TIMEOUT, AUDIT_LOG
+from megaploit.core.config import AUDIT_LOG
 from megaploit.server.session import Session
 
 _LOG   = logging.getLogger("megaploit.http_listener")
@@ -331,7 +329,6 @@ class _HttpSessionSocket:
         # Since we control both ends of this shim we just intercept before encryption.
         # NOTE: This is handled differently — see _HttpSocket.send_msg below.
         # Raw bytes path is not used for HTTP sessions.
-        pass
 
     def recv(self, n: int) -> bytes:
         """Blocking read from response queue."""
@@ -520,7 +517,7 @@ class _HttpSocketAdapter:
         self._fileno    = id(self) & 0x7FFFFFFF
 
         # Register a no-encryption ConnState so protocol functions work directly
-        from megaploit.core.protocol import _ConnState, set_state
+        from megaploit.core.protocol import _ConnState
         cs = _ConnState(key=None, encrypted=False)
         self._conn_state = cs
 

@@ -34,17 +34,14 @@ from __future__ import annotations
 import base64
 import gzip
 import hashlib
-import io
 import os
 import shutil
 import subprocess
-import sys
 import tempfile
 import textwrap
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 __all__ = [
     "OutputFormat",

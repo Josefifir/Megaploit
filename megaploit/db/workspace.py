@@ -36,7 +36,6 @@ import os
 import sqlite3
 import threading
 import time
-from typing import Optional
 
 from megaploit.db.database import Database, _DB_PATH
 

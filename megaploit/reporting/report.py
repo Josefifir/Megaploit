@@ -26,7 +26,6 @@ from __future__ import annotations
 import datetime
 import json
 import os
-import time
 from typing import Any
 
 __all__ = ["generate_report"]
@@ -529,7 +528,6 @@ def _write_html(path: str, name: str, desc: str, start: float, sessions: list,
 def _write_html_to_stream(stream, name: str, desc: str, start: float, sessions: list,
                           command_history: list) -> None:
     """Write the HTML report to an in-memory stream (used by PDF generation)."""
-    import io as _io
     tmp_path = "__megaploit_tmp_report__.html"
     _write_html(tmp_path, name, desc, start, sessions, command_history)
     import os as _os

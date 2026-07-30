@@ -35,8 +35,8 @@ import importlib.util
 import os
 import sys
 import traceback
-from dataclasses import dataclass, field
-from typing import Iterator, Optional, Type
+from dataclasses import dataclass
+from typing import Optional, Type
 
 from megaploit.modules.base import Module, ModuleType
 

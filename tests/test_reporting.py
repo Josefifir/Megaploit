@@ -6,7 +6,6 @@ from __future__ import annotations
 import json
 import os
 
-import pytest
 
 from megaploit.reporting.report import generate_report, _esc, _fmt_size
 

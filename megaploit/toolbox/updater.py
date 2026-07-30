@@ -39,7 +39,6 @@ import queue
 import shutil
 import subprocess
 import threading
-import time
 from dataclasses import dataclass
 from typing import Iterator
 

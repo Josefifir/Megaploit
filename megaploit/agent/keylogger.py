@@ -11,7 +11,7 @@ import os
 import sys
 import threading
 
-from pynput.keyboard import Listener
+from pynput.keyboard import Listener  # noqa: F401 — re-exported for agent use
 
 from megaploit.core.config import KEYLOG_PATH
 

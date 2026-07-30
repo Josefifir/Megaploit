@@ -68,7 +68,7 @@ import os
 import random
 import time
 from dataclasses import dataclass, field
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator
 
 __all__ = ["C2Profile", "load_profile", "default_profile"]
 

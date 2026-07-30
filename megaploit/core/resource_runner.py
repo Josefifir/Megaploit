@@ -45,7 +45,7 @@ from __future__ import annotations
 import datetime
 import os
 import re
-from typing import Callable, Optional
+from typing import Callable
 
 __all__ = ["run_resource", "load_resource_lines", "ResourceError"]
 

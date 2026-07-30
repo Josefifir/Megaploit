@@ -61,7 +61,6 @@ from typing import Callable, Optional
 from megaploit.plugins.schema import (
     PluginCommand,
     PluginContext,
-    PLACEHOLDER_KEYS,
 )
 from megaploit.server.commands import CommandResult
 

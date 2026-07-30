@@ -5,13 +5,11 @@ Tests exercise the public framing helpers independently of the crypto layer.
 from __future__ import annotations
 
 import importlib
-import io
 import json
 import socket
 import struct
 import sys
 import threading
-import time
 
 import pytest
 

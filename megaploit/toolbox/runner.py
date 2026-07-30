@@ -31,7 +31,6 @@ import shutil
 import subprocess
 import sys
 import threading
-import zipfile
 from typing import Callable, Optional
 
 from megaploit.toolbox.registry import (
