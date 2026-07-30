@@ -15,8 +15,7 @@ from __future__ import annotations
 import os
 import sys
 import types
-import importlib
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -286,7 +285,6 @@ class TestServerKiwiCommand:
 
     def test_valid_module_sends_message_and_receives(self):
         from megaploit.server.commands import cmd_kiwi
-        from megaploit.core.protocol import send_msg, recv_msg
 
         session = self._make_session()
         expected_output = "[+] Username : DESKTOP-ABC\\user\n[+] NTLM : aad3..."

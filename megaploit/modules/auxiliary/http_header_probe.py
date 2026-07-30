@@ -9,9 +9,7 @@ Collects: Server, X-Powered-By, X-Frame-Options, Content-Security-Policy,
 from __future__ import annotations
 
 import http.client
-import socket
 import ssl
-import urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from megaploit.modules.base import Module, ModuleType, OptionType

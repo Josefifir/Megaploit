@@ -9,7 +9,6 @@ Options: RHOSTS (CIDR or single IP), PORTS (comma-separated, ranges OK),
 from __future__ import annotations
 
 import socket
-import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from megaploit.modules.base import Module, ModuleType, OptionType

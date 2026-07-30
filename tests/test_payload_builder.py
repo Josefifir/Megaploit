@@ -7,7 +7,6 @@ import base64
 import gzip
 import os
 
-import pytest
 
 from megaploit.payload.builder import (
     BuildConfig,

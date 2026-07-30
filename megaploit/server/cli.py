@@ -19,8 +19,6 @@ Features
 from __future__ import annotations
 
 import datetime
-import glob as _glob_mod
-import hashlib
 import json
 import os
 import queue
@@ -30,7 +28,6 @@ import ssl
 import sys
 import threading
 import time
-import py_compile
 from typing import Optional
 
 try:
@@ -65,7 +62,7 @@ from megaploit.toolbox.updater import UpdateChecker as _UpdateChecker
 from megaploit.plugins.loader import plugin_loader as _plugin_loader
 from megaploit.plugins.runner import run_plugin_command as _run_plugin_cmd
 from megaploit.modules.registry import module_registry as _module_registry
-from megaploit.modules.base import ModuleType as _ModuleType, ModuleError as _ModuleError
+from megaploit.modules.base import ModuleError as _ModuleError
 from megaploit.payload.builder import builder as _payload_builder, OutputFormat as _OutputFormat
 from megaploit.payload.encoders import encoder_info as _encoder_info, ENCODERS as _ENCODERS
 
@@ -204,14 +201,11 @@ _enable_windows_ansi()
 _RESET   = "\033[0m"
 _BOLD    = "\033[1m"
 _DIM     = "\033[2m"
-_ITALIC  = "\033[3m"
-_UL      = "\033[4m"        # underline
 
 # Standard foreground colours
 _RED     = "\033[91m"
 _GREEN   = "\033[92m"
 _YELLOW  = "\033[93m"
-_BLUE    = "\033[94m"
 _MAGENTA = "\033[95m"
 _CYAN    = "\033[96m"
 _WHITE   = "\033[97m"
@@ -1658,13 +1652,13 @@ class Console:
         dispatch_map = {
             "install":        lambda: self._toolbox_install(rest),
             "catalogue":      lambda: self._toolbox_catalogue(rest),
-            "list":           lambda: self._toolbox_list(),
+            "list":           self._toolbox_list,
             "search":         lambda: self._toolbox_search(rest),
             "info":           lambda: self._toolbox_info(rest),
             "remove":         lambda: self._toolbox_remove(rest),
             "update":         lambda: self._toolbox_update(rest),
-            "update-all":     lambda: self._toolbox_update_all(),
-            "check-updates":  lambda: self._toolbox_check_updates(),
+            "update-all":     self._toolbox_update_all,
+            "check-updates":  self._toolbox_check_updates,
             "rebuild":        lambda: self._toolbox_rebuild(rest),
             "set-entry":      lambda: self._toolbox_set_entry(rest),
             "healthcheck":    lambda: self._toolbox_healthcheck(rest),
@@ -3123,7 +3117,6 @@ class Console:
 
         # Dispatch via the same elif chain as the main loop — delegate to each handler
         # to avoid duplication we call the relevant methods directly
-        import importlib as _il
         handler_map = {
             "use":        lambda: self._cmd_use(args),
             "set":        lambda: self._cmd_set(args),
@@ -3133,10 +3126,10 @@ class Console:
             "check":      lambda: self._cmd_module_check(args),
             "back":       lambda: setattr(self, "_active_module", None) or setattr(self, "_active_module_name", ""),
             "generate":   lambda: self._cmd_generate(args),
-            "sessions":   lambda: print(),
+            "sessions":   print,
             "show":       lambda: self._cmd_show(args),
             "info":       lambda: self._cmd_module_info(args),
-            "options":    lambda: self._cmd_module_options(),
+            "options":    self._cmd_module_options,
         }
         handler = handler_map.get(cmd)
         if handler:
