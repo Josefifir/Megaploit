@@ -45,9 +45,10 @@ import zipfile
 from typing import Callable, Optional
 
 from megaploit.plugins.schema import Plugin, PluginCommand, version_meets_minimum
+from megaploit.core.exceptions import PluginTrustError
 
 PLUGINS_DIR = "plugins"
-_MEGAPLOIT_VERSION = "2.2.0"          # used for min_megaploit_version checks
+from megaploit import __version__ as _MEGAPLOIT_VERSION
 
 _LOG = logging.getLogger("megaploit.plugins.loader")
 
@@ -285,13 +286,21 @@ class PluginLoader:
     # Load from URL
     # ------------------------------------------------------------------
 
-    def load_url(self, url: str, timeout: int = 30) -> tuple[bool, Optional[str]]:
+    def load_url(self, url: str, timeout: int = 30, allow_remote: bool = False) -> tuple[bool, Optional[str]]:
         """
         Download a plugin file from *url* and load it.
 
         The URL must point directly to a .toml, .json, or .zip file.
         Returns ``(ok, error_or_None)``.
+
+        *allow_remote* must be ``True`` to permit network loading; the default
+        ``False`` raises :class:`~megaploit.core.exceptions.PluginTrustError`.
         """
+        if not allow_remote:
+            raise PluginTrustError(
+                "Remote plugin loading is disabled by default. "
+                "Pass allow_remote=True to load_url() to explicitly permit it."
+            )
         ext = os.path.splitext(url.split("?")[0])[1].lower()
         if ext not in (".toml", ".json", ".zip"):
             return False, (

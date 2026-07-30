@@ -58,11 +58,15 @@ import threading
 import time
 from typing import Callable, Optional
 
+from megaploit.core.exceptions import PluginTrustError
 from megaploit.plugins.schema import (
     PluginCommand,
     PluginContext,
 )
 from megaploit.server.commands import CommandResult
+
+# Plugins directory — source_file paths must resolve inside this root.
+_PLUGINS_ABS = os.path.abspath("plugins")
 
 OutputFn = Callable[[str], None]
 _NOOP: OutputFn = lambda _: None
@@ -387,11 +391,20 @@ def _run_native(
     """
     source = _expand(cmd.source_file, ctx)
 
-    if not os.path.isfile(source):
+    # Reject path traversal: the resolved source must stay inside plugins/.
+    abs_source = os.path.normpath(os.path.abspath(source))
+    if not abs_source.startswith(_PLUGINS_ABS + os.sep):
+        raise PluginTrustError(
+            f"Native plugin source '{source}' resolves outside the plugins/ "
+            f"directory ({abs_source}). Path traversal is not permitted."
+        )
+
+    if not os.path.isfile(abs_source):
         return CommandResult(
             ok=False,
-            output=f"[-] native plugin source not found: {source}",
+            output=f"[-] native plugin source not found: {abs_source}",
         )
+    source = abs_source
 
     compiler = _find_compiler(source)
     if compiler is None:
