@@ -24,35 +24,34 @@
 #   pip install dnspython             # DNS resolver module (all record types)
 #   pip install pyinstaller           # payload exe / payload elf compilation
 #   pip install weasyprint            # PDF export from HTML reports
-blinker==1.9.0
-cffi==2.1.0
-click==8.4.2
-cryptography==49.0.0
-evdev==1.9.3
-flask==3.1.3
-itsdangerous==2.2.0
-jinja2==3.1.6
-markupsafe==3.0.3
-mouseinfo==0.1.3
-mss==10.2.0
-numpy==2.2.6
-opencv-python==5.0.0.93
-pillow==12.3.0
-pyautogui==0.9.54
-pycparser==3.0
-pygetwindow==0.0.9
-pymsgbox==2.0.1
-pynput==1.8.2
-pyperclip==1.11.0
-pyrect==0.2.0
-pyscreeze==1.0.1
-python-xlib==0.33
-python3-xlib==0.15
-pytweening==1.2.0
-six==1.17.0
-sounddevice==0.5.5
-soundfile==0.14.0
-termcolor==3.3.0
-tomli==2.4.1 ; python_version < "3.11"
-typing-extensions==4.16.0
-werkzeug==3.1.8
+
+# ── Core (operator console) ────────────────────────────────────────────────
+termcolor>=2.3.0
+
+# TOML plugin support — stdlib on Python ≥ 3.11; this polyfill covers 3.10
+tomli>=2.0.1; python_version < "3.11"
+
+# ── Agent capabilities ─────────────────────────────────────────────────────
+pynput>=1.7.6               # keylogger
+PyAutoGUI>=0.9.54           # screenshot + screen-resolution query
+mss>=9.0.1                  # fast screen capture for desktop streaming
+opencv-python>=4.8.0        # webcam + image encoding
+numpy>=1.24.0               # array bridge for mss/opencv
+
+# Audio recording — pure-wheel, no external PortAudio build required
+sounddevice>=0.4.6
+soundfile>=0.12.1
+
+# ── Transport encryption (required) ────────────────────────────────────────
+# AES-256-GCM per-session encryption.  Missing this package causes the server
+# and agent to raise ImportError on startup rather than fall back to a weaker cipher.
+cryptography>=41.0.0
+
+# ── Web streaming (agent-side Flask MJPEG servers) ─────────────────────────
+Flask>=3.0.0
+Werkzeug>=3.0.0
+
+# ── Testing ────────────────────────────────────────────────────────────────
+# Install separately: pip install pytest pytest-cov
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
