@@ -27,6 +27,13 @@ MAX_PLUGIN_MSG_SIZE: int = 256 * 1024 * 1024   # 256 MiB hard cap per framed mes
 MAX_AUTH_ATTEMPTS_PER_MIN: int = 5   # per source IP; excess connections are dropped
 IP_BAN_DURATION: int = 300           # seconds an IP stays banned after exceeding the limit
 
+# Protocol downgrade policy
+# When a shared secret (key) is configured, encryption is REQUIRED by default.
+# Setting this to True re-enables the silent v1 plaintext fallback for legacy
+# compatibility with agents that do not support the v2 encrypted protocol.
+# WARNING: enabling this allows a MITM to strip encryption silently.
+ALLOW_PLAINTEXT_FALLBACK: bool = False
+
 # Stream framing
 END_SENTINEL: bytes = b"<<MEGAPLOIT_END>>"
 
