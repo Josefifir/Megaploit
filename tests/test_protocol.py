@@ -192,24 +192,21 @@ class TestNoCryptographyFallback:
     removed; encrypted transport must refuse to load rather than degrade."""
 
     def test_protocol_raises_on_missing_cryptography(self):
-        """Importing protocol.py without the cryptography package must raise
-        ImportError, not silently fall back to a weaker cipher."""
+        """Importing framing.py (which owns the cryptography import) without
+        the cryptography package must raise ImportError, not silently fall back
+        to a weaker cipher.  protocol.py is now a re-export shim; the actual
+        import guard lives in megaploit.core.framing."""
 
-        proto_key = "megaploit.core.protocol"
+        # The cryptography import now lives in framing.py; evict both modules
+        # so they re-execute on the next import.
+        _MEGA_KEYS = ["megaploit.core.framing", "megaploit.core.protocol"]
+        saved_mega = {k: sys.modules.pop(k) for k in _MEGA_KEYS if k in sys.modules}
 
-        # Evict the protocol module so it re-executes on the next import.
-        saved_proto = sys.modules.pop(proto_key, None)
-
-        # Block the cryptography package by injecting None sentinels into
-        # sys.modules (None is the canonical "this module does not exist"
-        # sentinel recognised by the import machinery on all Python versions).
+        # Block the cryptography package by injecting None sentinels.
         crypto_keys = [k for k in sys.modules
                        if k == "cryptography" or k.startswith("cryptography.")]
         saved_crypto = {k: sys.modules.pop(k) for k in crypto_keys}
 
-        # Sentinel names we must block so the protocol's
-        # `from cryptography.hazmat.primitives.ciphers.aead import AESGCM`
-        # raises ImportError rather than succeeding from a cached submodule.
         _BLOCKED = [
             "cryptography",
             "cryptography.hazmat",
@@ -222,14 +219,15 @@ class TestNoCryptographyFallback:
 
         try:
             with pytest.raises(ImportError, match="cryptography"):
-                importlib.import_module(proto_key)
+                importlib.import_module("megaploit.core.framing")
         finally:
             # Remove sentinels
             for name in _BLOCKED:
                 sys.modules.pop(name, None)
             # Restore real cryptography modules
             sys.modules.update(saved_crypto)
-            # Restore real protocol module (or remove the failed partial import)
-            sys.modules.pop(proto_key, None)
-            if saved_proto is not None:
-                sys.modules[proto_key] = saved_proto
+            # Remove any partially-imported mega modules
+            for k in _MEGA_KEYS:
+                sys.modules.pop(k, None)
+            # Restore originals
+            sys.modules.update(saved_mega)
