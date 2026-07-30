@@ -14,11 +14,11 @@ import threading
 # ---------------------------------------------------------------------------
 
 _HDR  = struct.Struct("!I")    # 4-byte big-endian uint32 (outer length)
-_unused_seq  = struct.Struct("!Q")    # 8-byte big-endian uint64 (sequence number)
+_SEQ  = struct.Struct("!Q")    # 8-byte big-endian uint64 (sequence number)
 _NONCE_LEN  = 12
 _TAG_LEN    = 16
 _V2_MAGIC   = b"M"             # version byte sent in handshake
-_unused_v1_magic = b"\x00"
+_V1_MAGIC   = b"\x00"
 
 # ---------------------------------------------------------------------------
 # Per-connection encryption state (thread-local is NOT correct here —
