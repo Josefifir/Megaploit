@@ -21,7 +21,7 @@ operator state (secret key, loot, toolbox, settings) persisted across restarts.
 git clone https://github.com/Josefifir/Megaploit.git
 cd Megaploit
 
-# 2. Build the image (lean, no Go toolchain)
+# 2. Build the image (includes MinGW-w64 for `payload c_exe` by default)
 docker build -t megaploit .
 
 # 3. Run the interactive console
@@ -168,6 +168,40 @@ docker build --build-arg INSTALL_GO=1 -t megaploit:full .
 #   args:
 #     INSTALL_GO: "1"
 docker compose build
+```
+
+---
+
+## MinGW-w64 cross-compiler (`payload c_exe`)
+
+**Included by default.** The image ships `mingw-w64` so `payload c_exe` can
+cross-compile the C-remote-shell client into a Windows `.exe` from inside the
+container. The builder probes for `x86_64-w64-mingw32-gcc` automatically.
+
+```
+megaploit > payload c_exe --out /data/agent.exe
+```
+
+### Prerequisite: initialise the C-remote-shell submodule
+
+The C client source lives in a git submodule and is **not** part of the main
+clone. You must check it out *before* building the Docker image, otherwise the
+source tree is empty and the build fails with *"C-remote-shell source not found"*:
+
+```bash
+# In your local clone (before `docker build`):
+git submodule update --init C-remote-shell
+```
+
+The `.c` / `.h` files are then copied into the image by `COPY . .` (the
+`.dockerignore` does not exclude them).
+
+### Dropping MinGW to shrink the image (~130 MB saved)
+
+If you don't need `payload c_exe`, build lean:
+
+```bash
+docker build --build-arg INSTALL_MINGW=0 -t megaploit:slim .
 ```
 
 ---
