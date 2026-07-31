@@ -270,8 +270,10 @@ class Listener:
             if not accepted:
                 try:
                     conn.close()
-                except OSError:
-                    pass
+                except OSError as e:
+                    _audit.debug(
+                        "CLOSEERR ip=%-18s port=%d detail=%s", ip, src_port, e
+                    )
 
 
 # ---------------------------------------------------------------------------
