@@ -67,3 +67,19 @@ screenshot_*.png
 
 # -- MkDocs build output -------------------------------------------------------
 site/
+
+# -- Debug / temp scripts generated during development -----------------------
+_*.py
+_*.sh
+_*.bat
+_*.ps1
+build.rsp
+build_errors.txt
+gcc_error.txt
+
+# -- Compiled C agent binary (built locally, not distributed in repo) --------
+megaploit_c_agent.exe
+
+# -- Draft PR / issue reply documents ----------------------------------------
+ISSUE_*.md
+PR_DESCRIPTION.md

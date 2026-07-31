@@ -34,7 +34,7 @@ from megaploit.agent.shell import run_shell
 
 LHOST   = "127.0.0.1"
 PORT    = 4444
-USE_TLS = False   # set to True by: generate --tls
+USE_TLS = True   # patched
 
 
 # ---------------------------------------------------------------------------
