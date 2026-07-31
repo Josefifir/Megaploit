@@ -25,6 +25,16 @@ Options
 import argparse
 import sys
 
+# Windows PowerShell / cmd.exe default to cp1252 which cannot encode the
+# Unicode box-drawing characters in the banner.  Reconfigure stdout/stderr
+# to UTF-8 so the banner renders correctly on all platforms.
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except AttributeError:
+        pass  # Python < 3.7 — best-effort
+
 from megaploit.server.cli import Console
 
 
