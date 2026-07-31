@@ -404,8 +404,8 @@ def crs_build(args: list[str], ctx: PluginContext) -> str:
         # Clean up the temp config header on success
         try:
             os.remove(config_hdr)
-        except OSError:
-            pass
+        except OSError as e:
+            lines.append(f"[!] Warning: failed to remove temporary config header '{config_hdr}': {e}")
 
     return "\n".join(lines)
 
