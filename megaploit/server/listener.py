@@ -207,60 +207,73 @@ class Listener:
 
     def _handshake(self, raw_conn: socket.socket, addr: tuple) -> None:
         ip, src_port = addr[0], addr[1]
-
-        # ── 1. IP allowlist ──────────────────────────────────────
-        if self._allowed_ips is not None and ip not in self._allowed_ips:
-            raw_conn.close()
-            _audit.warning("BLOCKED ip=%-18s  reason=not_in_allowlist", ip)
-            return
-
-        # ── 2. Rate limiter ──────────────────────────────────────
-        if self._rate.is_banned(ip):
-            raw_conn.close()
-            _audit.warning("BLOCKED ip=%-18s  reason=banned", ip)
-            return
-
-        if not self._rate.record(ip):
-            raw_conn.close()
-            # record() already wrote the BANNED audit entry
-            return
-
-        # ── 3. TLS upgrade ───────────────────────────────────────
         conn = raw_conn
-        if self.ssl_context:
+        accepted = False
+
+        try:
+            # ── 1. IP allowlist ──────────────────────────────────────
+            if self._allowed_ips is not None and ip not in self._allowed_ips:
+                _audit.warning("BLOCKED ip=%-18s  reason=not_in_allowlist", ip)
+                return
+
+            # ── 2. Rate limiter ──────────────────────────────────────
+            if self._rate.is_banned(ip):
+                _audit.warning("BLOCKED ip=%-18s  reason=banned", ip)
+                return
+
+            if not self._rate.record(ip):
+                # record() already wrote the BANNED audit entry
+                return
+
+            # ── 3. TLS upgrade ───────────────────────────────────────
+            if self.ssl_context:
+                try:
+                    conn = self.ssl_context.wrap_socket(raw_conn, server_side=True)
+                except ssl.SSLError as e:
+                    _audit.warning("REJECTED ip=%-18s port=%d  reason=tls_error  detail=%s",
+                                   ip, src_port, e)
+                    return
+
+            # ── 4. HMAC authentication ───────────────────────────────
+            if not server_authenticate(conn, self.secret_key, timeout=AUTH_TIMEOUT):
+                _audit.warning("REJECTED ip=%-18s port=%d  reason=auth_failed", ip, src_port)
+                return
+
+            # ── 5. Protocol version handshake (AES-GCM v2) ──────────
             try:
-                conn = self.ssl_context.wrap_socket(raw_conn, server_side=True)
-            except ssl.SSLError as e:
-                raw_conn.close()
-                _audit.warning("REJECTED ip=%-18s port=%d  reason=tls_error  detail=%s",
+                handshake_server(conn, self.secret_key)
+            except ConnectionError as e:
+                _audit.warning("REJECTED ip=%-18s port=%d  reason=handshake_failed  detail=%s",
                                ip, src_port, e)
                 return
 
-        # ── 4. HMAC authentication ───────────────────────────────
-        if not server_authenticate(conn, self.secret_key, timeout=AUTH_TIMEOUT):
-            conn.close()
-            _audit.warning("REJECTED ip=%-18s port=%d  reason=auth_failed", ip, src_port)
-            return
+            # ── 6. Session created ───────────────────────────────────
+            with self._lock:
+                self._session_counter += 1
+                sid = self._session_counter
 
-        # ── 5. Protocol version handshake (AES-GCM v2) ──────────
-        handshake_server(conn, self.secret_key)
+            tls_info = ""
+            if self.ssl_context and hasattr(conn, "cipher"):
+                cipher = conn.cipher()
+                tls_info = f"  cipher={cipher[0] if cipher else 'unknown'}"
 
-        # ── 6. Session created ───────────────────────────────────
-        with self._lock:
-            self._session_counter += 1
-            sid = self._session_counter
+            _audit.info("ACCEPTED ip=%-18s port=%d  session=%d%s",
+                        ip, src_port, sid, tls_info)
 
-        # Record TLS cipher suite and cert fingerprint if TLS is on
-        tls_info = ""
-        if self.ssl_context and hasattr(conn, "cipher"):
-            cipher = conn.cipher()
-            tls_info = f"  cipher={cipher[0] if cipher else 'unknown'}"
+            accepted = True
+            session = Session(conn=conn, ip=ip, port=src_port, id=sid)
+            self.on_session(session)
 
-        _audit.info("ACCEPTED ip=%-18s port=%d  session=%d%s",
-                    ip, src_port, sid, tls_info)
-
-        session = Session(conn=conn, ip=ip, port=src_port, id=sid)
-        self.on_session(session)
+        except Exception as e:
+            _audit.warning("ERROR    ip=%-18s port=%d  detail=%s", ip, src_port, e)
+        finally:
+            if not accepted:
+                try:
+                    conn.close()
+                except OSError as e:
+                    _audit.debug(
+                        "CLOSEERR ip=%-18s port=%d detail=%s", ip, src_port, e
+                    )
 
 
 # ---------------------------------------------------------------------------
