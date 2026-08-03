@@ -112,50 +112,60 @@ pip install -r requirements.txt
 
 ## 4. Start the Server
 
-### Basic start (defaults: host `0.0.0.0`, port `4444`)
+### Basic start
 
 ```bash
-python3 -m megaploit
+python server.py -lh <your-ip> -p 4444
 ```
+
+Replace `<your-ip>` with the IP address the agent will call back to (your machine's IP
+visible to the target — not `0.0.0.0`).
 
 You should see:
 
 ```
-  __  __                       _       _ _
- |  \/  | ___  __ _  __ _ _ __| | ___ (_) |_
- | |\/| |/ _ \/ _` |/ _` | '__| |/ _ \| | __|
- | |  | |  __/ (_| | (_| | |  | | (_) | | |_
- |_|  |_|\___|\__, |\__,_|_|  |_|\___/|_|\__|
-              |___/
-                       v4.1.0
-
-[*] Listener started on 0.0.0.0:4444
+[+] TLS auto-cert (required for C agent)  →  loot/tls/megaploit.crt
+[+] Listener ready on 0.0.0.0:4444
+[*] Agents should call back to  192.168.1.10:4444
 megaploit >
 ```
 
-### Custom host and port
+**TLS is always on.** The server auto-generates a self-signed certificate in
+`loot/tls/` on first run and reuses it on every subsequent start. You do not
+need a `--tls` flag or a pre-existing certificate.
+
+### Custom port
 
 ```bash
-# Listen on port 8080
-python3 -m megaploit --port 8080
-
-# Listen on a specific interface
-python3 -m megaploit --host 192.168.1.50 --port 9999
-
-# Use HTTPS (encrypted) transport
-python3 -m megaploit --port 443 --ssl
+python server.py -lh 192.168.1.10 -p 8443
 ```
+
+### Bring your own certificate (optional)
+
+If you have a real certificate (e.g. from Let's Encrypt or a CA):
+
+```bash
+python server.py -lh 192.168.1.10 -p 4444 --cert server.crt --key server.key
+```
+
+### Restrict which IPs may connect (optional)
+
+```bash
+python server.py -lh 192.168.1.10 -p 4444 --allow-ip 10.0.0.5 --allow-ip 10.0.0.6
+```
+
+Any connection from an IP not on the list is dropped before any data is read.
 
 ### Tip — run on a VPS or cloud server
 
-If your target is on the internet (not your local network), start Megaploit on a **VPS with a public IP**:
+If your target is on the internet, start Megaploit on a **VPS with a public IP**:
 
 ```bash
 # On your VPS (e.g., 203.0.113.10)
-python3 -m megaploit --host 0.0.0.0 --port 443 --ssl
+python server.py -lh 203.0.113.10 -p 443
 ```
 
-Make sure port `443` (or whatever port you choose) is open in your firewall / security group.
+Make sure the chosen port is open in your firewall / security group.
 
 ---
 

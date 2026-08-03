@@ -790,18 +790,27 @@ class Console:
             except ssl.SSLError as e:
                 print(err(f"TLS error: {e}"))
                 sys.exit(1)
-        elif self._tls_auto:
+        else:
+            # The C agent always performs a SChannel TLS handshake before the
+            # HMAC challenge.  If the server has no TLS context the raw TCP
+            # socket receives a TLS ClientHello which is misread as an HMAC
+            # response, causing an immediate auth-failed rejection.
+            # Auto-generate a self-signed cert whenever no manual cert was
+            # supplied — this covers both --tls and the plain (no-flag) case.
             cert_path, key_path, fp = self._do_tls_auto(self.lhost)
             if cert_path:
                 try:
                     ssl_ctx = build_ssl_context(cert_path, key_path)
-                    print(ok(f"TLS auto-cert  →  {_c(cert_path, _CYAN)}"))
-                    print(info(f"TLS fingerprint  {_c(fp[:32], _DIM)}"))
+                    if self._tls_auto:
+                        print(ok(f"TLS auto-cert  →  {_c(cert_path, _CYAN)}"))
+                        print(info(f"TLS fingerprint  {_c(fp[:32], _DIM)}"))
+                    else:
+                        print(ok(f"TLS auto-cert (required for C agent)  →  {_c(cert_path, _CYAN)}"))
                 except ssl.SSLError as e:
                     print(err(f"TLS error loading auto-cert: {e}"))
                     ssl_ctx = None
-        else:
-            print(warn("TLS not configured — traffic is unencrypted."))
+            else:
+                print(warn("TLS cert generation failed — C agent connections will be rejected."))
 
         self._listener = Listener(
             bind_host=self.bind_host,

