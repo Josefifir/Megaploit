@@ -41,7 +41,40 @@ from megaploit.core.config import (
     MAX_AUTH_ATTEMPTS_PER_MIN,
     IP_BAN_DURATION,
     AUDIT_LOG,
+    ALLOW_PLAINTEXT_FALLBACK,
 )
+
+
+# ---------------------------------------------------------------------------
+# Startup safety check
+# ---------------------------------------------------------------------------
+
+def _assert_encryption_policy(secret_key: bytes) -> None:
+    """
+    Raise RuntimeError immediately if the operator has set
+    ALLOW_PLAINTEXT_FALLBACK=True while a shared secret is configured.
+
+    This combination defeats all encryption: a MITM can strip the V2_MAGIC
+    byte and force the session into unencrypted v1 mode even though both
+    sides have a key.  The default (ALLOW_PLAINTEXT_FALLBACK=False) is
+    safe; this guard prevents a config mistake from silently downgrading
+    every session without any diagnostic output.
+    """
+    if secret_key and ALLOW_PLAINTEXT_FALLBACK:
+        raise RuntimeError(
+            "[!] SECURITY CONFIGURATION ERROR\n"
+            "    ALLOW_PLAINTEXT_FALLBACK=True is set in megaploit/core/config.py\n"
+            "    but a shared secret key is also configured.\n"
+            "    This combination allows a MITM attacker to strip the v2 magic byte\n"
+            "    and silently downgrade ALL sessions to unencrypted plaintext.\n"
+            "\n"
+            "    Fix one of the following:\n"
+            "      • Keep ALLOW_PLAINTEXT_FALLBACK=False  (the safe default).\n"
+            "      • Remove the shared secret to run without encryption\n"
+            "        (not recommended for production).\n"
+            "\n"
+            "    The server will NOT start until this is resolved."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -154,6 +187,7 @@ class Listener:
     # ---------------------------------------------------------------
 
     def start(self) -> None:
+        _assert_encryption_policy(self.secret_key)
         self._server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # SO_REUSEPORT speeds up restart on Linux (no TIME_WAIT delay)
@@ -270,10 +304,8 @@ class Listener:
             if not accepted:
                 try:
                     conn.close()
-                except OSError as e:
-                    _audit.debug(
-                        "CLOSEERR ip=%-18s port=%d detail=%s", ip, src_port, e
-                    )
+                except OSError:
+                    pass
 
 
 # ---------------------------------------------------------------------------
