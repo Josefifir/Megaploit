@@ -422,25 +422,31 @@ class TestScreenshotStream:
 
     def test_sends_frames_pyautogui_fallback(self, conn):
         """
-        Patch the entire pyautogui fallback path by mocking _screenshot_stream_burst
-        to directly call _send_msg with synthetic FRAME messages — verifying the
-        protocol contract without requiring a real display.
+        Verify the screenshot_stream frame protocol without touching the display.
+
+        pyautogui.screenshot calls GDI/DirectX on Windows, which can trigger a
+        GPU driver TDR (VIDEO_TDR_FAILURE / nvlddmkm.sys BSOD) on machines with
+        NVIDIA cards.  We block the real call by injecting pyautogui itself as a
+        mock module so no hardware path is ever entered.
         """
         frames_sent: list[str] = []
 
         def _fake_send_msg(c, msg):
             frames_sent.append(msg)
 
-        # Build a fake JPEG bytes buffer
+        # Fake JPEG header — handler only checks it's bytes, never decodes
         fake_jpeg = b"\xff\xd8\xff\xe0" + b"\x00" * 100
 
-        # Patch pyautogui.screenshot to return an object whose .save writes fake JPEG
+        # Build a pyautogui stub whose .screenshot() never touches the GPU
+        import types as _types
+
         class _FakeImg:
             def save(self, fp, format=None, quality=None, **kw):
                 fp.write(fake_jpeg)
 
-        # Also stub PIL.Image so the fallback path doesn't bail on missing Pillow
-        import types as _types
+        fake_pyautogui        = _types.ModuleType("pyautogui")
+        fake_pyautogui.screenshot = MagicMock(return_value=_FakeImg())  # type: ignore[attr-defined]
+
         fake_pil   = _types.ModuleType("PIL")
         fake_image = _types.ModuleType("PIL.Image")
         fake_pil.Image = fake_image  # type: ignore[attr-defined]
@@ -449,8 +455,8 @@ class TestScreenshotStream:
              patch.dict("sys.modules", {
                  "cv2": None, "mss": None, "numpy": None,
                  "PIL": fake_pil, "PIL.Image": fake_image,
+                 "pyautogui": fake_pyautogui,
              }), \
-             patch("pyautogui.screenshot", return_value=_FakeImg()), \
              patch("time.sleep"):
             _HANDLERS["screenshot_stream"](conn, ["3", "10"])
 
@@ -460,17 +466,25 @@ class TestScreenshotStream:
         assert len(frame_msgs) == 3
 
     def test_fps_default(self, conn):
-        """Calling with only count should default to fps=5."""
+        """Calling with only count should default to fps=5.
+
+        pyautogui.screenshot is replaced with a no-GPU stub (same reason as
+        test_sends_frames_pyautogui_fallback — avoids TDR on NVIDIA hardware).
+        """
         frames_sent: list[str] = []
 
         def _fake_send_msg(c, msg):
             frames_sent.append(msg)
 
+        import types as _types
         fake_img = MagicMock()
         fake_img.save = lambda buf, **kw: buf.write(b"\xff\xd8\xff\xe0fake_jpeg")
 
+        fake_pyautogui = _types.ModuleType("pyautogui")
+        fake_pyautogui.screenshot = MagicMock(return_value=fake_img)  # type: ignore[attr-defined]
+
         with patch("megaploit.agent.meterp._send_msg", side_effect=_fake_send_msg), \
-             patch("pyautogui.screenshot", return_value=fake_img), \
+             patch.dict("sys.modules", {"pyautogui": fake_pyautogui}), \
              patch("time.sleep"):
             _HANDLERS["screenshot_stream"](conn, ["2"])
 

