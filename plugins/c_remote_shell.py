@@ -211,7 +211,7 @@ def crs_build(args: list[str], ctx: PluginContext) -> str:
     from megaploit.core.crypto import key_fingerprint
     fp = key_fingerprint(raw_key)
     lines.append(f"[+] Key generated  fingerprint={fp}")
-    lines.append(f"[+] secret.key written \u2192 {key_file}")
+    lines.append(f"[+] secret.key written to {key_file} (server CWD) and {submodule_key} (C-remote-shell submodule)")
 
     # Full source list — must match CLIENT_SRCS in C-remote-shell/Makefile.
     # Uses the *_obf.c variants (XOR-obfuscated string literals) and includes
