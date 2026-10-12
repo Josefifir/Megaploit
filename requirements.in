@@ -20,7 +20,7 @@
 termcolor>=2.3.0
 
 # TOML plugin support — stdlib on Python ≥ 3.11; this polyfill covers 3.10
-tomli>=2.0.1; python_version < "3.11"
+tomli>=2.5.0; python_version < "3.11"
 
 # ── Agent capabilities ─────────────────────────────────────────────────────
 pynput>=1.7.6
@@ -28,7 +28,7 @@ PyAutoGUI>=0.9.54
 mss>=9.0.1
 opencv-python>=4.8.0
 numpy>=1.24.0
-sounddevice>=0.4.6
+sounddevice>=0.5.6
 soundfile>=0.12.1
 
 # ── Transport encryption (required) ────────────────────────────────────────
@@ -36,4 +36,4 @@ cryptography>=41.0.0
 
 # ── Web streaming (agent-side Flask MJPEG servers) ─────────────────────────
 Flask>=3.0.0
-Werkzeug>=3.0.0
+Werkzeug>=3.1.9
